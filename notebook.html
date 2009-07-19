@@ -5,6 +5,23 @@
 <script src="jquery.hotkeys.js" type="text/javascript"></script>
 
 <script type="text/javascript">
+
+$.fn.selectRange = function(start, end) {
+        return this.each(function() {
+                if(this.setSelectionRange) {
+                        this.focus();
+                        this.setSelectionRange(start, end);
+                } else if(this.createTextRange) {
+                        var range = this.createTextRange();
+                        range.collapse(true);
+                        range.moveEnd('character', end);
+                        range.moveStart('character', start);
+                        range.select();
+                }
+        });
+};
+
+
     var i=1;
     function create_cell() {
         /* This is a safety catch: */
@@ -26,13 +43,18 @@
                 $("#cell_prototype").after("b");
                 return true;
             });
+        a.children("textarea.cell_input").bind('keydown', 'up',
+            function(event) {
+                var next_cell = $(event.target).parent().prev().children("textarea.cell_input");
+                next_cell.focus();
+                next_cell.selectRange(1, 1);
+                return true;
+            });
         a.children("textarea.cell_input").bind('keydown', 'down',
             function(event) {
-                $("#cell_prototype").after("d");
                 var next_cell = $(event.target).parent().next().children("textarea.cell_input");
                 next_cell.focus();
-                next_cell.selectionStart = 1;
-                next_cell.selectionEnd = 1;
+                next_cell.selectRange(1, 1);
                 return true;
             });
         i += 1;
