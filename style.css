@@ -1,3 +1,7 @@
+div.disabled {
+  display:none;
+}
+
 textarea.cell_input {
   color:#000000;
   background-color: white;

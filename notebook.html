@@ -9,6 +9,7 @@
         return a;
     }
 $(document).ready(function(){
+    $("#cell_prototype").after(create_cell());
     $("a.eval_button").click(function(event) {
         event.preventDefault();
         $("#cell_prototype").after(create_cell());
