@@ -19,10 +19,7 @@ div.insert_new_cell:hover {
 textarea.cell_input {
   color:#000000;
   background-color: white;
-  border-left: 1px solid  #a8a8a8;
-  border-bottom: 1px solid  #a8a8a8;
-  border-top: 1px solid  #a8a8a8;
-  border-right: 1px solid  #a8a8a8;
+  border: 1px solid  #a8a8a8;
   font-family: monospace;
   font-size:12pt;
   overflow:hidden;
