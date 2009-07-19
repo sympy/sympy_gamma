@@ -30,10 +30,10 @@ textarea.cell_input {
   margin-bottom:0px;
   margin-top:0px;
   line-height:1.2em;
+  height: 31px;
 }
 
 textarea.cell_input_active {
-  color:#000000;
   background-color: white;
   border: 2px solid #8888FE;
   font-family: monospace;
@@ -46,6 +46,7 @@ textarea.cell_input_active {
   margin-bottom:0px;
   margin-top:0px;
   line-height:1.2em;
+  height: 31px;
 }
 
 a.eval_button_dis {
