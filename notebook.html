@@ -7,6 +7,8 @@
 <script type="text/javascript">
     var i=1;
     function create_cell() {
+        /* This is a safety catch: */
+        if (i > 10) return;
         /* Creates a new cell by cloning the disabled prototype */
         var a = $("#cell_prototype").clone().removeClass("disabled");
         a.children(".prompt").text("In [" + i + "]:");
@@ -16,9 +18,8 @@
         a.children("textarea.cell_input").blur(cell_input_blur);
         a.children("textarea.cell_input").bind('keydown', 'Shift+return',
             function(event) {
-                event.preventDefault();
-                //$("#cell_prototype").after(create_cell());
-                $("#cell_prototype").after("x");
+                eval_click(event);
+                return true;
             });
         i += 1;
         return a;
