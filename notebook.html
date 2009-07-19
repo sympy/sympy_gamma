@@ -75,7 +75,6 @@ $.fn.selectRange = function(start, end) {
             });
         a.children("textarea.cell_input").bind('keydown', 'backspace',
             function(event) {
-                console.log("selection", get_selection_range(event.target))
                 if (get_selection_range(event.target)[0] == 0) {
                     var next_cell = $(event.target).parent().prev().children("textarea.cell_input");
                     if (next_cell.val() == "") {
