@@ -49,11 +49,11 @@ textarea.cell_input_active {
   height: 31px;
 }
 
-a.eval_button_dis {
+a.eval_button {
   display:none;
 }
 
-a.eval_button {
+a.eval_button_active {
   display: block;
   position: relative;
   top: 2px;
