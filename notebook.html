@@ -3,11 +3,15 @@
       <link rel="stylesheet" href="style.css" type="text/css" />
 <script src="jquery-1.3.2.min.js" type="text/javascript"></script>
 <script type="text/javascript">
+    function create_cell() {
+        /* Creates a new cell by cloning the disabled prototype */
+        a = $("div.cell_dis").clone().removeClass("cell_dis").addClass("cell");
+        return a;
+    }
 $(document).ready(function(){
     $("a.eval_button").click(function(event) {
         event.preventDefault();
-        a = $("div.cell_dis").clone().removeClass("cell_dis").addClass("cell");
-        $(".cell_dis").after(a);
+        $(".cell_dis").after(create_cell());
     });
 });
 </script>
