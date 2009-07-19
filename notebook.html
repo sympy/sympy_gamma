@@ -6,8 +6,6 @@
 
 <script type="text/javascript">
 
-var browser_ie=0;
-
 function get_selection_range(input) {
     /*
     Return the start and end positions of the currently selected text
@@ -19,7 +17,9 @@ function get_selection_range(input) {
     OUTPUT:
         an array of two nonnegative integers
     */
-    if(browser_ie) {
+    if (input.selectionStart) {
+        return Array(input.selectionStart, input.selectionEnd);
+    } else {
         var start, end;
         var range = document.selection.createRange();
 
@@ -34,8 +34,6 @@ function get_selection_range(input) {
         end = tmprange.text.length;
 
         return Array(start, end);
-    } else {
-        return Array(input.selectionStart, input.selectionEnd);
     }
 }
 
