@@ -5,6 +5,17 @@ div.disabled {
   display:none;
 }
 
+div.insert_new_cell {
+    display:block;
+    height:6px;
+    margin:3px;
+}
+
+div.insert_new_cell:hover {
+    background-color:#8888FE;
+    margin:3px;
+}
+
 textarea.cell_input {
   color:#000000;
   background-color: white;
