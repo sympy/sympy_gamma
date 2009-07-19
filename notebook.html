@@ -35,6 +35,7 @@
         /* Gets called whenever the user "gets into" the cell */
         event.preventDefault();
         $(event.target).removeClass("cell_input_active").addClass("cell_input")
+        $(event.target).siblings("a.eval_button").css("display", "none");
     };
 $(document).ready(function(){
     $("#cell_prototype").after(create_cell());
