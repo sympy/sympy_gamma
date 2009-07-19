@@ -9,8 +9,15 @@
         var a = $("#cell_prototype").clone().removeClass("disabled");
         a.children(".prompt").text("In [" + i + "]:");
         a.children("a.eval_button").click(eval_click);
+        a.children("div.insert_new_cell").click(insert_new_cell_click);
         i += 1;
         return a;
+    };
+    function insert_new_cell_click(event) {
+        /* Gets called whenever the the "insert new cell" blue area is clicked,
+           so this puts the new cell above the current one */
+        event.preventDefault();
+        $(event.target).parent().before(create_cell());
     };
     function eval_click(event) {
         /* Gets called whenever the "evaluate" link is clicked */
