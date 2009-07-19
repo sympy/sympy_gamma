@@ -32,6 +32,22 @@ textarea.cell_input {
   line-height:1.2em;
 }
 
+textarea.cell_input_active {
+  color:#000000;
+  background-color: white;
+  border: 2px solid #8888FE;
+  font-family: monospace;
+  font-size:12pt;
+  overflow:hidden;
+  padding-left:5px;
+  padding-top:3px;
+  padding-bottom:0px;
+  width: 94%;
+  margin-bottom:0px;
+  margin-top:0px;
+  line-height:1.2em;
+}
+
 a.eval_button_dis {
   display:none;
 }

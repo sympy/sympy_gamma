@@ -10,6 +10,8 @@
         a.children(".prompt").text("In [" + i + "]:");
         a.children("a.eval_button").click(eval_click);
         a.children("div.insert_new_cell").click(insert_new_cell_click);
+        a.children("textarea.cell_input").focus(cell_input_focus);
+        a.children("textarea.cell_input").blur(cell_input_blur);
         i += 1;
         return a;
     };
@@ -23,6 +25,16 @@
         /* Gets called whenever the "evaluate" link is clicked */
         event.preventDefault();
         $(event.target).parent().after(create_cell());
+    };
+    function cell_input_focus(event) {
+        /* Gets called whenever the user "gets into" the cell */
+        event.preventDefault();
+        $(event.target).removeClass("cell_input").addClass("cell_input_active")
+    };
+    function cell_input_blur(event) {
+        /* Gets called whenever the user "gets into" the cell */
+        event.preventDefault();
+        $(event.target).removeClass("cell_input_active").addClass("cell_input")
     };
 $(document).ready(function(){
     $("#cell_prototype").after(create_cell());
