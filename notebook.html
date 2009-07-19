@@ -5,13 +5,13 @@
 <script type="text/javascript">
     function create_cell() {
         /* Creates a new cell by cloning the disabled prototype */
-        a = $("div.cell_dis").clone().removeClass("cell_dis").addClass("cell");
+        a = $("#cell_prototype").clone().removeClass("disabled");
         return a;
     }
 $(document).ready(function(){
     $("a.eval_button").click(function(event) {
         event.preventDefault();
-        $(".cell_dis").after(create_cell());
+        $("#cell_prototype").after(create_cell());
     });
 });
 </script>
@@ -23,7 +23,7 @@ $(document).ready(function(){
   </head>
   <body>
     <a href="http://jquery.com/">jQuery</a>
-<div class="cell_dis">
+<div class="disabled" id="cell_prototype">
 <textarea class="cell_input" rows=1 cols=80 id='cell_input_0'></textarea>
 <a href="" class="eval_button" id="eval_button0" alt="Click here or press shift-return to evaluate">evaluate</a>
 </div>
