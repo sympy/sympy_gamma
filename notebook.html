@@ -75,12 +75,16 @@ $.fn.selectRange = function(start, end) {
         a.children("textarea.cell_input").bind('keydown', 'backspace',
             function(event) {
                 console.log("selection", get_selection_range(event.target))
-                var next_cell = $(event.target).parent().prev().children("textarea.cell_input");
-                if (next_cell.val() == "")
-                    next_cell.remove()
-                else
-                    next_cell.focus();
-                return true;
+                if (get_selection_range(event.target)[0] == 0) {
+                    var next_cell = $(event.target).parent().prev().children("textarea.cell_input");
+                    if (next_cell.val() == "") {
+                        next_cell.remove()
+                    } else {
+                        next_cell.focus();
+                        next_cell.selectRange(1, 1);
+                    }
+                    return true;
+                }
             });
         a.children("textarea.cell_input").bind('keydown', 'up',
             function(event) {
