@@ -1,4 +1,4 @@
-div.prompt {
+span.prompt {
     color:blue;
 }
 div.disabled {
@@ -18,7 +18,7 @@ textarea.cell_input {
   padding-left:5px;
   padding-top:3px;
   padding-bottom:0px;
-  width: 97%;
+  width: 94%;
   margin-bottom:0px;
   margin-top:0px;
   line-height:1.2em;
