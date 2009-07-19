@@ -21,6 +21,20 @@
                 eval_click(event);
                 return true;
             });
+        a.children("textarea.cell_input").bind('keydown', 'backspace',
+            function(event) {
+                $("#cell_prototype").after("b");
+                return true;
+            });
+        a.children("textarea.cell_input").bind('keydown', 'down',
+            function(event) {
+                $("#cell_prototype").after("d");
+                var next_cell = $(event.target).parent().next().children("textarea.cell_input");
+                next_cell.focus();
+                next_cell.selectionStart = 1;
+                next_cell.selectionEnd = 1;
+                return true;
+            });
         i += 1;
         return a;
     };
@@ -38,8 +52,9 @@
     function cell_input_focus(event) {
         /* Gets called whenever the user "gets into" the cell */
         event.preventDefault();
-        $(event.target).removeClass("cell_input").addClass("cell_input_active")
+        $("textarea.cell_input_active").removeClass("cell_input_active").addClass("cell_input")
         $("a.eval_button_active").removeClass("eval_button_active").addClass("eval_button");
+        $(event.target).removeClass("cell_input").addClass("cell_input_active")
         $(event.target).siblings("a.eval_button").removeClass("eval_button").addClass("eval_button_active");
     };
     function cell_input_blur(event) {
