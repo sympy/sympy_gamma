@@ -6,7 +6,7 @@
     var i=1;
     function create_cell() {
         /* Creates a new cell by cloning the disabled prototype */
-        a = $("#cell_prototype").clone().removeClass("disabled");
+        var a = $("#cell_prototype").clone().removeClass("disabled");
         a.children(".prompt").text("In [" + i + "]:");
         i += 1;
         return a;
