@@ -17,11 +17,11 @@ textarea.cell_input {
   line-height:1.2em;
 }
 
-a.eval_button {
+a.eval_button_dis {
   display:none;
 }
 
-a.eval_button_active {
+a.eval_button {
   display: block;
   position: relative;
   top: 2px;
