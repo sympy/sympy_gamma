@@ -14,8 +14,9 @@
         a.children("div.insert_new_cell").click(insert_new_cell_click);
         a.children("textarea.cell_input").focus(cell_input_focus);
         a.children("textarea.cell_input").blur(cell_input_blur);
-        a.children("textarea.cell_input").bind('keydown', 'tab',
+        a.children("textarea.cell_input").bind('keydown', 'Shift+return',
             function(event) {
+                event.preventDefault();
                 //$("#cell_prototype").after(create_cell());
                 $("#cell_prototype").after("x");
             });
