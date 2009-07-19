@@ -6,6 +6,40 @@
 
 <script type="text/javascript">
 
+var browser_ie=0;
+
+function get_selection_range(input) {
+    /*
+    Return the start and end positions of the currently selected text
+    in the input text area (a DOM object).
+
+    INPUT:
+        input -- a DOM object (a textarea)
+
+    OUTPUT:
+        an array of two nonnegative integers
+    */
+    if(browser_ie) {
+        var start, end;
+        var range = document.selection.createRange();
+
+        var tmprange = range.duplicate();
+        tmprange.moveToElementText(input);
+        tmprange.setEndPoint("endToStart", range);
+        start = tmprange.text.length;
+
+        tmprange = range.duplicate();
+        tmprange.moveToElementText(input);
+        tmprange.setEndPoint("endToEnd", range);
+        end = tmprange.text.length;
+
+        return Array(start, end);
+    } else {
+        return Array(input.selectionStart, input.selectionEnd);
+    }
+}
+
+
 $.fn.selectRange = function(start, end) {
         return this.each(function() {
                 if(this.setSelectionRange) {
@@ -40,7 +74,12 @@ $.fn.selectRange = function(start, end) {
             });
         a.children("textarea.cell_input").bind('keydown', 'backspace',
             function(event) {
-                $("#cell_prototype").after("b");
+                console.log("selection", get_selection_range(event.target))
+                var next_cell = $(event.target).parent().prev().children("textarea.cell_input");
+                if (next_cell.val() == "")
+                    next_cell.remove()
+                else
+                    next_cell.focus();
                 return true;
             });
         a.children("textarea.cell_input").bind('keydown', 'up',
