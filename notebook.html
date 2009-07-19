@@ -8,16 +8,18 @@
         /* Creates a new cell by cloning the disabled prototype */
         var a = $("#cell_prototype").clone().removeClass("disabled");
         a.children(".prompt").text("In [" + i + "]:");
+        a.children("a.eval_button").click(eval_click);
         i += 1;
         return a;
-    }
+    };
+    function eval_click(event) {
+        /* Gets called whenever the "evaluate" link is clicked */
+        event.preventDefault();
+        $(event.target).parent().after(create_cell());
+    };
 $(document).ready(function(){
     $("#cell_prototype").after(create_cell());
-    $("a.eval_button").click(function(event) {
-        event.preventDefault();
-        //$(this).parent
-        $("#cell_prototype").after(create_cell());
-    });
+    $("a.eval_button").click(eval_click);
 });
 </script>
 <style type="text/css">
