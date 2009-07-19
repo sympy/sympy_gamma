@@ -70,6 +70,9 @@ $.fn.selectRange = function(start, end) {
         a.children("textarea.cell_input").bind('keydown', 'Shift+return',
             function(event) {
                 eval_click(event);
+                var next_cell = $(event.target).parent().next().children("textarea.cell_input");
+                next_cell.focus();
+                next_cell.selectRange(1, 1);
                 return true;
             });
         a.children("textarea.cell_input").bind('keydown', 'backspace',
