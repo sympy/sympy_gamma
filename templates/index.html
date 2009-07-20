@@ -164,7 +164,7 @@ function handle_resize(node, type) {
         a.children("textarea.cell_input").bind('keydown', 'Shift+return',
             function(event) {
                 event.preventDefault();
-                insert_cell_after($(event.target));
+                eval_click(event);
                 focus_next_cell($(event.target));
                 return true;
             });
@@ -221,7 +221,8 @@ function handle_resize(node, type) {
                 console.log(data.result);
                 t.after(data.result);
                 }, "json");
-        insert_cell_after($(event.target));
+        var next_cell = $(event.target).parent().next().children("textarea.cell_input");
+        if (next_cell.length == 0) insert_cell_after($(event.target));
     };
     function cell_input_focus(event) {
         /* Gets called whenever the user "gets into" the cell */
