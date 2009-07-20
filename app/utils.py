@@ -41,7 +41,7 @@ class Eval(object):
             eval(compile(s, '', 'exec'), globals, globals)
 
             if not z is None:
-                r = str(eval(z, globals))
+                r = repr(eval(z, globals))
             else:
                 r = ''
             return r
