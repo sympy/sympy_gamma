@@ -156,7 +156,7 @@ function handle_resize(node, type) {
         if (i > 10) return; */
         /* Creates a new cell by cloning the disabled prototype */
         var a = $("#cell_prototype").clone().removeClass("disabled");
-        a.children(".prompt").text("In [" + i + "]:");
+        a.children(".input_prompt").text("In [" + i + "]:");
         a.children("a.eval_button").click(eval_click);
         a.children("div.insert_new_cell").click(insert_new_cell_click);
         a.children("textarea.cell_input").focus(cell_input_focus);
@@ -215,11 +215,17 @@ function handle_resize(node, type) {
         /* Gets called whenever the "evaluate" link is clicked */
         event.preventDefault();
         var t = $(event.target).parent().children("textarea");
+        var output = $(event.target).parent().children("span.cell_output");
+        var output_prompt = $(event.target).parent().children("span.output_prompt");
         var payload = { code: t.val(), time: "2pm" };
         payload = JSON.stringify(payload);
         $.post("/eval_cell/", { "payload": payload }, function(data) {
                 //console.log(data.result);
-                t.after(data.result);
+                if (data.result != "") {
+                    output_prompt.css("display", "inline");
+                    output.empty();
+                    output.append(data.result);
+                }
                 }, "json");
         var next_cell = $(event.target).parent().next().children("textarea.cell_input");
         if (next_cell.length == 0) insert_cell_after($(event.target));
@@ -256,9 +262,11 @@ $(document).ready(function() {
 
 <div class="disabled" id="cell_prototype">
     <div class="insert_new_cell"></div>
-    <span class="prompt">In [1]:</span>
+    <span class="input_prompt">In [1]:</span>
     <textarea class="cell_input" rows=1 cols=80></textarea>
     <a href="" class="eval_button" alt="Click here or press shift-return to evaluate">evaluate</a>
+    <span class="output_prompt">Out[1]:</span>
+    <span class="cell_output"></span>
 </div>
 
   </body>

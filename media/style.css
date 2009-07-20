@@ -1,5 +1,9 @@
-span.prompt {
+span.input_prompt {
     color:blue;
+}
+span.output_prompt {
+    color:red;
+    display:none;
 }
 div.disabled {
   display:none;
