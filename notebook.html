@@ -79,24 +79,23 @@ function insert_cell_after(cell) {
 function join_cells(cell) {
     var prev_cell = cell.parent().prev().children("textarea.cell_input");
     if (prev_cell.length == 0) return;
-    if (prev_cell.val() != "") {
-        if (cell.val() != "") {
-            cell.val(prev_cell.val() + "\n" + cell.val());
+    if (cell.val() != "") {
+        if (prev_cell.val() != "") {
+            prev_cell.val(prev_cell.val() + "\n" + cell.val());
         } else {
-            cell.val(prev_cell.val());
+            prev_cell.val(cell.val());
         }
     }
-    prev_cell.parent().remove()
-    //prev_cell.focus();
-    //prev_cell.selectRange(0, 0);
+    focus_prev_cell(cell);
+    cell.parent().remove()
 };
 
 
 
     var i=1;
     function create_cell() {
-        /* This is a safety catch: */
-        if (i > 10) return;
+        /* This is a safety catch:
+        if (i > 10) return; */
         /* Creates a new cell by cloning the disabled prototype */
         var a = $("#cell_prototype").clone().removeClass("disabled");
         a.children(".prompt").text("In [" + i + "]:");
