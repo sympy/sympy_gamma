@@ -2,7 +2,9 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.utils import simplejson
 
-from utils import log_exception
+from utils import log_exception, Eval
+
+e = Eval()
 
 def index(request):
     return render_to_response("index.html")
@@ -14,5 +16,8 @@ def eval_cell(request):
     print "-"*70
     print "Got payload:"
     print payload
+    print "evaluating"
+    r = e.eval(payload["code"])
+    print r
     print "-"*70
-    return HttpResponse("OK")
+    return HttpResponse(r)
