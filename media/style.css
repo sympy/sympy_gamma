@@ -1,17 +1,26 @@
 span.input_prompt {
     color:blue;
+    display: inline;
 }
 span.output_prompt {
     color:red;
     display:none;
+    width: 60px;
+    float: left;
 }
 pre.shrunk {
     color: #0000AA;
     font-size: 12pt;
     margin: 0;
+    padding-left:20px;
+    float: left;
 }
 div.disabled {
   display:none;
+}
+div.cell {
+  width: 100%;
+  float: left;
 }
 
 div.insert_new_cell {

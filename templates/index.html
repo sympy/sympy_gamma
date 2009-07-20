@@ -155,7 +155,7 @@ function handle_resize(node, type) {
         /* This is a safety catch:
         if (i > 10) return; */
         /* Creates a new cell by cloning the disabled prototype */
-        var a = $("#cell_prototype").clone().removeClass("disabled");
+        var a = $("#cell_prototype").clone().removeClass("disabled").addClass("cell");
         a.children(".input_prompt").text("In [" + i + "]:");
         a.children("a.eval_button").click(eval_click);
         a.children("div.insert_new_cell").click(insert_new_cell_click);

@@ -20,7 +20,8 @@ def eval_cell(request):
     logging.info(payload)
     logging.info("evaluating...")
     r = e.eval(payload["code"])
-    r = '<pre class="shrunk">' + r + "</pre>"
+    if r != "":
+        r = '<pre class="shrunk">' + r + "</pre>"
     logging.info("encoding to JSON...")
     payload = {"result": r}
     payload = simplejson.dumps(payload)
