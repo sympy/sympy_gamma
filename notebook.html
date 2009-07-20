@@ -64,6 +64,7 @@ function focus_next_cell(cell) {
 function focus_prev_cell(cell) {
     var prev_cell = cell.parent().prev().children("textarea.cell_input");
     if (prev_cell.length == 0) return;
+    if (prev_cell.parent().attr("class") == "disabled") return;
     prev_cell.focus();
     prev_cell.selectRange(0, 0);
 };
