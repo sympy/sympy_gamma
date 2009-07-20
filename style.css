@@ -25,12 +25,11 @@ textarea.cell_input {
   overflow:hidden;
   padding-left:6px;
   padding-top:4px;
-  padding-bottom:0px;
+  padding-bottom:4px;
   width: 94%;
   margin-bottom:0px;
   margin-top:0px;
   line-height:1.2em;
-  height: 31px;
 }
 
 textarea.cell_input_active {
@@ -41,12 +40,11 @@ textarea.cell_input_active {
   overflow:hidden;
   padding-left:5px;
   padding-top:3px;
-  padding-bottom:0px;
+  padding-bottom:4px;
   width: 94%;
   margin-bottom:0px;
   margin-top:0px;
   line-height:1.2em;
-  height: 31px;
 }
 
 a.eval_button {

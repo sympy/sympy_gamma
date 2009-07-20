@@ -1,3 +1,0 @@
-* join the cells (always, just copy "" to the previous cell if it's empty)
-* refactor everything to nice functions, like "join_cells()", "focus_next_cell()", etc.
-

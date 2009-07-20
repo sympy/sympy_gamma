@@ -58,12 +58,14 @@ $.fn.selectRange = function(start, end) {
 
 function focus_next_cell(cell) {
     var next_cell = cell.parent().next().children("textarea.cell_input");
+    if (next_cell.length == 0) return;
     next_cell.focus();
     next_cell.selectRange(0, 0);
 };
 
 function focus_prev_cell(cell) {
     var prev_cell = cell.parent().prev().children("textarea.cell_input");
+    if (prev_cell.length == 0) return;
     prev_cell.focus();
     prev_cell.selectRange(0, 0);
 };
@@ -90,6 +92,63 @@ function join_cells(cell) {
     cell.parent().remove()
 };
 
+function calculate_textarea_rows(text, cols) {
+    /*
+       Calculates the number of rows in the textarea.
+
+       text ... the text in the textarea
+       cols ... the number of columns in the text area
+
+       Returns: the number of rows
+
+       This function counts the number of new lines and takes wrapping into
+       account.
+       */
+    var lines = text.split('\n');
+    var rows = lines.length;
+    for (var i = 0; i < lines.length; i++)
+    {
+        var line = lines[i];
+        if (line.length >= cols) rows += Math.floor(line.length / cols);
+    }
+    return rows;
+}
+
+function get_cursor_row(node) {
+    /*
+       Returns the row the cursor is on
+       */
+    var r = get_selection_range(node.context)[0];
+    var lines = node.val().split('\n');
+    var cols = node.context.cols;
+    var row = 0;
+    var chars = 0;
+    for (var i = 0; i < lines.length; i++)
+    {
+        var line = lines[i];
+        chars += line.length+1;
+        if (r < chars) return row;
+        row += 1;
+    }
+    return row-1;
+}
+
+
+function handle_resize(node, type) {
+    /*
+       Resizes the textarea (node) if needed.
+
+       node ... the JQuery element
+       type ... one of +1 (enter pressed) or -1 (backspace pressed)
+                or 0 (copy & paste, or joining cells)
+
+        Currently "type" is not used, but it may be used to do more accurate
+        calculation of the number of rows in the future.
+       */
+    var t = node.context;
+    var text = t.value;
+    t.rows = calculate_textarea_rows(text, t.cols);
+}
 
 
     var i=1;
@@ -117,17 +176,31 @@ function join_cells(cell) {
                     join_cells($(event.target));
                     return true;
                 }
+                handle_resize($(event.target), -1)
             });
         a.children("textarea.cell_input").bind('keydown', 'up',
             function(event) {
-                event.preventDefault();
-                focus_prev_cell($(event.target));
-                return true;
+                if (get_cursor_row($(event.target)) == 0) {
+                    event.preventDefault();
+                    focus_prev_cell($(event.target));
+                    return true;
+                }
             });
         a.children("textarea.cell_input").bind('keydown', 'down',
             function(event) {
-                event.preventDefault();
-                focus_next_cell($(event.target));
+                if (get_cursor_row($(event.target)) + 1 == event.target.rows) {
+                    event.preventDefault();
+                    focus_next_cell($(event.target));
+                    return true;
+                }
+            });
+        a.children("textarea.cell_input").bind('keydown', 'return',
+            function(event) {
+                handle_resize($(event.target), +1)
+                return true;
+            });
+        a.children("textarea.cell_input").keyup(function(event) {
+                handle_resize($(event.target), 0)
                 return true;
             });
         i += 1;
