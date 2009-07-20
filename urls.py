@@ -11,7 +11,7 @@ urlpatterns = patterns('',
     # Example:
     # (r'^notebook/', include('notebook.foo.urls')),
     (r'^$', 'app.views.index'),
-    (r'^media/(?P<path>.*)$', 'django.views.static.serve',
+    (r'^media_files/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': p}),
 
 
