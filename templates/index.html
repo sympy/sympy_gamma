@@ -218,7 +218,7 @@ function handle_resize(node, type) {
         var payload = { code: t.val(), time: "2pm" };
         payload = JSON.stringify(payload);
         $.post("/eval_cell/", { "payload": payload }, function(data) {
-                console.log(data.result);
+                //console.log(data.result);
                 t.after(data.result);
                 }, "json");
         var next_cell = $(event.target).parent().next().children("textarea.cell_input");
