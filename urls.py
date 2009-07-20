@@ -4,9 +4,16 @@ from django.conf.urls.defaults import *
 # from django.contrib import admin
 # admin.autodiscover()
 
+import os.path
+p = os.path.join(os.path.dirname(__file__), 'media/')
+
 urlpatterns = patterns('',
     # Example:
     # (r'^notebook/', include('notebook.foo.urls')),
+    (r'^$', 'app.views.index'),
+    (r'^media/(?P<path>.*)$', 'django.views.static.serve',
+        {'document_root': p}),
+
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:
