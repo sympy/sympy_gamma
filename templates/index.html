@@ -217,7 +217,10 @@ function handle_resize(node, type) {
         var t = $(event.target).parent().children("textarea");
         var payload = { code: t.val(), time: "2pm" };
         payload = JSON.stringify(payload);
-        $.post("/eval_cell/", { "payload": payload } );
+        $.post("/eval_cell/", { "payload": payload }, function(data) {
+                console.log(data.result);
+                t.after(data.result);
+                }, "json");
         insert_cell_after($(event.target));
     };
     function cell_input_focus(event) {

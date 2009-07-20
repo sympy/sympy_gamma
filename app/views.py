@@ -18,6 +18,7 @@ def eval_cell(request):
     print payload
     print "evaluating"
     r = e.eval(payload["code"])
-    print r
+    payload = {"result": r}
+    payload = simplejson.dumps(payload)
     print "-"*70
-    return HttpResponse(r)
+    return HttpResponse(payload)
