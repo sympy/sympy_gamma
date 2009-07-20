@@ -23,10 +23,28 @@ class Eval(object):
     def __init__(self):
         self._namespace = {}
 
-    def eval(self, text):
+    def eval(self, x):
+        globals = self._namespace
         try:
-            exec text in {}, self._namespace
-            return str(self._namespace)
+            x = x.strip()
+            y = x.split('\n')
+            if len(y) == 0:
+                return ''
+            s = '\n'.join(y[:-1]) + '\n'
+            t = y[-1]
+            try:
+                z = compile(t + '\n', '', 'eval')
+            except SyntaxError:
+                s += '\n' + t
+                z = None
+
+            eval(compile(s, '', 'exec'), globals, globals)
+
+            if not z is None:
+                r = str(eval(z, globals))
+            else:
+                r = ''
+            return r
         except:
             etype, value, tb = sys.exc_info()
             s = "".join(traceback.format_exception(etype, value, tb))
