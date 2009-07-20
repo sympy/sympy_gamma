@@ -18,9 +18,11 @@ def eval_cell(request):
     logging.info("-"*70)
     logging.info("Got payload:")
     logging.info(payload)
-    logging.info("evaluating")
+    logging.info("evaluating...")
     r = e.eval(payload["code"])
+    logging.info("encoding to JSON...")
     payload = {"result": r}
     payload = simplejson.dumps(payload)
+    logging.info("Sending payload: " + payload)
     logging.info("-"*70)
     return HttpResponse(payload)
