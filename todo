@@ -1,0 +1,2 @@
+* when pressing the UP arrow to go to the previous cell, put the cursor at the
+  bottom row (currently it goes to the top row)
