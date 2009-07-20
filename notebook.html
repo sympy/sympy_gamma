@@ -101,7 +101,8 @@ function join_cells(cell) {
         a.children("textarea.cell_input").blur(cell_input_blur);
         a.children("textarea.cell_input").bind('keydown', 'Shift+return',
             function(event) {
-                eval_click(event);
+                event.preventDefault();
+                insert_cell_after($(event.target))
                 focus_next_cell($(event.target));
                 return true;
             });
