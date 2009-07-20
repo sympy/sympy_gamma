@@ -89,7 +89,7 @@ function join_cells(cell) {
         }
     }
     focus_prev_cell(cell);
-    cell.parent().remove()
+    cell.parent().remove();
 };
 
 function calculate_textarea_rows(text, cols) {
@@ -165,7 +165,7 @@ function handle_resize(node, type) {
         a.children("textarea.cell_input").bind('keydown', 'Shift+return',
             function(event) {
                 event.preventDefault();
-                insert_cell_after($(event.target))
+                insert_cell_after($(event.target));
                 focus_next_cell($(event.target));
                 return true;
             });
@@ -196,11 +196,11 @@ function handle_resize(node, type) {
             });
         a.children("textarea.cell_input").bind('keydown', 'return',
             function(event) {
-                handle_resize($(event.target), +1)
+                handle_resize($(event.target), +1);
                 return true;
             });
         a.children("textarea.cell_input").keyup(function(event) {
-                handle_resize($(event.target), 0)
+                handle_resize($(event.target), 0);
                 return true;
             });
         i += 1;
@@ -210,28 +210,28 @@ function handle_resize(node, type) {
         /* Gets called whenever the the "insert new cell" blue area is clicked,
            so this puts the new cell above the current one */
         event.preventDefault();
-        insert_cell_before($(event.target))
+        insert_cell_before($(event.target));
     };
     function eval_click(event) {
         /* Gets called whenever the "evaluate" link is clicked */
         event.preventDefault();
-        insert_cell_after($(event.target))
+        insert_cell_after($(event.target));
     };
     function cell_input_focus(event) {
         /* Gets called whenever the user "gets into" the cell */
         event.preventDefault();
-        $("textarea.cell_input_active").removeClass("cell_input_active").addClass("cell_input")
+        $("textarea.cell_input_active").removeClass("cell_input_active").addClass("cell_input");
         $("a.eval_button_active").removeClass("eval_button_active").addClass("eval_button");
-        $(event.target).removeClass("cell_input").addClass("cell_input_active")
+        $(event.target).removeClass("cell_input").addClass("cell_input_active");
         $(event.target).siblings("a.eval_button").removeClass("eval_button").addClass("eval_button_active");
     };
     function cell_input_blur(event) {
         /* Gets called whenever the user "gets into" the cell */
         event.preventDefault();
-        $(event.target).removeClass("cell_input_active").addClass("cell_input")
+        $(event.target).removeClass("cell_input_active").addClass("cell_input");
     };
 $(document).ready(function(){
-    insert_cell_after($("#cell_prototype"))
+    insert_cell_after($("#cell_prototype"));
     focus_next_cell($("#cell_prototype"));
 });
 </script>
