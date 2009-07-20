@@ -4,6 +4,8 @@ from django.utils import simplejson
 
 from utils import log_exception, Eval
 
+import logging
+
 e = Eval()
 
 def index(request):
@@ -13,12 +15,12 @@ def index(request):
 def eval_cell(request):
     payload = request.POST["payload"]
     payload = simplejson.loads(payload)
-    print "-"*70
-    print "Got payload:"
-    print payload
-    print "evaluating"
+    logging.info("-"*70)
+    logging.info("Got payload:")
+    logging.info(payload)
+    logging.info("evaluating")
     r = e.eval(payload["code"])
     payload = {"result": r}
     payload = simplejson.dumps(payload)
-    print "-"*70
+    logging.info("-"*70)
     return HttpResponse(payload)
