@@ -54,21 +54,23 @@ $.fn.selectRange = function(start, end) {
 };
 
 function focus_next_cell(cell) {
-    /* Moves to the next cell
-       cell ... the current cell
-       */
     var next_cell = cell.parent().next().children("textarea.cell_input");
     next_cell.focus();
     next_cell.selectRange(1, 1);
 };
 
 function focus_prev_cell(cell) {
-    /* Moves to the previous cell
-       cell ... the current cell
-       */
     var prev_cell = cell.parent().prev().children("textarea.cell_input");
     prev_cell.focus();
     prev_cell.selectRange(1, 1);
+};
+
+function insert_cell_before(cell) {
+    cell.parent().before(create_cell());
+};
+
+function insert_cell_after(cell) {
+    cell.parent().after(create_cell());
 };
 
 
@@ -120,12 +122,12 @@ function focus_prev_cell(cell) {
         /* Gets called whenever the the "insert new cell" blue area is clicked,
            so this puts the new cell above the current one */
         event.preventDefault();
-        $(event.target).parent().before(create_cell());
+        insert_cell_before($(event.target))
     };
     function eval_click(event) {
         /* Gets called whenever the "evaluate" link is clicked */
         event.preventDefault();
-        $(event.target).parent().after(create_cell());
+        insert_cell_after($(event.target))
     };
     function cell_input_focus(event) {
         /* Gets called whenever the user "gets into" the cell */
@@ -141,7 +143,7 @@ function focus_prev_cell(cell) {
         $(event.target).removeClass("cell_input_active").addClass("cell_input")
     };
 $(document).ready(function(){
-    $("#cell_prototype").after(create_cell());
+    insert_cell_after($("#cell_prototype"))
 });
 </script>
 <style type="text/css">
