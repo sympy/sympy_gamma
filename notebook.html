@@ -17,10 +17,8 @@ function get_selection_range(input) {
     OUTPUT:
         an array of two nonnegative integers
     */
-    // hack:
-    return Array(input.selectionStart, input.selectionEnd);
-    // this is false if selectionStart is zero!!! this needs to be fixed
-    if (input.selectionStart) {
+    // If the attribute input.selectionStart is present, use that:
+    if (input.selectionStart || input.selectionStart == 0) {
         return Array(input.selectionStart, input.selectionEnd);
     } else {
         var start, end;
