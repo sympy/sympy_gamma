@@ -53,6 +53,25 @@ $.fn.selectRange = function(start, end) {
         });
 };
 
+function focus_next_cell(cell) {
+    /* Moves to the next cell
+       cell ... the current cell
+       */
+    var next_cell = cell.parent().next().children("textarea.cell_input");
+    next_cell.focus();
+    next_cell.selectRange(1, 1);
+};
+
+function focus_prev_cell(cell) {
+    /* Moves to the previous cell
+       cell ... the current cell
+       */
+    var prev_cell = cell.parent().prev().children("textarea.cell_input");
+    prev_cell.focus();
+    prev_cell.selectRange(1, 1);
+};
+
+
 
     var i=1;
     function create_cell() {
@@ -68,9 +87,7 @@ $.fn.selectRange = function(start, end) {
         a.children("textarea.cell_input").bind('keydown', 'Shift+return',
             function(event) {
                 eval_click(event);
-                var next_cell = $(event.target).parent().next().children("textarea.cell_input");
-                next_cell.focus();
-                next_cell.selectRange(1, 1);
+                focus_next_cell($(event.target));
                 return true;
             });
         a.children("textarea.cell_input").bind('keydown', 'backspace',
@@ -88,16 +105,12 @@ $.fn.selectRange = function(start, end) {
             });
         a.children("textarea.cell_input").bind('keydown', 'up',
             function(event) {
-                var next_cell = $(event.target).parent().prev().children("textarea.cell_input");
-                next_cell.focus();
-                next_cell.selectRange(1, 1);
+                focus_prev_cell($(event.target))
                 return true;
             });
         a.children("textarea.cell_input").bind('keydown', 'down',
             function(event) {
-                var next_cell = $(event.target).parent().next().children("textarea.cell_input");
-                next_cell.focus();
-                next_cell.selectRange(1, 1);
+                focus_next_cell($(event.target))
                 return true;
             });
         i += 1;
