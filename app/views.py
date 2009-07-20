@@ -10,7 +10,7 @@ def index(request):
 @log_exception
 def eval_cell(request):
     payload = request.POST["payload"]
-    print payload
+    print repr(payload)
     payload = simplejson.loads(payload)
     print payload
     return HttpResponse("OK")
