@@ -5,6 +5,11 @@ span.output_prompt {
     color:red;
     display:none;
 }
+pre.shrunk {
+    color: #0000AA;
+    font-size: 12pt;
+    margin: 0;
+}
 div.disabled {
   display:none;
 }

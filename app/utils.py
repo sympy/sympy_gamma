@@ -47,5 +47,9 @@ class Eval(object):
             return r
         except:
             etype, value, tb = sys.exc_info()
+            # If we decide in the future to remove the first frame fromt he
+            # traceback (since it links to our code, so it could be confusing
+            # to the user), it's easy to do:
+            #tb = tb.tb_next
             s = "".join(traceback.format_exception(etype, value, tb))
             return s
