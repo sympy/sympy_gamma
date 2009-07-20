@@ -214,7 +214,8 @@ function handle_resize(node, type) {
     function eval_click(event) {
         /* Gets called whenever the "evaluate" link is clicked */
         event.preventDefault();
-        var payload = { name: "John", time: "2pm" };
+        var t = $(event.target).parent().children("textarea");
+        var payload = { code: t.val(), time: "2pm" };
         payload = JSON.stringify(payload);
         $.post("/eval_cell/", { "payload": payload } );
         insert_cell_after($(event.target));
