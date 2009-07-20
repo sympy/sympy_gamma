@@ -5,6 +5,7 @@ from django.utils import simplejson
 from utils import log_exception, Eval
 
 import logging
+import cgi
 
 e = Eval()
 
@@ -21,6 +22,7 @@ def eval_cell(request):
     logging.info("evaluating...")
     r = e.eval(payload["code"])
     if r != "":
+        r = cgi.escape(r)
         r = '<pre class="shrunk">' + r + "</pre>"
     logging.info("encoding to JSON...")
     payload = {"result": r}
