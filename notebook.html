@@ -59,13 +59,13 @@ $.fn.selectRange = function(start, end) {
 function focus_next_cell(cell) {
     var next_cell = cell.parent().next().children("textarea.cell_input");
     next_cell.focus();
-    next_cell.selectRange(1, 1);
+    next_cell.selectRange(0, 0);
 };
 
 function focus_prev_cell(cell) {
     var prev_cell = cell.parent().prev().children("textarea.cell_input");
     prev_cell.focus();
-    prev_cell.selectRange(1, 1);
+    prev_cell.selectRange(0, 0);
 };
 
 function insert_cell_before(cell) {
@@ -82,7 +82,7 @@ function join_cells(cell) {
         next_cell.remove()
     } else {
         next_cell.focus();
-        next_cell.selectRange(1, 1);
+        next_cell.selectRange(0, 0);
     }
 };
 
@@ -109,17 +109,20 @@ function join_cells(cell) {
         a.children("textarea.cell_input").bind('keydown', 'backspace',
             function(event) {
                 if (get_selection_range(event.target)[0] == 0) {
+                    event.preventDefault();
                     join_cells($(event.target));
                     return true;
                 }
             });
         a.children("textarea.cell_input").bind('keydown', 'up',
             function(event) {
+                event.preventDefault();
                 focus_prev_cell($(event.target));
                 return true;
             });
         a.children("textarea.cell_input").bind('keydown', 'down',
             function(event) {
+                event.preventDefault();
                 focus_next_cell($(event.target));
                 return true;
             });
