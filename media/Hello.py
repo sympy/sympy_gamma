@@ -106,6 +106,8 @@ class InputArea(TextArea):
         elif key_code == KeyboardListener.KEY_ENTER and \
                 modifiers == KeyboardListener.MODIFIER_SHIFT:
             print "new_cell"
+            event = DOM.eventGetCurrentEvent()
+            event.preventDefault()
             t = InputArea(self.echo, StyleName='cell_input')
             RootPanel().add(t)
 
