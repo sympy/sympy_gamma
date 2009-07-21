@@ -1,12 +1,16 @@
 span.input_prompt {
     color:blue;
     display: inline;
+    font-family: monospace;
+    font-size:12pt;
 }
 span.output_prompt {
     color:red;
     display:none;
     width: 60px;
     float: left;
+    font-family: monospace;
+    font-size:12pt;
 }
 pre.shrunk {
     color: #0000AA;
