@@ -70,11 +70,6 @@ textarea.cell_input_active {
 }
 
 a.eval_button {
-  display:none;
-}
-
-a.eval_button_active {
-  display: block;
   position: relative;
   top: 2px;
   margin:0px;
