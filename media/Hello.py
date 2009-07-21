@@ -122,9 +122,10 @@ class Worksheet:
         self._echo = HTML()
         RootPanel().add(self._echo)
         self._i = 0
+        self.print_info("")
 
     def print_info(self, text):
-        self._echo.setHTML("Info:" + text)
+        self._echo.setHTML("INFO: cells: %d, " % self._i + text)
 
     def add_cell(self):
         self._i += 1
@@ -142,6 +143,7 @@ class Worksheet:
         RootPanel().add(output_delimiter)
         RootPanel().add(output_prompt)
         RootPanel().add(cell_output)
+        self.print_info("")
 
 
 if __name__ == '__main__':
