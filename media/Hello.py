@@ -128,26 +128,24 @@ class Worksheet:
 
     def add_cell(self):
         self._i += 1
+        insert_new_cell = HTML('<div class="insert_new_cell"></div>')
         input_prompt = HTML('<span class="input_prompt">In [%d]:</span>' % \
                 self._i)
         cell_input = InputArea(self, StyleName='cell_input')
+        output_delimiter = HTML('<div class="output_delimiter"></div>')
         output_prompt = HTML('<span class="output_prompt">Out[%d]:</span>' % \
                 self._i)
         cell_output = HTML('<span class="cell_output"></span>')
+        RootPanel().add(insert_new_cell)
         RootPanel().add(input_prompt)
         RootPanel().add(cell_input)
+        RootPanel().add(output_delimiter)
         RootPanel().add(output_prompt)
         RootPanel().add(cell_output)
 
 
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
-    b = Button("Click me", greet, StyleName='teststyle')
-    h = HTML("<b>Hello World</b> (html)", StyleName='teststyle')
-    l = Label("Hello World (label)", StyleName='teststyle')
-    RootPanel().add(b)
-    RootPanel().add(h)
-    RootPanel().add(l)
     w = Worksheet()
     w.add_cell()
     pyjd.run()
