@@ -30,6 +30,11 @@ class InputArea(TextArea):
     def cols(self):
         return self.getCharacterWidth()
 
+    def occupied_rows(self):
+        text = self.getText()
+        lines = text.split("\n")
+        return len(lines)
+
     def cursor_coordinates(self):
         """
         Returns the cursor coordinates as a tuple (x, y).
@@ -59,8 +64,10 @@ class InputArea(TextArea):
     def onKeyUp(self, sender, keyCode, modifiers):
         #print "on_key_up"
         x, y = self.cursor_coordinates()
-        s = "row/col: (%s, %s), cursor pos: %d, %d" % \
-                (self.rows(), self.cols(), x, y )
+        rows = self.occupied_rows()
+        s = "row/col: (%s, %s), cursor pos: %d, %d, real_rows: %d" % \
+                (self.rows(), self.cols(), x, y, rows)
+        self.setVisibleLines(rows-1)
         self.echo.setHTML("Info:" + s)
 
     def onKeyDown(self, sender, keyCode, modifiers):
