@@ -11,11 +11,16 @@ def greet(fred):
     Window.alert("Hello, AJAX!")
 
 class TextBoxListener:
+    def __init__(self, textbox, echo):
+        self.textbox = textbox
+        self.echo = echo
+
     def onClick(self, sender):
         print "on_click"
 
     def onKeyUp(self, sender, keyCode, modifiers):
         print "on_key_up"
+        self.echo.setHTML("Text:" + self.textbox.getText())
 
     def onKeyDown(self, sender, keyCode, modifiers):
         print "on_key_down"
@@ -30,11 +35,13 @@ if __name__ == '__main__':
     h = HTML("<b>Hello World</b> (html)", StyleName='teststyle')
     l = Label("Hello World (label)", StyleName='teststyle')
     t = TextArea()
-    listener = TextBoxListener()
+    echo = HTML()
+    listener = TextBoxListener(t, echo)
     t.addKeyboardListener(listener)
     t.addClickListener(listener)
     RootPanel().add(b)
     RootPanel().add(h)
     RootPanel().add(l)
     RootPanel().add(t)
+    RootPanel().add(echo)
     pyjd.run()
