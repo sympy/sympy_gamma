@@ -157,6 +157,7 @@ function handle_resize(node, type) {
         /* Creates a new cell by cloning the disabled prototype */
         var a = $("#cell_prototype").clone().removeClass("disabled").addClass("cell");
         a.children(".input_prompt").text("In [" + i + "]:");
+        a.children(".output_prompt").text("Out[" + i + "]:");
         a.children("a.eval_button").click(eval_click);
         a.children("div.insert_new_cell").click(insert_new_cell_click);
         a.children("textarea.cell_input").focus(cell_input_focus);
