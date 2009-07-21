@@ -137,7 +137,7 @@ class Worksheet:
 
 
 if __name__ == '__main__':
-    pyjd.setup("../templates/Hello.html")
+    pyjd.setup("templates/Hello.html")
     b = Button("Click me", greet, StyleName='teststyle')
     h = HTML("<b>Hello World</b> (html)", StyleName='teststyle')
     l = Label("Hello World (label)", StyleName='teststyle')
