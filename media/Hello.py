@@ -108,8 +108,7 @@ class InputArea(TextArea):
             print "new_cell"
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
-            t = InputArea(self._worksheet, StyleName='cell_input')
-            RootPanel().add(t)
+            self._worksheet.add_cell()
 
     def onKeyPress(self, sender, keyCode, modifiers):
         #print "on_key_press"
@@ -120,13 +119,21 @@ class Worksheet:
     def __init__(self):
         self._echo = HTML()
         RootPanel().add(self._echo)
+        self._i = 0
 
     def print_info(self, text):
         self._echo.setHTML("Info:" + text)
 
     def add_cell(self):
-        t = InputArea(self, StyleName='cell_input')
-        RootPanel().add(t)
+        input_prompt = HTML('<span class="input_prompt">In [1]:</span>')
+        cell_input = InputArea(self, StyleName='cell_input')
+        output_prompt = HTML('<span class="output_prompt">Out[1]:</span>')
+        cell_output = HTML('<span class="cell_output"></span>')
+        RootPanel().add(input_prompt)
+        RootPanel().add(cell_input)
+        RootPanel().add(output_prompt)
+        RootPanel().add(cell_output)
+        self._i += 1
 
 
 if __name__ == '__main__':
