@@ -10,10 +10,13 @@ def greet(fred):
     print "greet button"
     Window.alert("Hello, AJAX!")
 
-class TextBoxListener:
-    def __init__(self, textbox, echo):
-        self.textbox = textbox
+class InputArea(TextArea):
+
+    def __init__(self, echo):
+        TextArea.__init__(self)
         self.echo = echo
+        self.addKeyboardListener(self)
+        self.addClickListener(self)
 
     def onClick(self, sender):
         print "on_click"
@@ -21,9 +24,9 @@ class TextBoxListener:
     def onKeyUp(self, sender, keyCode, modifiers):
         print "on_key_up"
         s = "row/col: (%s, %s), pos: %s, text: %s" % \
-                (self.textbox.getVisibleLines(),
-                        self.textbox.getCharacterWidth(),
-                        self.textbox.getCursorPos(), self.textbox.getText())
+                (self.getVisibleLines(),
+                        self.getCharacterWidth(),
+                        self.getCursorPos(), self.getText())
         self.echo.setHTML("Info:" + s)
 
     def onKeyDown(self, sender, keyCode, modifiers):
@@ -38,13 +41,8 @@ if __name__ == '__main__':
     b = Button("Click me", greet, StyleName='teststyle')
     h = HTML("<b>Hello World</b> (html)", StyleName='teststyle')
     l = Label("Hello World (label)", StyleName='teststyle')
-    t = TextArea()
-    t.setVisibleLines(4)
-    t.setCharacterWidth(80)
     echo = HTML()
-    listener = TextBoxListener(t, echo)
-    t.addKeyboardListener(listener)
-    t.addClickListener(listener)
+    t = InputArea(echo)
     RootPanel().add(b)
     RootPanel().add(h)
     RootPanel().add(l)
