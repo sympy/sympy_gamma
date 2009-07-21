@@ -5,3 +5,6 @@
 * the measuring of the cursor row is off by 1 on IE, so UP arrow and TAB is
   wrong
 * the blue line for adding new cells is not visible on IE8
+* if you do "print 'ok'", nothing will get printed out
+* allow to switch off the numbering
+* Implement _4 and similar things if the cells are numbered
