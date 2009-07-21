@@ -2,4 +2,6 @@
   bottom row (currently it goes to the top row)
 * on IE8, the resizing needs to be fixed for ENTER and BACKSPACE (e.g. to take
   the just happening change in the text into account)
+* the measuring of the cursor row is off by 1 on IE, so UP arrow and TAB is
+  wrong
 * the blue line for adding new cells is not visible on IE8
