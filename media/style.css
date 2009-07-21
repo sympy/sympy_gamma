@@ -29,21 +29,19 @@ div.disabled {
 }
 div.cell {
   width: 100%;
+  float: left;
+  clear: left;
 }
 
 div.insert_new_cell {
     height:6px;
     margin:3px;
-    float: left;
-    clear: left;
     width: 100%;
 }
 
 div.insert_new_cell:hover {
     background-color:#8888FE;
     margin:3px;
-    float: left;
-    clear: left;
     width: 100%;
 }
 
