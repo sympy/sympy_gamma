@@ -20,8 +20,8 @@ class TextBoxListener:
 
     def onKeyUp(self, sender, keyCode, modifiers):
         print "on_key_up"
-        s = "(%s, %s)" % (self.textbox.getVisibleLines(),
-                self.textbox.getCharacterWidth())
+        s = "(%s, %s), pos: %s" % (self.textbox.getVisibleLines(),
+                self.textbox.getCharacterWidth(), self.textbox.getCursorPos())
         self.echo.setHTML("Text:" + self.textbox.getText() + s)
 
     def onKeyDown(self, sender, keyCode, modifiers):
