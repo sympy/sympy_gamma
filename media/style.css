@@ -13,6 +13,10 @@ span.output_prompt {
     font-size:12pt;
     float: left;
 }
+div.output_delimiter {
+    height: 3px;
+    clear: left;
+}
 span.cell_output {
     color: #0000AA;
     font-size: 12pt;
