@@ -15,9 +15,9 @@ def greet(fred):
 
 class InputArea(TextArea):
 
-    def __init__(self, echo, **kwargs):
+    def __init__(self, worksheet, **kwargs):
         TextArea.__init__(self, **kwargs)
-        self.echo = echo
+        self._worksheet = worksheet
         self.addKeyboardListener(self)
         self.addClickListener(self)
         self.set_rows(1)
@@ -83,7 +83,7 @@ class InputArea(TextArea):
         s = "row/col: (%s, %s), cursor pos: %d, %d, real_rows: %d" % \
                 (self.rows(), self.cols(), x, y, rows)
         self.set_rows(rows)
-        self.echo.setHTML("Info:" + s)
+        self._worksheet.print_info(s)
 
     def onKeyDown(self, sender, key_code, modifiers):
         if key_code == KeyboardListener.KEY_TAB:
@@ -108,12 +108,25 @@ class InputArea(TextArea):
             print "new_cell"
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
-            t = InputArea(self.echo, StyleName='cell_input')
+            t = InputArea(self._worksheet, StyleName='cell_input')
             RootPanel().add(t)
 
     def onKeyPress(self, sender, keyCode, modifiers):
         #print "on_key_press"
         pass
+
+class Worksheet:
+
+    def __init__(self):
+        self._echo = HTML()
+        RootPanel().add(self._echo)
+
+    def print_info(self, text):
+        self._echo.setHTML("Info:" + text)
+
+    def add_cell(self):
+        t = InputArea(self, StyleName='cell_input')
+        RootPanel().add(t)
 
 
 if __name__ == '__main__':
@@ -121,11 +134,9 @@ if __name__ == '__main__':
     b = Button("Click me", greet, StyleName='teststyle')
     h = HTML("<b>Hello World</b> (html)", StyleName='teststyle')
     l = Label("Hello World (label)", StyleName='teststyle')
-    echo = HTML()
-    t = InputArea(echo, StyleName='cell_input')
     RootPanel().add(b)
     RootPanel().add(h)
     RootPanel().add(l)
-    RootPanel().add(t)
-    RootPanel().add(echo)
+    w = Worksheet()
+    w.add_cell()
     pyjd.run()
