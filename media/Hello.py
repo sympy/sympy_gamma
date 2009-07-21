@@ -127,15 +127,17 @@ class Worksheet:
         self._echo.setHTML("Info:" + text)
 
     def add_cell(self):
-        input_prompt = HTML('<span class="input_prompt">In [1]:</span>')
+        self._i += 1
+        input_prompt = HTML('<span class="input_prompt">In [%d]:</span>' % \
+                self._i)
         cell_input = InputArea(self, StyleName='cell_input')
-        output_prompt = HTML('<span class="output_prompt">Out[1]:</span>')
+        output_prompt = HTML('<span class="output_prompt">Out[%d]:</span>' % \
+                self._i)
         cell_output = HTML('<span class="cell_output"></span>')
         RootPanel().add(input_prompt)
         RootPanel().add(cell_input)
         RootPanel().add(output_prompt)
         RootPanel().add(cell_output)
-        self._i += 1
 
 
 if __name__ == '__main__':
