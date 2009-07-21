@@ -15,9 +15,10 @@ def greet(fred):
 
 class InputArea(TextArea):
 
-    def __init__(self, worksheet, **kwargs):
+    def __init__(self, worksheet, cell_id, **kwargs):
         TextArea.__init__(self, **kwargs)
         self._worksheet = worksheet
+        self._cell_id = cell_id
         self.addKeyboardListener(self)
         self.addClickListener(self)
         self.addFocusListener(self)
@@ -28,10 +29,12 @@ class InputArea(TextArea):
         print "on_click"
 
     def onFocus(self, sender):
-        print "focus"
+        #print "focus", self._cell_id
+        self._worksheet.set_active_cell(self._cell_id)
 
     def onLostFocus(self, sender):
-        print "lost-focus"
+        #print "lost-focus", self._cell_id
+        pass
 
     def rows(self):
         return self.getVisibleLines()
@@ -142,7 +145,7 @@ class Worksheet:
         insert_new_cell = HTML('<div class="insert_new_cell"></div>')
         input_prompt = HTML('<span class="input_prompt">In [%d]:</span>' % \
                 self._i)
-        cell_input = InputArea(self, StyleName='cell_input')
+        cell_input = InputArea(self, self._i, StyleName='cell_input')
         output_delimiter = HTML('<div class="output_delimiter"></div>')
         output_prompt = HTML('<span class="output_prompt">Out[%d]:</span>' % \
                 self._i)
@@ -153,6 +156,10 @@ class Worksheet:
         RootPanel().add(output_delimiter)
         RootPanel().add(output_prompt)
         RootPanel().add(cell_output)
+        self.print_info("")
+
+    def set_active_cell(self, cell_id):
+        self._active_cell = cell_id
         self.print_info("")
 
     def move_to_next_cell(self):
