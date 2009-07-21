@@ -1,41 +1,50 @@
 span.input_prompt {
     color:blue;
-    display: inline;
     font-family: monospace;
     font-size:12pt;
+    float: left;
+    clear: left;
 }
 span.output_prompt {
     color:red;
     display:none;
-    width: 60px;
-    float: left;
+    clear: left;
     font-family: monospace;
     font-size:12pt;
+    float: left;
 }
-pre.shrunk {
+span.cell_output {
     color: #0000AA;
     font-size: 12pt;
-    margin: 0;
-    padding-left:20px;
     float: left;
+    position: relative;
+    left: 8px;
+}
+pre.shrunk {
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
 div.disabled {
   display:none;
 }
 div.cell {
   width: 100%;
-  float: left;
 }
 
 div.insert_new_cell {
-    display:block;
     height:6px;
     margin:3px;
+    float: left;
+    clear: left;
+    width: 100%;
 }
 
 div.insert_new_cell:hover {
     background-color:#8888FE;
     margin:3px;
+    float: left;
+    clear: left;
+    width: 100%;
 }
 
 textarea.cell_input {
@@ -48,10 +57,10 @@ textarea.cell_input {
   padding-left:6px;
   padding-top:4px;
   padding-bottom:4px;
-  width: 88%;
   margin-bottom:0px;
   margin-top:0px;
   line-height:1.2em;
+  float: left;
 }
 
 textarea.cell_input_active {
@@ -63,16 +72,19 @@ textarea.cell_input_active {
   padding-left:5px;
   padding-top:3px;
   padding-bottom:4px;
-  width: 88%;
   margin-bottom:0px;
   margin-top:0px;
   line-height:1.2em;
+  float: left;
 }
 
 a.eval_button {
-  position: relative;
   top: 2px;
   margin:0px;
   padding:0px;
   font-size:10pt;
+  float: left;
+  clear: left;
+  position: relative;
+  left: 72px;
 }
