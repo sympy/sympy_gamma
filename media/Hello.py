@@ -99,18 +99,10 @@ class InputArea(TextArea):
                 new_len = int(old_len / 4) * 4
                 if old_len == new_len:
                     new_len = new_len - 4
-                print old_len, new_len, old_len / 4, int(old_len / 4)
                 lines[y] = line[:new_len]
                 self.setText("\n".join(lines))
                 event = DOM.eventGetCurrentEvent()
                 event.preventDefault()
-                print "OK"
-            #self.insert_at_cursor("    ")
-            #event = DOM.eventGetCurrentEvent()
-            #event.preventDefault()
-
-    #def onKeyDownPreview(self, key, modifier):
-    #    print "preview"
 
     def onKeyPress(self, sender, keyCode, modifiers):
         #print "on_key_press"
