@@ -17,7 +17,8 @@ class InputArea(TextArea):
         self.echo = echo
         self.addKeyboardListener(self)
         self.addClickListener(self)
-        self.setVisibleLines(4)
+        # this makes actually 2 rows, it's a bug in pyjamas:
+        self.setVisibleLines(1)
         self.setCharacterWidth(80)
 
     def onClick(self, sender):
@@ -30,6 +31,14 @@ class InputArea(TextArea):
         return self.getCharacterWidth()
 
     def cursor_coordinates(self):
+        """
+        Returns the cursor coordinates as a tuple (x, y).
+
+        Example:
+
+        >>> self.cursor_coordinates()
+        (2, 3)
+        """
         text = self.getText()
         lines = text.split("\n")
         pos = self.getCursorPos()
@@ -45,12 +54,13 @@ class InputArea(TextArea):
                 cursor_col = pos - i + len(line) + 1
                 break
         #print "--------"
-        return (cursor_row, cursor_col)
+        return (cursor_col, cursor_row)
 
     def onKeyUp(self, sender, keyCode, modifiers):
         #print "on_key_up"
-        s = "row/col: (%s, %s), cursor pos: %s" % \
-                (self.rows(), self.cols(), self.cursor_coordinates())
+        x, y = self.cursor_coordinates()
+        s = "row/col: (%s, %s), cursor pos: %d, %d" % \
+                (self.rows(), self.cols(), x, y )
         self.echo.setHTML("Info:" + s)
 
     def onKeyDown(self, sender, keyCode, modifiers):
