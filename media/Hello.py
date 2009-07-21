@@ -23,12 +23,16 @@ class InputArea(TextArea):
     def onClick(self, sender):
         print "on_click"
 
+    def rows(self):
+        return self.getVisibleLines()
+
+    def cols(self):
+        return self.getCharacterWidth()
+
     def onKeyUp(self, sender, keyCode, modifiers):
         print "on_key_up"
         s = "row/col: (%s, %s), pos: %s, text: %s" % \
-                (self.getVisibleLines(),
-                        self.getCharacterWidth(),
-                        self.getCursorPos(), self.getText())
+                (self.rows(), self.cols(), self.getCursorPos(), self.getText())
         self.echo.setHTML("Info:" + s)
 
     def onKeyDown(self, sender, keyCode, modifiers):
