@@ -107,10 +107,11 @@ class InputArea(TextArea):
                 event.preventDefault()
         elif key_code == KeyboardListener.KEY_ENTER and \
                 modifiers == KeyboardListener.MODIFIER_SHIFT:
-            print "new_cell"
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
             self._worksheet.add_cell()
+        elif key_code == KeyboardListener.KEY_DOWN:
+            self._worksheet.move_to_next_cell()
 
     def onKeyPress(self, sender, keyCode, modifiers):
         #print "on_key_press"
@@ -122,10 +123,12 @@ class Worksheet:
         self._echo = HTML()
         RootPanel().add(self._echo)
         self._i = 0
+        self._active_cell = -1
         self.print_info("")
 
     def print_info(self, text):
-        self._echo.setHTML("INFO: cells: %d, " % self._i + text)
+        self._echo.setHTML("INFO: cells: %d, active cell: %d, " % \
+                (self._i, self._active_cell) + text)
 
     def add_cell(self):
         self._i += 1
@@ -144,6 +147,9 @@ class Worksheet:
         RootPanel().add(output_prompt)
         RootPanel().add(cell_output)
         self.print_info("")
+
+    def move_to_next_cell(self):
+        print "next"
 
 
 if __name__ == '__main__':
