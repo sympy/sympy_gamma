@@ -103,6 +103,11 @@ class InputArea(TextArea):
                 self.setText("\n".join(lines))
                 event = DOM.eventGetCurrentEvent()
                 event.preventDefault()
+        elif key_code == KeyboardListener.KEY_ENTER and \
+                modifiers == KeyboardListener.MODIFIER_SHIFT:
+            print "new_cell"
+            t = InputArea(self.echo, StyleName='cell_input')
+            RootPanel().add(t)
 
     def onKeyPress(self, sender, keyCode, modifiers):
         #print "on_key_press"
