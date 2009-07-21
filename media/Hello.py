@@ -17,6 +17,8 @@ class InputArea(TextArea):
         self.echo = echo
         self.addKeyboardListener(self)
         self.addClickListener(self)
+        self.setVisibleLines(4)
+        self.setCharacterWidth(80)
 
     def onClick(self, sender):
         print "on_click"
