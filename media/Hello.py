@@ -17,8 +17,7 @@ class InputArea(TextArea):
         self.echo = echo
         self.addKeyboardListener(self)
         self.addClickListener(self)
-        # this makes actually 2 rows, it's a bug in pyjamas:
-        self.setVisibleLines(1)
+        self.set_rows(1)
         self.setCharacterWidth(80)
 
     def onClick(self, sender):
@@ -26,6 +25,13 @@ class InputArea(TextArea):
 
     def rows(self):
         return self.getVisibleLines()
+
+    def set_rows(self, rows):
+        if rows in [0, 1]:
+            # this is a bug in pyjamas, we need to use 2 rows
+            rows = 2
+        # the number of rows seems to be off by 1, another bug in pyjamas
+        self.setVisibleLines(rows-1)
 
     def cols(self):
         return self.getCharacterWidth()
@@ -67,7 +73,7 @@ class InputArea(TextArea):
         rows = self.occupied_rows()
         s = "row/col: (%s, %s), cursor pos: %d, %d, real_rows: %d" % \
                 (self.rows(), self.cols(), x, y, rows)
-        self.setVisibleLines(rows-1)
+        self.set_rows(rows)
         self.echo.setHTML("Info:" + s)
 
     def onKeyDown(self, sender, keyCode, modifiers):
