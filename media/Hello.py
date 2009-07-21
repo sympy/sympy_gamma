@@ -5,6 +5,8 @@ from pyjamas.ui.HTML import HTML
 from pyjamas.ui.Label import Label
 from pyjamas import Window
 from pyjamas.ui.TextArea import TextArea
+from pyjamas.ui import KeyboardListener
+
 
 def greet(fred):
     print "greet button"
@@ -67,6 +69,12 @@ class InputArea(TextArea):
         #print "--------"
         return (cursor_col, cursor_row)
 
+    def insert_at_cursor(self, inserted_text):
+        pos = self.getCursorPos()
+        text = self.getText()
+        text = text[:pos] + inserted_text + text[pos:]
+        self.setText(text)
+
     def onKeyUp(self, sender, keyCode, modifiers):
         #print "on_key_up"
         x, y = self.cursor_coordinates()
@@ -76,9 +84,13 @@ class InputArea(TextArea):
         self.set_rows(rows)
         self.echo.setHTML("Info:" + s)
 
-    def onKeyDown(self, sender, keyCode, modifiers):
-        #print "on_key_down"
-        pass
+    def onKeyDown(self, sender, key_code, modifiers):
+        if key_code == KeyboardListener.KEY_TAB:
+            self.insert_at_cursor("    ")
+            print "TAB"
+
+    #def onKeyDownPreview(self, key, modifier):
+    #    print "preview"
 
     def onKeyPress(self, sender, keyCode, modifiers):
         #print "on_key_press"
