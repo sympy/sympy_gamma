@@ -198,6 +198,16 @@ function handle_resize(node, type) {
                 handle_resize($(event.target), +1);
                 return true;
             });
+        a.children("textarea.cell_input").bind('keydown', 'tab',
+            function(event) {
+                event.preventDefault();
+                var pos = get_selection_range(event.target)[0];
+                var text = event.target.value;
+                text = text.substring(0, pos) + "    " + text.substring(pos,
+                    text.length);
+                event.target.value = text;
+                return true;
+            });
         a.children("textarea.cell_input").keyup(function(event) {
                 handle_resize($(event.target), 0);
                 return true;
