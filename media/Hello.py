@@ -39,6 +39,8 @@ if __name__ == '__main__':
     h = HTML("<b>Hello World</b> (html)", StyleName='teststyle')
     l = Label("Hello World (label)", StyleName='teststyle')
     t = TextArea()
+    t.setVisibleLines(4)
+    t.setCharacterWidth(80)
     echo = HTML()
     listener = TextBoxListener(t, echo)
     t.addKeyboardListener(listener)
