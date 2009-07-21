@@ -10,12 +10,29 @@ def greet(fred):
     print "greet button"
     Window.alert("Hello, AJAX!")
 
+class TextBoxListener:
+    def onClick(self, sender):
+        print "on_click"
+
+    def onKeyUp(self, sender, keyCode, modifiers):
+        print "on_key_up"
+
+    def onKeyDown(self, sender, keyCode, modifiers):
+        print "on_key_down"
+
+    def onKeyPress(self, sender, keyCode, modifiers):
+        print "on_key_press"
+
+
 if __name__ == '__main__':
     pyjd.setup("../templates/Hello.html")
     b = Button("Click me", greet, StyleName='teststyle')
     h = HTML("<b>Hello World</b> (html)", StyleName='teststyle')
     l = Label("Hello World (label)", StyleName='teststyle')
     t = TextArea()
+    listener = TextBoxListener()
+    t.addKeyboardListener(listener)
+    t.addClickListener(listener)
     RootPanel().add(b)
     RootPanel().add(h)
     RootPanel().add(l)
