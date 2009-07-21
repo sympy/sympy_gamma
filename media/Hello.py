@@ -30,11 +30,25 @@ class InputArea(TextArea):
         return self.getCharacterWidth()
 
     def cursor_coordinates(self):
-        print self.getText()
-        return (3, 4)
+        text = self.getText()
+        lines = text.split("\n")
+        pos = self.getCursorPos()
+        i = 0
+        cursor_row = -1
+        cursor_col = -1
+        #print "--------" + "start"
+        for row, line in enumerate(lines):
+            i += len(line) + 1  # we need to include "\n"
+        #    print len(line), i, pos, line
+            if pos < i:
+                cursor_row = row
+                cursor_col = pos - i + len(line) + 1
+                break
+        #print "--------"
+        return (cursor_row, cursor_col)
 
     def onKeyUp(self, sender, keyCode, modifiers):
-        print "on_key_up"
+        #print "on_key_up"
         s = "row/col: (%s, %s), cursor pos: %s" % \
                 (self.rows(), self.cols(), self.cursor_coordinates())
         self.echo.setHTML("Info:" + s)
