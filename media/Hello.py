@@ -20,13 +20,13 @@ class InputArea(TextArea):
         self._worksheet = worksheet
         self._cell_id = cell_id
         self.addKeyboardListener(self)
-        self.addClickListener(self)
+        #self.addClickListener(self)
         self.addFocusListener(self)
         self.set_rows(1)
         self.setCharacterWidth(80)
 
-    def onClick(self, sender):
-        print "on_click"
+    #def onClick(self, sender):
+    #    pass
 
     def onFocus(self, sender):
         #print "focus", self._cell_id
