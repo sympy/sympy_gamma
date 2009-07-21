@@ -247,12 +247,13 @@ function handle_resize(node, type) {
         $("textarea.cell_input_active").removeClass("cell_input_active").addClass("cell_input");
         $("a.eval_button_active").removeClass("eval_button_active").addClass("eval_button");
         $(event.target).removeClass("cell_input").addClass("cell_input_active");
-        $(event.target).siblings("a.eval_button").removeClass("eval_button").addClass("eval_button_active");
+        $(event.target).siblings("a.eval_button").removeClass("eval_button").addClass("eval_button_active").css("display", "block");
     };
     function cell_input_blur(event) {
         /* Gets called whenever the user "gets into" the cell */
         event.preventDefault();
         $(event.target).removeClass("cell_input_active").addClass("cell_input");
+        $(event.target).siblings("a.eval_button_active").fadeOut();
     };
 $(document).ready(function() {
     var cell = $("#cell_prototype > textarea");
