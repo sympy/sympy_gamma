@@ -15,8 +15,8 @@ def greet(fred):
 
 class InputArea(TextArea):
 
-    def __init__(self, echo):
-        TextArea.__init__(self)
+    def __init__(self, echo, **kwargs):
+        TextArea.__init__(self, **kwargs)
         self.echo = echo
         self.addKeyboardListener(self)
         self.addClickListener(self)
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     h = HTML("<b>Hello World</b> (html)", StyleName='teststyle')
     l = Label("Hello World (label)", StyleName='teststyle')
     echo = HTML()
-    t = InputArea(echo)
+    t = InputArea(echo, StyleName='cell_input')
     RootPanel().add(b)
     RootPanel().add(h)
     RootPanel().add(l)
