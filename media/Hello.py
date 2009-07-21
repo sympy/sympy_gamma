@@ -6,6 +6,7 @@ from pyjamas.ui.Label import Label
 from pyjamas import Window
 from pyjamas.ui.TextArea import TextArea
 from pyjamas.ui import KeyboardListener
+from pyjamas import DOM
 
 
 def greet(fred):
@@ -87,7 +88,8 @@ class InputArea(TextArea):
     def onKeyDown(self, sender, key_code, modifiers):
         if key_code == KeyboardListener.KEY_TAB:
             self.insert_at_cursor("    ")
-            print "TAB"
+            event = DOM.eventGetCurrentEvent()
+            event.preventDefault()
 
     #def onKeyDownPreview(self, key, modifier):
     #    print "preview"
