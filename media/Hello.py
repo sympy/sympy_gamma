@@ -29,17 +29,23 @@ class InputArea(TextArea):
     def cols(self):
         return self.getCharacterWidth()
 
+    def cursor_coordinates(self):
+        print self.getText()
+        return (3, 4)
+
     def onKeyUp(self, sender, keyCode, modifiers):
         print "on_key_up"
-        s = "row/col: (%s, %s), pos: %s, text: %s" % \
-                (self.rows(), self.cols(), self.getCursorPos(), self.getText())
+        s = "row/col: (%s, %s), cursor pos: %s" % \
+                (self.rows(), self.cols(), self.cursor_coordinates())
         self.echo.setHTML("Info:" + s)
 
     def onKeyDown(self, sender, keyCode, modifiers):
-        print "on_key_down"
+        #print "on_key_down"
+        pass
 
     def onKeyPress(self, sender, keyCode, modifiers):
-        print "on_key_press"
+        #print "on_key_press"
+        pass
 
 
 if __name__ == '__main__':
