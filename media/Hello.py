@@ -30,6 +30,8 @@ class InputArea(TextArea):
         return self.getVisibleLines()
 
     def set_rows(self, rows):
+        if rows == 0:
+            rows = 1
         self.setVisibleLines(rows)
 
     def cols(self):
@@ -52,6 +54,8 @@ class InputArea(TextArea):
         text = self.getText()
         lines = text.split("\n")
         pos = self.getCursorPos()
+        if pos == 0:
+            return (0, 0)
         i = 0
         cursor_row = -1
         cursor_col = -1
@@ -88,6 +92,8 @@ class InputArea(TextArea):
             event.preventDefault()
         elif key_code == KeyboardListener.KEY_BACKSPACE:
             x, y = self.cursor_coordinates()
+            if (x == 0) and (y == 0):
+                return
             lines = self.getText().split("\n")
             line = lines[y]
             if line.strip() == "" and len(line) > 0:
