@@ -20,11 +20,18 @@ class InputArea(TextArea):
         self._worksheet = worksheet
         self.addKeyboardListener(self)
         self.addClickListener(self)
+        self.addFocusListener(self)
         self.set_rows(1)
         self.setCharacterWidth(80)
 
     def onClick(self, sender):
         print "on_click"
+
+    def onFocus(self, sender):
+        print "focus"
+
+    def onLostFocus(self, sender):
+        print "lost-focus"
 
     def rows(self):
         return self.getVisibleLines()
