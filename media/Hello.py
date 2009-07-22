@@ -140,11 +140,14 @@ class InputArea(TextArea):
 
 class InsertListener:
 
-    def onBrowserEvent(self, event):
-        print "event"
+    def __init__(self, worksheet, id):
+        self._worksheet = worksheet
+        self._id = id
 
     def onClick(self, event):
-        print "click!!"
+        print "click!!", event, self._id
+        return
+        self._worksheet.insert_cell(self._id)
 
 class Worksheet:
 
@@ -163,7 +166,7 @@ class Worksheet:
     def add_cell(self):
         self._i += 1
         insert_new_cell = HTML('<div class="insert_new_cell"></div>')
-        listener = InsertListener()
+        listener = InsertListener(self.self, self._i)
         insert_new_cell.addClickListener(listener)
         #DOM.setEventListener(insert_new_cell.getElement(), listener)
         #DOM.sinkEvents(insert_new_cell.getElement(), Event.ONCLICK)
@@ -194,6 +197,9 @@ class Worksheet:
     def move_to_next_cell(self):
         if self._active_cell < self._i:
             self._cell_list[self._active_cell].setFocus(True)
+
+    def insert_cell(self, id):
+        print "insert_cell", id
 
 
 if __name__ == '__main__':
