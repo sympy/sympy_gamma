@@ -3,10 +3,10 @@ from pyjamas.ui.RootPanel import RootPanel
 from pyjamas.ui.Button import Button
 from pyjamas.ui.HTML import HTML
 from pyjamas.ui.Label import Label
-from pyjamas import Window
 from pyjamas.ui.TextArea import TextArea
-from pyjamas.ui import KeyboardListener
+from pyjamas.ui import KeyboardListener, Event
 from pyjamas import DOM
+from pyjamas import Window
 
 
 def greet(fred):
@@ -138,6 +138,14 @@ class InputArea(TextArea):
         #print "on_key_press"
         pass
 
+class InsertListener:
+
+    def onBrowserEvent(self, event):
+        print "event"
+
+    def onClick(self, event):
+        print "click!!"
+
 class Worksheet:
 
     def __init__(self):
@@ -155,6 +163,10 @@ class Worksheet:
     def add_cell(self):
         self._i += 1
         insert_new_cell = HTML('<div class="insert_new_cell"></div>')
+        listener = InsertListener()
+        insert_new_cell.addClickListener(listener)
+        #DOM.setEventListener(insert_new_cell.getElement(), listener)
+        #DOM.sinkEvents(insert_new_cell.getElement(), Event.ONCLICK)
         input_prompt = HTML('<span class="input_prompt">In [%d]:</span>' % \
                 self._i)
         cell_input = InputArea(self, self._i, StyleName='cell_input')
