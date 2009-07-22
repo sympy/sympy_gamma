@@ -134,6 +134,7 @@ class Worksheet:
         RootPanel().add(self._echo)
         self._i = 0
         self._active_cell = -1
+        self._cell_list = []
         self.print_info("")
 
     def print_info(self, text):
@@ -156,6 +157,7 @@ class Worksheet:
         RootPanel().add(output_delimiter)
         RootPanel().add(output_prompt)
         RootPanel().add(cell_output)
+        self._cell_list.append(cell_input)
         self.print_info("")
 
     def set_active_cell(self, cell_id):
@@ -163,7 +165,12 @@ class Worksheet:
         self.print_info("")
 
     def move_to_next_cell(self):
-        print "next"
+        if self._active_cell < self._i:
+            print "moving to the cell", self._active_cell + 1
+            print self._cell_list[self._active_cell]
+            self._cell_list[self._active_cell].setFocus(True)
+        else:
+            print "no"
 
 
 if __name__ == '__main__':
