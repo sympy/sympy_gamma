@@ -121,12 +121,11 @@ class InputArea(TextArea):
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
             print "sending"
-            payload = '{"code": "1+1", "time": "ok"}'
+            payload = '{"code": "%s", "time": "ok"}' % self.getText()
             #from jsonrpc.json import dumps
             #data = dumps({"payload": payload})
             data = "payload=%s" % payload
-
-            HTTPRequest().asyncPost("/eval_cell/", data, Loader())
+            HTTPRequest().asyncPost("/eval_cell/", data, Loader(self))
             if self._cell_id == self._worksheet.num_cells():
                 self._worksheet.add_cell()
             self._worksheet.move_to_next_cell()
@@ -149,8 +148,13 @@ class InputArea(TextArea):
 
 class Loader:
 
+    def __init__(self, cell):
+        self._cell = cell
+
     def onCompletion(self, text):
         print "completed", text
+        print text["result"]
+        print "ok"
 
     def onError(self, text, code):
         print "error", text, code
