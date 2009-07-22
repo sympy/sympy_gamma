@@ -195,29 +195,15 @@ class Worksheet:
             self._cell_list[self._active_cell].setFocus(True)
 
     def insert_cell(self, id):
-        print "insert_cell", id
         cell = self._cell_list[id-1].getElement()
         first_elem = getPrevSibling(getPrevSibling(cell))
-        print "current cell", cell
-        print "prev sibling:", first_elem
         a = HTML("HEJ")
-        print "1"
         insertChildBefore(a.getElement(), first_elem)
-        #RootPanel().add(a)
-        #print "3"
-        #p = RootPanel()
-        #print a, p.getElement(), len(p.children)
-        #p.insert(a, p.getElement(), 3)
-        print "ok"
 
 def getPrevSibling(elem):
-    #print "--------"
     parent = DOM.getParent(elem)
-    #print parent
     elem_index = DOM.getChildIndex(parent, elem)
-    #print elem_index
     children = list(DOM.iterChildren(parent))
-    #print children
     return children[elem_index - 1]
 
 def insertChildBefore(new_elem, elem):
@@ -225,9 +211,7 @@ def insertChildBefore(new_elem, elem):
     Inserts an element "new_elem" before the element "elem".
     """
     parent = DOM.getParent(elem)
-    print parent
     id = DOM.getChildIndex(parent, elem)
-    print id
     DOM.insertChild(parent, new_elem, id)
 
 if __name__ == '__main__':
