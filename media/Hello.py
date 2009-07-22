@@ -119,7 +119,8 @@ class InputArea(TextArea):
                 modifiers == KeyboardListener.MODIFIER_SHIFT:
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
-            self._worksheet.add_cell()
+            if self._cell_id == self._worksheet._i:
+                self._worksheet.add_cell()
             self._worksheet.move_to_next_cell()
         elif key_code == KeyboardListener.KEY_UP:
             x, y = self.cursor_coordinates()
