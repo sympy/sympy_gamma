@@ -200,6 +200,7 @@ class Worksheet:
         p = RootPanel().getElement()
         id = DOM.getChildIndex(p, cell)
         print "current cell", cell
+        print "prev sibling:", getPrevSibling(cell)
         print "parent:", p
         print "cell id:", id
         id -= 2
@@ -212,6 +213,16 @@ class Worksheet:
         #print a, p.getElement(), len(p.children)
         #p.insert(a, p.getElement(), 3)
         print "ok"
+
+def getPrevSibling(elem):
+    print "--------"
+    parent = DOM.getParent(elem)
+    print parent
+    elem_index = DOM.getChildIndex(parent, elem)
+    print elem_index
+    children = list(DOM.iterChildren(parent))
+    print children
+    return children[elem_index - 1]
 
 
 if __name__ == '__main__':
