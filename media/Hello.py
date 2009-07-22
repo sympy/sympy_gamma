@@ -198,7 +198,10 @@ class Worksheet:
         print "insert_cell", id
         a = HTML("HEJ")
         RootPanel().add(a)
-        #RootPanel().insert(
+        print "3"
+        p = RootPanel()
+        print a, p.getElement(), len(p.children)
+        p.insert(a, p.getElement(), 3)
         print "ok"
 
 
