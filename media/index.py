@@ -5,6 +5,7 @@ from pyjamas.ui.HTML import HTML
 from pyjamas.ui.Label import Label
 from pyjamas.ui.TextArea import TextArea
 from pyjamas.ui import KeyboardListener, Event
+from pyjamas.HTTPRequest import HTTPRequest
 from pyjamas import DOM
 from pyjamas import Window
 
@@ -119,6 +120,8 @@ class InputArea(TextArea):
                 modifiers == KeyboardListener.MODIFIER_SHIFT:
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
+            print "sending"
+            HTTPRequest().asyncPost("/eval_cell/", "", Loader())
             if self._cell_id == self._worksheet.num_cells():
                 self._worksheet.add_cell()
             self._worksheet.move_to_next_cell()
@@ -138,6 +141,17 @@ class InputArea(TextArea):
     def onKeyPress(self, sender, keyCode, modifiers):
         #print "on_key_press"
         pass
+
+class Loader:
+
+    def onCompletion(self, text):
+        print "completed", text
+
+    def onError(self, text, code):
+        print "error", text, code
+
+    def onTimeout(self, text):
+        print "timeout", text
 
 class InsertListener:
 
