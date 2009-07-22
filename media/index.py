@@ -125,7 +125,8 @@ class InputArea(TextArea):
             payload = {"code": self.getText(), "time": "ok"}
             payload = JSONParser().encode(payload)
             print "payload: %s" % payload
-            data = "payload=%s" % payload
+            import urllib
+            data = urllib.urlencode({"payload": payload})
             HTTPRequest().asyncPost("/eval_cell/", data, Loader(self))
             if self._cell_id == self._worksheet.num_cells():
                 self._worksheet.add_cell()
