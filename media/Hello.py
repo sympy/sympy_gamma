@@ -197,16 +197,12 @@ class Worksheet:
     def insert_cell(self, id):
         print "insert_cell", id
         cell = self._cell_list[id-1].getElement()
-        p = RootPanel().getElement()
-        id = DOM.getChildIndex(p, cell)
+        first_elem = getPrevSibling(getPrevSibling(cell))
         print "current cell", cell
-        print "prev sibling:", getPrevSibling(cell)
-        print "parent:", p
-        print "cell id:", id
-        id -= 2
-        print "1"
+        print "prev sibling:", first_elem
         a = HTML("HEJ")
-        DOM.insertChild(p, a.getElement(), id)
+        print "1"
+        insertChildBefore(a.getElement(), first_elem)
         #RootPanel().add(a)
         #print "3"
         #p = RootPanel()
@@ -215,15 +211,24 @@ class Worksheet:
         print "ok"
 
 def getPrevSibling(elem):
-    print "--------"
+    #print "--------"
     parent = DOM.getParent(elem)
-    print parent
+    #print parent
     elem_index = DOM.getChildIndex(parent, elem)
-    print elem_index
+    #print elem_index
     children = list(DOM.iterChildren(parent))
-    print children
+    #print children
     return children[elem_index - 1]
 
+def insertChildBefore(new_elem, elem):
+    """
+    Inserts an element "new_elem" before the element "elem".
+    """
+    parent = DOM.getParent(elem)
+    print parent
+    id = DOM.getChildIndex(parent, elem)
+    print id
+    DOM.insertChild(parent, new_elem, id)
 
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
