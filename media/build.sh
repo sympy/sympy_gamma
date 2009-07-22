@@ -4,4 +4,4 @@
 
 options="$*"
 #if [ -z $options ] ; then options="-O";fi
-~/ext/pyjamas-0.6pre1/bin/pyjsbuild --print-statements $options Hello
+~/ext/pyjamas-0.6pre1/bin/pyjsbuild --print-statements $options index
