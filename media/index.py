@@ -125,8 +125,7 @@ class InputArea(TextArea):
             payload = {"code": self.getText(), "time": "ok"}
             payload = JSONParser().encode(payload)
             print "payload: %s" % payload
-            import urllib
-            data = urllib.urlencode({"payload": payload})
+            data = urlencode({"payload": payload})
             HTTPRequest().asyncPost("/eval_cell/", data, Loader(self))
             if self._cell_id == self._worksheet.num_cells():
                 self._worksheet.add_cell()
@@ -263,6 +262,9 @@ def RootPanel_insert_before(new_elem, elem):
         parent = RootPanel()
         new_elem.setParent(parent)
         insertChildBefore(new_elem.getElement(), elem)
+
+def urlencode(d):
+    return "%s=%s" % ("payload", encodeURIComponent(d["payload"]))
 
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
