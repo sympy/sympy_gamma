@@ -236,14 +236,7 @@ class Worksheet:
         self.add_cell(first_elem)
 
     def show_output(self, id, text):
-        print id
-        #print text
-        #self.print_info(text)
-        cell = self._cell_list[id-1].getElement()
-        output = HTML(text)
-        RootPanel_insert_before(output, cell)
         prompt, cell = self._other[id-1]
-        print prompt, cell
         prompt.setVisible(True)
         cell.setHTML('<span class="cell_output">' + text + '</span>')
 
