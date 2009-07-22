@@ -200,14 +200,17 @@ class Worksheet:
         p = DOM.getParent(cell)
         print "current cell", cell
         print "parent:", p
-        print "cell id:", DOM.getChildIndex(p, cell)
+        id = DOM.getChildIndex(p, cell)
+        print "cell id:", id
+        id -= 2
         print "1"
         a = HTML("HEJ")
-        RootPanel().add(a)
-        print "3"
-        p = RootPanel()
-        print a, p.getElement(), len(p.children)
-        p.insert(a, p.getElement(), 3)
+        DOM.insertChild(p, a.getElement(), id)
+        #RootPanel().add(a)
+        #print "3"
+        #p = RootPanel()
+        #print a, p.getElement(), len(p.children)
+        #p.insert(a, p.getElement(), 3)
         print "ok"
 
 
