@@ -236,9 +236,10 @@ class Worksheet:
         self.add_cell(first_elem)
 
     def show_output(self, id, text):
-        prompt, cell = self._other[id-1]
-        prompt.setVisible(True)
-        cell.setHTML('<span class="cell_output">' + text + '</span>')
+        if text != "":
+            prompt, cell = self._other[id-1]
+            prompt.setVisible(True)
+            cell.setHTML('<span class="cell_output">' + text + '</span>')
 
 def getPrevSibling(elem):
     parent = DOM.getParent(elem)
