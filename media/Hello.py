@@ -196,6 +196,12 @@ class Worksheet:
 
     def insert_cell(self, id):
         print "insert_cell", id
+        cell = self._cell_list[id-1].getElement()
+        p = DOM.getParent(cell)
+        print "current cell", cell
+        print "parent:", p
+        print "cell id:", DOM.getChildIndex(p, cell)
+        print "1"
         a = HTML("HEJ")
         RootPanel().add(a)
         print "3"
