@@ -7,7 +7,7 @@ span.input_prompt {
 }
 span.output_prompt {
     color:red;
-    display:none;
+    /*display:none;*/
     clear: left;
     font-family: monospace;
     font-size:12pt;

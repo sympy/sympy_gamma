@@ -184,6 +184,7 @@ class Worksheet:
         self._i = 0
         self._active_cell = -1
         self._cell_list = []
+        self._other = []
         self.print_info("")
 
     def print_info(self, text):
@@ -205,6 +206,7 @@ class Worksheet:
         output_prompt = HTML('<span class="output_prompt">Out[%d]:</span>' % \
                 self._i)
         cell_output = HTML('<span class="cell_output"></span>')
+        output_prompt.setVisible(False)
         RootPanel_insert_before(insert_new_cell, insert_before)
         RootPanel_insert_before(insert_new_cell, insert_before)
         RootPanel_insert_before(input_prompt, insert_before)
@@ -213,6 +215,7 @@ class Worksheet:
         RootPanel_insert_before(output_prompt, insert_before)
         RootPanel_insert_before(cell_output, insert_before)
         self._cell_list.append(cell_input)
+        self._other.append((output_prompt, cell_output))
         self.print_info("")
 
     def set_active_cell(self, cell_id):
@@ -239,7 +242,10 @@ class Worksheet:
         cell = self._cell_list[id-1].getElement()
         output = HTML(text)
         RootPanel_insert_before(output, cell)
-        #first_elem = DOM.getNextSibling(DOM.getNextSibling(cell))
+        prompt, cell = self._other[id-1]
+        print prompt, cell
+        prompt.setVisible(True)
+        cell.setHTML('<span class="cell_output">' + text + '</span>')
 
 def getPrevSibling(elem):
     parent = DOM.getParent(elem)
