@@ -192,4 +192,5 @@ if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
     w = Worksheet()
     w.add_cell()
+    w.move_to_next_cell()
     pyjd.run()
