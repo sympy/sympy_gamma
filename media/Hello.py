@@ -121,9 +121,17 @@ class InputArea(TextArea):
             event.preventDefault()
             self._worksheet.add_cell()
         elif key_code == KeyboardListener.KEY_UP:
-            self._worksheet.move_to_prev_cell()
+            x, y = self.cursor_coordinates()
+            if y == 0:
+                event = DOM.eventGetCurrentEvent()
+                event.preventDefault()
+                self._worksheet.move_to_prev_cell()
         elif key_code == KeyboardListener.KEY_DOWN:
-            self._worksheet.move_to_next_cell()
+            x, y = self.cursor_coordinates()
+            if y + 1 == self.rows():
+                event = DOM.eventGetCurrentEvent()
+                event.preventDefault()
+                self._worksheet.move_to_next_cell()
 
     def onKeyPress(self, sender, keyCode, modifiers):
         #print "on_key_press"
