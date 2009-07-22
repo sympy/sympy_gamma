@@ -122,9 +122,9 @@ class InputArea(TextArea):
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
             print "sending"
-            payload = '{"code": "%s", "time": "ok"}' % self.getText()
-            #from jsonrpc.json import dumps
-            #data = dumps({"payload": payload})
+            payload = {"code": self.getText(), "time": "ok"}
+            payload = JSONParser().encode(payload)
+            print "payload: %s" % payload
             data = "payload=%s" % payload
             HTTPRequest().asyncPost("/eval_cell/", data, Loader(self))
             if self._cell_id == self._worksheet.num_cells():
