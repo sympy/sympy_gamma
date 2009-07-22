@@ -178,14 +178,10 @@ class Worksheet:
     def move_to_prev_cell(self):
         if self._active_cell > 1:
             self._cell_list[self._active_cell-2].setFocus(True)
-        else:
-            print "no"
 
     def move_to_next_cell(self):
         if self._active_cell < self._i:
             self._cell_list[self._active_cell].setFocus(True)
-        else:
-            print "no"
 
 
 if __name__ == '__main__':
