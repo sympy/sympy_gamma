@@ -9,6 +9,7 @@ from pyjamas.HTTPRequest import HTTPRequest
 from pyjamas import DOM
 from pyjamas import Window
 
+from pyjamas.JSONParser import JSONParser
 
 def greet(fred):
     print "greet button"
@@ -146,6 +147,9 @@ class InputArea(TextArea):
         #print "on_key_press"
         pass
 
+    def handle_eval_data(self, text):
+        print text
+
 class Loader:
 
     def __init__(self, cell):
@@ -153,7 +157,8 @@ class Loader:
 
     def onCompletion(self, text):
         print "completed", text
-        print text["result"]
+        data = JSONParser().decode(text)
+        self._cell.handle_eval_data(data["result"])
         print "ok"
 
     def onError(self, text, code):
