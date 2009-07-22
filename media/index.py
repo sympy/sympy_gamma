@@ -121,7 +121,12 @@ class InputArea(TextArea):
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
             print "sending"
-            HTTPRequest().asyncPost("/eval_cell/", "", Loader())
+            payload = '{"code": "1+1", "time": "ok"}'
+            #from jsonrpc.json import dumps
+            #data = dumps({"payload": payload})
+            data = "payload=%s" % payload
+
+            HTTPRequest().asyncPost("/eval_cell/", data, Loader())
             if self._cell_id == self._worksheet.num_cells():
                 self._worksheet.add_cell()
             self._worksheet.move_to_next_cell()
