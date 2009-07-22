@@ -145,7 +145,6 @@ class InsertListener:
         self._id = id
 
     def onClick(self, event):
-        print "click!!", event, self._id
         self._worksheet.insert_cell(self._id)
 
 class Worksheet:
@@ -167,8 +166,6 @@ class Worksheet:
         insert_new_cell = HTML('<div class="insert_new_cell"></div>')
         listener = InsertListener(self, self._i)
         insert_new_cell.addClickListener(listener)
-        #DOM.setEventListener(insert_new_cell.getElement(), listener)
-        #DOM.sinkEvents(insert_new_cell.getElement(), Event.ONCLICK)
         input_prompt = HTML('<span class="input_prompt">In [%d]:</span>' % \
                 self._i)
         cell_input = InputArea(self, self._i, StyleName='cell_input')
