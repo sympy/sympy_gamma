@@ -120,6 +120,8 @@ class InputArea(TextArea):
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
             self._worksheet.add_cell()
+        elif key_code == KeyboardListener.KEY_UP:
+            self._worksheet.move_to_prev_cell()
         elif key_code == KeyboardListener.KEY_DOWN:
             self._worksheet.move_to_next_cell()
 
@@ -164,10 +166,14 @@ class Worksheet:
         self._active_cell = cell_id
         self.print_info("")
 
+    def move_to_prev_cell(self):
+        if self._active_cell > 1:
+            self._cell_list[self._active_cell-2].setFocus(True)
+        else:
+            print "no"
+
     def move_to_next_cell(self):
         if self._active_cell < self._i:
-            print "moving to the cell", self._active_cell + 1
-            print self._cell_list[self._active_cell]
             self._cell_list[self._active_cell].setFocus(True)
         else:
             print "no"
