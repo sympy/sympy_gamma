@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.utils import simplejson
 
@@ -10,7 +10,8 @@ import cgi
 e = Eval()
 
 def index(request):
-    return render_to_response("index.html")
+    #return render_to_response("index.html")
+    return HttpResponseRedirect("/media_files/output/index.html")
 
 @log_exception
 def eval_cell(request):
