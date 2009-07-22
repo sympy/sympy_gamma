@@ -161,7 +161,7 @@ class Worksheet:
         self._echo.setHTML("INFO: cells: %d, active cell: %d, " % \
                 (self._i, self._active_cell) + text)
 
-    def add_cell(self):
+    def add_cell(self, insert_before=None):
         self._i += 1
         insert_new_cell = HTML('<div class="insert_new_cell"></div>')
         listener = InsertListener(self, self._i)
@@ -173,12 +173,13 @@ class Worksheet:
         output_prompt = HTML('<span class="output_prompt">Out[%d]:</span>' % \
                 self._i)
         cell_output = HTML('<span class="cell_output"></span>')
-        RootPanel().add(insert_new_cell)
-        RootPanel().add(input_prompt)
-        RootPanel().add(cell_input)
-        RootPanel().add(output_delimiter)
-        RootPanel().add(output_prompt)
-        RootPanel().add(cell_output)
+        RootPanel_insert_before(insert_new_cell, insert_before)
+        RootPanel_insert_before(insert_new_cell, insert_before)
+        RootPanel_insert_before(input_prompt, insert_before)
+        RootPanel_insert_before(cell_input, insert_before)
+        RootPanel_insert_before(output_delimiter, insert_before)
+        RootPanel_insert_before(output_prompt, insert_before)
+        RootPanel_insert_before(cell_output, insert_before)
         self._cell_list.append(cell_input)
         self.print_info("")
 
@@ -213,6 +214,12 @@ def insertChildBefore(new_elem, elem):
     parent = DOM.getParent(elem)
     id = DOM.getChildIndex(parent, elem)
     DOM.insertChild(parent, new_elem, id)
+
+def RootPanel_insert_before(new_elem, elem):
+    if elem is None:
+        RootPanel().add(new_elem)
+    else:
+        insertChildBefore(new_elem, elem)
 
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
