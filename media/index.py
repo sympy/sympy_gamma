@@ -148,7 +148,7 @@ class InputArea(TextArea):
         pass
 
     def handle_eval_data(self, text):
-        print text
+        self._worksheet.show_output(self._cell_id, text)
 
 class Loader:
 
@@ -231,6 +231,10 @@ class Worksheet:
         cell = self._cell_list[id-1].getElement()
         first_elem = getPrevSibling(getPrevSibling(cell))
         self.add_cell(first_elem)
+
+    def show_output(self, cell_id, text):
+        print cell_id
+        print text
 
 def getPrevSibling(elem):
     parent = DOM.getParent(elem)
