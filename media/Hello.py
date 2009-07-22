@@ -219,6 +219,11 @@ def RootPanel_insert_before(new_elem, elem):
         RootPanel().add(new_elem)
     else:
         print "1", new_elem, elem
+        parent = RootPanel()
+        print parent
+        new_elem.setParent(parent)
+        #r.adopt(new_elem, r.getElement())
+        print "2"
         insertChildBefore(new_elem.getElement(), elem)
 
 if __name__ == '__main__':
