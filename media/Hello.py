@@ -196,6 +196,10 @@ class Worksheet:
 
     def insert_cell(self, id):
         print "insert_cell", id
+        a = HTML("HEJ")
+        RootPanel().add(a)
+        #RootPanel().insert(
+        print "ok"
 
 
 if __name__ == '__main__':
