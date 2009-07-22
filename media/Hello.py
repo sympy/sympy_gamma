@@ -197,10 +197,10 @@ class Worksheet:
     def insert_cell(self, id):
         print "insert_cell", id
         cell = self._cell_list[id-1].getElement()
-        p = DOM.getParent(cell)
+        p = RootPanel().getElement()
+        id = DOM.getChildIndex(p, cell)
         print "current cell", cell
         print "parent:", p
-        id = DOM.getChildIndex(p, cell)
         print "cell id:", id
         id -= 2
         print "1"
