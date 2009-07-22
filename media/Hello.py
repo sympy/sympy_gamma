@@ -198,8 +198,7 @@ class Worksheet:
     def insert_cell(self, id):
         cell = self._cell_list[id-1].getElement()
         first_elem = getPrevSibling(getPrevSibling(cell))
-        a = HTML("HEJ")
-        insertChildBefore(a.getElement(), first_elem)
+        self.add_cell(first_elem)
 
 def getPrevSibling(elem):
     parent = DOM.getParent(elem)
@@ -219,7 +218,8 @@ def RootPanel_insert_before(new_elem, elem):
     if elem is None:
         RootPanel().add(new_elem)
     else:
-        insertChildBefore(new_elem, elem)
+        print "1", new_elem, elem
+        insertChildBefore(new_elem.getElement(), elem)
 
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
