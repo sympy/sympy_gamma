@@ -119,7 +119,7 @@ class InputArea(TextArea):
                 modifiers == KeyboardListener.MODIFIER_SHIFT:
             event = DOM.eventGetCurrentEvent()
             event.preventDefault()
-            if self._cell_id == self._worksheet._i:
+            if self._cell_id == self._worksheet.num_cells():
                 self._worksheet.add_cell()
             self._worksheet.move_to_next_cell()
         elif key_code == KeyboardListener.KEY_UP:
@@ -161,6 +161,9 @@ class Worksheet:
     def print_info(self, text):
         self._echo.setHTML("INFO: cells: %d, active cell: %d, " % \
                 (self._i, self._active_cell) + text)
+
+    def num_cells(self):
+        return self._i
 
     def add_cell(self, insert_before=None):
         self._i += 1
