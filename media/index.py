@@ -232,9 +232,14 @@ class Worksheet:
         first_elem = getPrevSibling(getPrevSibling(cell))
         self.add_cell(first_elem)
 
-    def show_output(self, cell_id, text):
-        print cell_id
-        print text
+    def show_output(self, id, text):
+        print id
+        #print text
+        #self.print_info(text)
+        cell = self._cell_list[id-1].getElement()
+        output = HTML(text)
+        RootPanel_insert_before(output, cell)
+        #first_elem = DOM.getNextSibling(DOM.getNextSibling(cell))
 
 def getPrevSibling(elem):
     parent = DOM.getParent(elem)
