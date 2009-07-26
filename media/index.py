@@ -264,7 +264,20 @@ def RootPanel_insert_before(new_elem, elem):
         insertChildBefore(new_elem.getElement(), elem)
 
 def urlencode(d):
-    return "%s=%s" % ("payload", encodeURIComponent(d["payload"]))
+    """
+    Equivalent of urllib.urlencode().
+
+    This is a workaround because pyjamas doesn't support urllib.
+    """
+    return "%s=%s" % ("payload", quote(d["payload"]))
+
+def quote(s):
+    """
+    This function is equivalent to urllib.quote().
+
+    This is a workaround because pyjamas doesn't support urllib.
+    """
+    JS("""return encodeURIComponent(s);""")
 
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
