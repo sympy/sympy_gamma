@@ -1,9 +1,3 @@
-* when pressing the UP arrow to go to the previous cell, put the cursor at the
-  bottom row (currently it goes to the top row)
-* TAB always moves the cursor to the end of the textarea (so if you are in the
-  middle, the cursor should stay in the middle)
-* the blue line for adding new cells is not visible on IE8
-* if you do "print 'ok'", nothing will get printed out
-* allow to switch off the numbering
-* Implement _4 and similar things if the cells are numbered
-* add "loading" message until the javascript is fully loaded
+For a list of all issues, see:
+
+http://github.com/certik/notebook/issues
