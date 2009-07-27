@@ -11,6 +11,8 @@ from pyjamas import Window
 
 from pyjamas.JSONParser import JSONParser
 
+import urllib
+
 def greet(fred):
     print "greet button"
     Window.alert("Hello, AJAX!")
@@ -144,7 +146,7 @@ class InputArea(TextArea):
             payload = {"code": self.getText(), "time": "ok"}
             payload = JSONParser().encode(payload)
             print "payload: %s" % payload
-            data = urlencode({"payload": payload})
+            data = urllib.urlencode({"payload": payload})
             HTTPRequest().asyncPost("/eval_cell/", data, Loader(self))
             if self._cell_id == self._worksheet.num_cells():
                 self._worksheet.add_cell()
@@ -318,22 +320,6 @@ def RootPanel_insert_before(new_elem, elem):
         parent = RootPanel()
         new_elem.setParent(parent)
         insertChildBefore(new_elem.getElement(), elem)
-
-def urlencode(d):
-    """
-    Equivalent of urllib.urlencode().
-
-    This is a workaround because pyjamas doesn't support urllib.
-    """
-    return "%s=%s" % ("payload", quote(d["payload"]))
-
-def quote(s):
-    """
-    This function is equivalent to urllib.quote().
-
-    This is a workaround because pyjamas doesn't support urllib.
-    """
-    JS("""return encodeURIComponent(s);""")
 
 def event_preventDefault():
     """
