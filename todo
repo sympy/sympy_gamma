@@ -6,3 +6,4 @@
 * if you do "print 'ok'", nothing will get printed out
 * allow to switch off the numbering
 * Implement _4 and similar things if the cells are numbered
+* add "loading" message until the javascript is fully loaded
