@@ -1,6 +1,7 @@
 import traceback
 import sys
 import logging
+from StringIO import StringIO
 
 # always print stuff on the screen:
 logging.basicConfig(level=logging.INFO)
@@ -39,12 +40,19 @@ class Eval(object):
                 s += '\n' + t
                 z = None
 
-            eval(compile(s, '', 'exec'), globals, globals)
+            try:
+                old_stdout = sys.stdout
+                sys.stdout = StringIO()
+                eval(compile(s, '', 'exec'), globals, globals)
 
-            if not z is None:
-                r = repr(eval(z, globals))
-            else:
-                r = ''
+                if not z is None:
+                    r = repr(eval(z, globals))
+                else:
+                    r = ''
+                sys.stdout.seek(0)
+                r = r + sys.stdout.read()
+            finally:
+                sys.stdout = old_stdout
             return r
         except:
             etype, value, tb = sys.exc_info()
