@@ -65,6 +65,8 @@ class InputArea(TextArea):
             if row == y:
                 break
             i += len(line) + 1  # we need to include "\n"
+            if "\r" in line: # and also "\r"
+                i -= 1
         pos = i + x
         if pos > len(text):
             pos = len(text)
