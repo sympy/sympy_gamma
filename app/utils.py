@@ -50,7 +50,7 @@ class Eval(object):
                 else:
                     r = ''
                 sys.stdout.seek(0)
-                r = r + sys.stdout.read()
+                r = sys.stdout.read() + r
             finally:
                 sys.stdout = old_stdout
             return r
