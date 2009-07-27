@@ -27,6 +27,7 @@ class Eval(object):
         globals = self._namespace
         try:
             x = x.strip()
+            x = x.replace("\r", "")
             y = x.split('\n')
             if len(y) == 0:
                 return ''
