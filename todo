@@ -1,9 +1,8 @@
+* on IE8, the backspace can't delete things on the beginning of the line
 * when pressing the UP arrow to go to the previous cell, put the cursor at the
   bottom row (currently it goes to the top row)
-* on IE8, the resizing needs to be fixed for ENTER and BACKSPACE (e.g. to take
-  the just happening change in the text into account)
-* the measuring of the cursor row is off by 1 on IE, so UP arrow and TAB is
-  wrong
+* TAB always moves the cursor to the end of the textarea (so if you are in the
+  middle, the cursor should stay in the middle)
 * the blue line for adding new cells is not visible on IE8
 * if you do "print 'ok'", nothing will get printed out
 * allow to switch off the numbering
