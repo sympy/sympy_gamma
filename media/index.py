@@ -120,7 +120,8 @@ class InputArea(TextArea):
         elif key_code == KeyboardListener.KEY_BACKSPACE:
             x, y = self.cursor_coordinates()
             if (x == 0) and (y == 0):
-                return
+                event_preventDefault()
+                self._worksheet.join_cells()
             if (x == 0):
                 return
             lines = self.getText().split("\n")
@@ -262,6 +263,22 @@ class Worksheet:
         cell = self._cell_list[id-1].getElement()
         first_elem = getPrevSibling(getPrevSibling(cell))
         self.add_cell(first_elem)
+
+    def join_cells(self):
+        current_cell = self._cell_list[self._active_cell-1]
+        prev_cell = self._cell_list[self._active_cell-2]
+        if prev_cell.getText() == "":
+            new_text = current_cell.getText()
+        else:
+            new_text = prev_cell.getText()
+            if current_cell.getText() != "":
+                new_text += "\n" + current_cell.getText()
+        y_new = prev_cell.rows()
+        if prev_cell.getText() == "":
+            y_new -= 1
+        prev_cell.setText(new_text)
+        prev_cell.set_cursor_coordinates(0, y_new)
+        prev_cell.setFocus(True)
 
     def show_output(self, id, text):
         if text != "":
