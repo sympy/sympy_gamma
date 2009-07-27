@@ -100,8 +100,7 @@ class InputArea(TextArea):
     def onKeyDown(self, sender, key_code, modifiers):
         if key_code == KeyboardListener.KEY_TAB:
             self.insert_at_cursor("    ")
-            event = DOM.eventGetCurrentEvent()
-            event.preventDefault()
+            event_preventDefault()
         elif key_code == KeyboardListener.KEY_BACKSPACE:
             x, y = self.cursor_coordinates()
             if (x == 0) and (y == 0):
@@ -115,12 +114,10 @@ class InputArea(TextArea):
                     new_len = new_len - 4
                 lines[y] = line[:new_len]
                 self.setText("\n".join(lines))
-                event = DOM.eventGetCurrentEvent()
-                event.preventDefault()
+                event_preventDefault()
         elif key_code == KeyboardListener.KEY_ENTER and \
                 modifiers == KeyboardListener.MODIFIER_SHIFT:
-            event = DOM.eventGetCurrentEvent()
-            event.preventDefault()
+            event_preventDefault()
             print "sending"
             payload = {"code": self.getText(), "time": "ok"}
             payload = JSONParser().encode(payload)
@@ -133,14 +130,12 @@ class InputArea(TextArea):
         elif key_code == KeyboardListener.KEY_UP:
             x, y = self.cursor_coordinates()
             if y == 0:
-                event = DOM.eventGetCurrentEvent()
-                event.preventDefault()
+                event_preventDefault()
                 self._worksheet.move_to_prev_cell()
         elif key_code == KeyboardListener.KEY_DOWN:
             x, y = self.cursor_coordinates()
             if y + 1 == self.rows():
-                event = DOM.eventGetCurrentEvent()
-                event.preventDefault()
+                event_preventDefault()
                 self._worksheet.move_to_next_cell()
 
     def onKeyPress(self, sender, keyCode, modifiers):
@@ -278,6 +273,16 @@ def quote(s):
     This is a workaround because pyjamas doesn't support urllib.
     """
     JS("""return encodeURIComponent(s);""")
+
+def event_preventDefault():
+    """
+    Prevents the current event's default behavior.
+    """
+    event = DOM.eventGetCurrentEvent()
+    if event.preventDefault:
+        event.preventDefault()
+    else:
+        event.returnValue = False
 
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
