@@ -58,7 +58,6 @@ class InputArea(TextArea):
         """
         Sets the cursor coordinates using the (x, y) tuple.
         """
-        print "setting cursor coordinates to (%d, %d)" % (x, y)
         text = self.getText()
         lines = text.split("\n")
         i = 0
@@ -67,11 +66,9 @@ class InputArea(TextArea):
                 break
             i += len(line) + 1  # we need to include "\n"
         pos = i + x
-        print x, y, i, pos
         if pos > len(text):
             pos = len(text)
         self.setCursorPos(pos)
-        print "ok"
 
     def cursor_coordinates(self):
         """
@@ -90,15 +87,12 @@ class InputArea(TextArea):
         i = 0
         cursor_row = -1
         cursor_col = -1
-        #print "--------" + "start"
         for row, line in enumerate(lines):
             i += len(line) + 1  # we need to include "\n"
-        #    print len(line), i, pos, line
             if pos < i:
                 cursor_row = row
                 cursor_col = pos - i + len(line) + 1
                 break
-        #print "--------"
         return (cursor_col, cursor_row)
 
     def insert_at_cursor(self, inserted_text):
