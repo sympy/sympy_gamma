@@ -1,4 +1,3 @@
-* on IE8, the backspace can't delete things on the beginning of the line
 * when pressing the UP arrow to go to the previous cell, put the cursor at the
   bottom row (currently it goes to the top row)
 * TAB always moves the cursor to the end of the textarea (so if you are in the

@@ -105,6 +105,8 @@ class InputArea(TextArea):
             x, y = self.cursor_coordinates()
             if (x == 0) and (y == 0):
                 return
+            if (x == 0):
+                return
             lines = self.getText().split("\n")
             line = lines[y]
             if line.strip() == "" and len(line) > 0:
