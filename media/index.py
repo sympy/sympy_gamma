@@ -244,7 +244,7 @@ class Worksheet:
     def move_to_next_cell(self):
         if self._active_cell == -1:
             self._cell_list[0].setFocus(True)
-        if self._active_cell < self._i:
+        elif self._active_cell < self._i:
             current_cell = self._cell_list[self._active_cell-1]
             next_cell = self._cell_list[self._active_cell]
             x, y = current_cell.cursor_coordinates()
