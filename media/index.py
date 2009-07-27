@@ -54,6 +54,25 @@ class InputArea(TextArea):
         lines = text.split("\n")
         return len(lines)
 
+    def set_cursor_coordinates(self, x, y):
+        """
+        Sets the cursor coordinates using the (x, y) tuple.
+        """
+        print "setting cursor coordinates to (%d, %d)" % (x, y)
+        text = self.getText()
+        lines = text.split("\n")
+        i = 0
+        for row, line in enumerate(lines):
+            if row == y:
+                break
+            i += len(line) + 1  # we need to include "\n"
+        pos = i + x
+        print x, y, i, pos
+        if pos > len(text):
+            pos = len(text)
+        self.setCursorPos(pos)
+        print "ok"
+
     def cursor_coordinates(self):
         """
         Returns the cursor coordinates as a tuple (x, y).
@@ -221,11 +240,23 @@ class Worksheet:
 
     def move_to_prev_cell(self):
         if self._active_cell > 1:
-            self._cell_list[self._active_cell-2].setFocus(True)
+            current_cell = self._cell_list[self._active_cell-1]
+            prev_cell = self._cell_list[self._active_cell-2]
+            x, y = current_cell.cursor_coordinates()
+            prev_cell.setFocus(True)
+            y_new = prev_cell.rows() - 1
+            prev_cell.set_cursor_coordinates(x, y_new)
 
     def move_to_next_cell(self):
+        if self._active_cell == -1:
+            self._cell_list[0].setFocus(True)
         if self._active_cell < self._i:
-            self._cell_list[self._active_cell].setFocus(True)
+            current_cell = self._cell_list[self._active_cell-1]
+            next_cell = self._cell_list[self._active_cell]
+            x, y = current_cell.cursor_coordinates()
+            next_cell.setFocus(True)
+            y_new = 0
+            next_cell.set_cursor_coordinates(x, y_new)
 
     def insert_cell(self, id):
         cell = self._cell_list[id-1].getElement()
