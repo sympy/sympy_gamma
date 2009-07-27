@@ -278,7 +278,18 @@ class Worksheet:
             y_new -= 1
         prev_cell.setText(new_text)
         prev_cell.set_cursor_coordinates(0, y_new)
+        id = self._active_cell
         prev_cell.setFocus(True)
+        self.delete_cell(id)
+
+    def delete_cell(self, id):
+        print "deleting:", id
+        # this will not work, because we use "id" to access the cells directly
+        # in the list. We need to fix this by creating a class cell() which
+        # would handle one cell and then use a dictionary to access cells
+        #cell = self._cell_list[id-1]
+        #self._cell_list = self._cell_list[:id-1] + self._cell_list[id:]
+        #cell.removeFromParent()
 
     def show_output(self, id, text):
         if text != "":
