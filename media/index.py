@@ -125,13 +125,16 @@ class InputArea(TextArea):
                 return
             lines = self.getText().split("\n")
             line = lines[y]
-            if line.strip() == "" and len(line) > 0:
-                old_len = len(line)
+            sline = line[:x]
+            if sline.strip() == "" and len(sline) > 0:
+                old_len = len(sline)
                 new_len = int(old_len / 4) * 4
                 if old_len == new_len:
                     new_len = new_len - 4
-                lines[y] = line[:new_len]
+                lines[y] = sline[:new_len] + line[x:]
+                pos = self.getCursorPos()
                 self.setText("\n".join(lines))
+                self.setCursorPos(pos - (old_len - new_len))
                 event_preventDefault()
         elif key_code == KeyboardListener.KEY_ENTER and \
                 modifiers == KeyboardListener.MODIFIER_SHIFT:
