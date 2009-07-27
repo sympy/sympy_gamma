@@ -237,9 +237,9 @@ class Worksheet:
             current_cell = self._cell_list[self._active_cell-1]
             prev_cell = self._cell_list[self._active_cell-2]
             x, y = current_cell.cursor_coordinates()
-            prev_cell.setFocus(True)
             y_new = prev_cell.rows() - 1
             prev_cell.set_cursor_coordinates(x, y_new)
+            prev_cell.setFocus(True)
 
     def move_to_next_cell(self):
         if self._active_cell == -1:
@@ -248,9 +248,9 @@ class Worksheet:
             current_cell = self._cell_list[self._active_cell-1]
             next_cell = self._cell_list[self._active_cell]
             x, y = current_cell.cursor_coordinates()
-            next_cell.setFocus(True)
             y_new = 0
             next_cell.set_cursor_coordinates(x, y_new)
+            next_cell.setFocus(True)
 
     def insert_cell(self, id):
         cell = self._cell_list[id-1].getElement()
