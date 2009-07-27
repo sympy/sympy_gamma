@@ -102,6 +102,7 @@ class InputArea(TextArea):
         text = self.getText()
         text = text[:pos] + inserted_text + text[pos:]
         self.setText(text)
+        self.setCursorPos(pos+len(inserted_text))
 
     def onKeyUp(self, sender, keyCode, modifiers):
         #print "on_key_up"
