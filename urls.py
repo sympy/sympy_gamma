@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     (r'^eval_cell/$', 'app.views.eval_cell'),
 
     (r'^input/', 'app.views.input'),
+    (r'^about/$', 'app.views.about'),
 
     (r'^nb/$', 'app.views.notebook'),
     (r'^nb/(nb.*)$', 'django.views.static.serve',

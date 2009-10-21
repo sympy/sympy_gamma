@@ -42,6 +42,11 @@ def notebook(request):
         "MEDIA_URL": settings.MEDIA_URL,
         })
 
+def about(request):
+    return render_to_response("about.html", {
+        "MEDIA_URL": settings.MEDIA_URL,
+        })
+
 @log_exception
 def eval_cell(request):
     payload = request.POST["payload"]
