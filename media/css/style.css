@@ -129,7 +129,7 @@ div.cell_input {
 
 div.cell_output {
     color: black;
-    font-size:12pt;
+    font-size:8pt;
     margin: 10px;
     border: 1px solid  #a8a8a8;
 }
@@ -141,6 +141,7 @@ div.input {
 }
 
 div.input input[type="text"] {
+    margin: 20px auto;
     width: 500px;
 }
 
