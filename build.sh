@@ -5,4 +5,4 @@
 
 options="$*"
 #if [ -z $options ] ; then options="-O";fi
-~/repos/pyjamas/bin/pyjsbuild --print-statements $options nb
+~/repos/pyjamas/bin/pyjsbuild --print-statements $options -Itemplates nb
