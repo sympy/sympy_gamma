@@ -5,16 +5,15 @@ SymPy Gamma
 {% endblock %}
 
 {% block content %}
-    <form action="/input/" method="GET">
-        Search {{ form.i }}
-        <input type="submit" value="Search"/>
-    </form>
-    <p>
-    <b>request</b>: {{ input }}<br/>
-    <b>result</b>:<br/>
+    <div class="input">
+        <form action="/input/" method="GET">
+            {{ form.i }}
+            <input class="input_field" type="submit" value="=" />
+        </form>
+    </div>
     <div class="result">
         {% for cell in result %}
-            <div class="cell">
+            <div class="cell1">
                 <div class="cell_title">
                     {{ cell.title }}:
                 </div>

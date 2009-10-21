@@ -104,10 +104,14 @@ div.menu a {
     font-size: 10pt;
 }
 
-div.cell {
+div.result {
+    width: 600px;
+    margin: 10px auto;
+}
+
+div.cell1 {
     border: 2px solid  #a8a8a8;
     margin: 10px;
-    width: 800px;
 }
 
 div.cell_title {
@@ -132,10 +136,10 @@ div.cell_output {
 
 div.input {
     text-align: center;
-    width: 450px;
+    width: 550px;
     margin: 40px auto;
 }
 
 div.input input[type="text"] {
-    width: 400px;
+    width: 500px;
 }
