@@ -3,6 +3,10 @@
 # for debugging info, run:
 # ./build.sh -d --line-tracking --source-tracking
 
+# path to the pyjsbuild:
+PYJS=~/repos/pyjamas/bin/pyjsbuild
+
+
 options="$*"
 #if [ -z $options ] ; then options="-O";fi
-~/repos/pyjamas/bin/pyjsbuild --print-statements $options -Itemplates -omedia/js nb
+$PYJS --print-statements $options -Itemplates -omedia/js nb
