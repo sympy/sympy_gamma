@@ -7,6 +7,22 @@ SymPy Gamma
 {% block content %}
     <p>
     <b>request</b>: {{ input }}<br/>
-    <b>result</b>: {{ result }}
-    </p>
+    <b>result</b>:<br/>
+    <div class="result">
+        {% for cell in result %}
+            <div class="cell">
+                <div class="cell_title">
+                    {{ cell.title }}:
+                </div>
+                <div class="cell_input">
+                    {{ cell.input }}
+                </div>
+                {% if cell.output %}
+                    <div class="cell_output">
+                        {{ cell.output }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

@@ -94,3 +94,29 @@ a.eval_button {
 #menu {
     border: 2px solid green;
 }
+
+div.cell {
+    border: 2px solid  #a8a8a8;
+    margin: 10px;
+    width: 800px;
+}
+
+div.cell_title {
+    color: gray;
+    font-size:10pt;
+    margin: 5px;
+}
+
+div.cell_input {
+    color: black;
+    font-size:12pt;
+    margin: 10px;
+    border: 1px solid  #a8a8a8;
+}
+
+div.cell_output {
+    color: black;
+    font-size:12pt;
+    margin: 10px;
+    border: 1px solid  #a8a8a8;
+}
