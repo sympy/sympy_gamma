@@ -1,18 +1,16 @@
-<html>
-    <!-- auto-generated html - you should consider editing and
-         adapting this to suit your requirements
-     -->
-    <head>
-      <meta name="pygwt:module" content="index">
-      <link rel='stylesheet' href='style.css'>
-      <title>Notebook</title>
-    </head>
-    <body bgcolor="white">
-  </head>
-  <body>
-      <h2>Notebook demo</h2>
-      <p>Source code: <a href="http://github.com/certik/notebook/tree/pyjamas">http://github.com/certik/notebook/tree/pyjamas</a> (the "pyjamas" branch)</p>
-      <p>Made using <a href="http://pyjs.org/">Pyjamas</a></p>
-      <script language="javascript" src="bootstrap.js"></script>
-    </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}
+SymPy Gamma
+{% endblock %}
+
+{% block content %}
+    <h2>SymPy Gamma</h2>
+    This is a work in progress. Below you can find a development version,
+    which might or might not work.
+    <h3>Development version</h3>
+    <a href="/media_files/output/nb.html">notebook</a>
+    <p>Source code: <a href="http://github.com/certik/sympy_gamma/">http://github.com/certik/sympy_gamma</a></p>
+    <p>Made using <a href="http://djangoproject.com">Django</a> and <a
+      href="http://pyjs.org/">Pyjamas</a>.</p>
+{% endblock %}
