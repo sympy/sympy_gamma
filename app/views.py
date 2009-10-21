@@ -4,16 +4,22 @@ from django.utils import simplejson
 
 from utils import log_exception, Eval
 
+from sympy_gamma import settings
+
 import logging
 import cgi
 
 e = Eval()
 
 def index(request):
-    return render_to_response("index.html")
+    return render_to_response("index.html", {
+        "MEDIA_URL": settings.MEDIA_URL,
+        })
 
 def notebook(request):
-    return render_to_response("nb.html")
+    return render_to_response("nb.html", {
+        "MEDIA_URL": settings.MEDIA_URL,
+        })
 
 @log_exception
 def eval_cell(request):
