@@ -3,3 +3,9 @@ Installation
 
 ./build.sh
 ./manage.py runserver
+
+Upload to the google app engine
+-------------------------------
+
+./build.sh
+appcfg.py update .
