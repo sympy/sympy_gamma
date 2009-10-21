@@ -1,7 +1,5 @@
 Installation
 ------------
 
-cd media
 ./build.sh
-cd ..
 ./manage.py runserver
