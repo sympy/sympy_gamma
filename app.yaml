@@ -1,5 +1,5 @@
-application: pythonnb
-version: 4
+application: sympy-gamma
+version: 1
 runtime: python
 api_version: 1
 
