@@ -90,3 +90,7 @@ a.eval_button {
   position: relative;
   left: 72px;
 }
+
+#menu {
+    border: 2px solid green;
+}
