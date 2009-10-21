@@ -3,7 +3,8 @@ from django.shortcuts import render_to_response
 from django.utils import simplejson
 from django import forms
 
-from utils import log_exception, Eval
+from utils import log_exception
+from logic import Eval
 
 import settings
 
