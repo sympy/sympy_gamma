@@ -13,7 +13,7 @@ class SymPyGamma(object):
 
     def try_sympy(self, s):
         namespace = {}
-        exec "from sympy import *" in {}, namespace
+        exec "from sympy.interactive import *" in {}, namespace
         a = Eval(namespace)
         # change to True to spare the user from exceptions:
         r = a.eval(s, use_none_for_exceptions=False)

@@ -33,6 +33,7 @@ def input(request):
             return render_to_response("result.html", {
                 "input": input,
                 "result": r,
+                "form": form,
                 "MEDIA_URL": settings.MEDIA_URL,
                 })
 

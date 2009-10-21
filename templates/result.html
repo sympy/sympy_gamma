@@ -5,6 +5,10 @@ SymPy Gamma
 {% endblock %}
 
 {% block content %}
+    <form action="/input/" method="GET">
+        Search {{ form.i }}
+        <input type="submit" value="Search"/>
+    </form>
     <p>
     <b>request</b>: {{ input }}<br/>
     <b>result</b>:<br/>
