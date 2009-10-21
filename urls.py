@@ -11,12 +11,12 @@ urlpatterns = patterns('',
     # Example:
     # (r'^notebook/', include('notebook.foo.urls')),
     (r'^$', 'app.views.index'),
+    (r'^eval_cell/$', 'app.views.eval_cell'),
+
     (r'^nb/$', 'app.views.notebook'),
-    (r'^nb/(bootstrap.js)$', 'django.views.static.serve',
-        {'document_root': os.path.join(p, "js")}),
     (r'^nb/(nb.*)$', 'django.views.static.serve',
         {'document_root': os.path.join(p, "js")}),
-    (r'^eval_cell/$', 'app.views.eval_cell'),
+
     (r'^media_files/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': p}),
 
