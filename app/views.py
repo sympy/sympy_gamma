@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.utils import simplejson
+from django import forms
 
 from utils import log_exception, Eval
 
@@ -9,12 +10,30 @@ import settings
 import logging
 import cgi
 
+class SearchForm(forms.Form):
+    i = forms.CharField(required=False)
+
 e = Eval()
 
 def index(request):
+    form = SearchForm()
     return render_to_response("index.html", {
+        "form": form,
         "MEDIA_URL": settings.MEDIA_URL,
         })
+
+def input(request):
+    if request.method == "GET":
+        form = SearchForm(request.GET)
+        if form.is_valid():
+            input = form.cleaned_data["i"]
+            e = Eval()
+            r = e.eval(input)
+            return render_to_response("result.html", {
+                "input": input,
+                "result": r,
+                "MEDIA_URL": settings.MEDIA_URL,
+                })
 
 def notebook(request):
     return render_to_response("nb.html", {

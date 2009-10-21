@@ -13,6 +13,8 @@ urlpatterns = patterns('',
     (r'^$', 'app.views.index'),
     (r'^eval_cell/$', 'app.views.eval_cell'),
 
+    (r'^input/', 'app.views.input'),
+
     (r'^nb/$', 'app.views.notebook'),
     (r'^nb/(nb.*)$', 'django.views.static.serve',
         {'document_root': os.path.join(p, "js")}),
