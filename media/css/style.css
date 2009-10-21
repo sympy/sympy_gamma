@@ -1,3 +1,7 @@
+* {
+    padding: 0px;
+    margin: 0px;
+}
 span.input_prompt {
     color:blue;
     font-family: monospace;
@@ -91,8 +95,13 @@ a.eval_button {
   left: 72px;
 }
 
-#menu {
-    border: 2px solid green;
+div.menu {
+    padding: 5px;
+}
+
+div.menu a {
+    color: blue;
+    font-size: 10pt;
 }
 
 div.cell {
@@ -119,4 +128,14 @@ div.cell_output {
     font-size:12pt;
     margin: 10px;
     border: 1px solid  #a8a8a8;
+}
+
+div.input {
+    text-align: center;
+    width: 450px;
+    margin: 40px auto;
+}
+
+div.input input[type="text"] {
+    width: 400px;
 }
