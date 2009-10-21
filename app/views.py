@@ -4,7 +4,7 @@ from django.utils import simplejson
 
 from utils import log_exception, Eval
 
-from sympy_gamma import settings
+import settings
 
 import logging
 import cgi
