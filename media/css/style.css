@@ -143,3 +143,8 @@ div.input {
 div.input input[type="text"] {
     width: 500px;
 }
+
+div.foot {
+    text-align: center;
+    font-size: 10pt;
+}
