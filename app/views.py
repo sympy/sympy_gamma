@@ -4,7 +4,7 @@ from django.utils import simplejson
 from django import forms
 
 from utils import log_exception
-from logic import Eval
+from logic import Eval, SymPyGamma
 
 import settings
 
@@ -28,8 +28,8 @@ def input(request):
         form = SearchForm(request.GET)
         if form.is_valid():
             input = form.cleaned_data["i"]
-            e = Eval()
-            r = e.eval(input)
+            g = SymPyGamma()
+            r = g.eval(input)
             return render_to_response("result.html", {
                 "input": input,
                 "result": r,

@@ -7,7 +7,7 @@ class Eval(object):
     def __init__(self):
         self._namespace = {}
 
-    def eval(self, x):
+    def eval(self, x, use_none_for_exceptions=False):
         globals = self._namespace
         try:
             x = x.strip()
@@ -38,6 +38,8 @@ class Eval(object):
                 sys.stdout = old_stdout
             return r
         except:
+            if use_none_for_exceptions:
+                return
             etype, value, tb = sys.exc_info()
             # If we decide in the future to remove the first frame fromt he
             # traceback (since it links to our code, so it could be confusing
