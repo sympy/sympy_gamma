@@ -12,7 +12,9 @@ class SymPyGamma(object):
                 ]
 
     def try_sympy(self, s):
-        a = Eval()
+        namespace = {}
+        exec "from sympy import *" in {}, namespace
+        a = Eval(namespace)
         # change to True to spare the user from exceptions:
         r = a.eval(s, use_none_for_exceptions=False)
         if r is not None:

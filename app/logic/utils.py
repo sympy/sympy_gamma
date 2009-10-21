@@ -4,8 +4,8 @@ from StringIO import StringIO
 
 class Eval(object):
 
-    def __init__(self):
-        self._namespace = {}
+    def __init__(self, namespace={}):
+        self._namespace = namespace
 
     def eval(self, x, use_none_for_exceptions=False):
         globals = self._namespace
