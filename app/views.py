@@ -11,7 +11,9 @@ e = Eval()
 
 def index(request):
     return render_to_response("index.html")
-    #return HttpResponseRedirect("/media_files/output/index.html")
+
+def notebook(request):
+    return render_to_response("nb.html")
 
 @log_exception
 def eval_cell(request):
