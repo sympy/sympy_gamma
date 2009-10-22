@@ -18,9 +18,32 @@ class SymPyGamma(object):
         # change to True to spare the user from exceptions:
         r = a.eval(s, use_none_for_exceptions=False)
         if r is not None:
-            return [
+            result = [
                     {"title": "Input", "input": s},
-                    {"title": "Eval", "input": s, "output": r},
+                    {"title": "SymPy", "input": s, "output": r},
                     ]
+            code = """\
+s = %s
+a = s.atoms(Symbol)
+if len(a) == 1:
+    x = a.pop()
+    result = %s
+else:
+    result = None
+result
+"""
+            line = "diff(%s, x)" % s
+            r = a.eval(code % (s, line), use_none_for_exceptions=True)
+            if r and r != "None":
+                result.append(
+                        {"title": "Derivative", "input": line,
+                            "output": r})
+            line = "integrate(%s, x)" % s
+            r = a.eval(code % (s, line), use_none_for_exceptions=True)
+            if r and r != "None":
+                result.append(
+                        {"title": "Indefinite integral", "input": line,
+                            "output": r})
+            return result
         else:
             return None
