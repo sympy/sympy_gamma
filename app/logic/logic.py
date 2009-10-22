@@ -44,6 +44,12 @@ result
                 result.append(
                         {"title": "Indefinite integral", "input": line,
                             "output": r})
+            line = "series(%s, x, 0, 10)" % s
+            r = a.eval(code % (s, line), use_none_for_exceptions=True)
+            if r and r != "None":
+                result.append(
+                        {"title": "Series expansion around 0", "input": line,
+                            "output": r})
             return result
         else:
             return None
