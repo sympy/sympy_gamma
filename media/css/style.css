@@ -109,6 +109,12 @@ div.menu a {
     margin-right: 0.5em;
 }
 
+div.menu a.selected {
+    color: black !important;
+    text-decoration: none;
+    font-weight: bold;
+}
+
 div.gbh {
     border-top-color:#C9D7F1;
     border-top-style:solid;

@@ -21,6 +21,7 @@ def index(request):
     return render_to_response("index.html", {
         "form": form,
         "MEDIA_URL": settings.MEDIA_URL,
+        "main_active": "selected",
         })
 
 def input(request):
@@ -40,11 +41,13 @@ def input(request):
 def notebook(request):
     return render_to_response("nb.html", {
         "MEDIA_URL": settings.MEDIA_URL,
+        "nb_active": "selected",
         })
 
 def about(request):
     return render_to_response("about.html", {
         "MEDIA_URL": settings.MEDIA_URL,
+        "about_active": "selected",
         })
 
 @log_exception
