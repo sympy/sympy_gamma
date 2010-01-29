@@ -99,12 +99,25 @@ a.eval_button {
 }
 
 div.menu {
-    padding: 5px;
+    padding: 2px 8px;
 }
 
 div.menu a {
-    color: blue;
+    color: blue !important;
     font-size: 10pt;
+    font-family: arial, sans-serif;
+    margin-right: 0.5em;
+}
+
+div.gbh {
+    border-top-color:#C9D7F1;
+    border-top-style:solid;
+    border-top-width:1px;
+    font-size:1px;
+    height:0;
+    position:absolute;
+    top:24px;
+    width:100%;
 }
 
 div.result {
