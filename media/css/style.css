@@ -2,6 +2,9 @@
     padding: 0px;
     margin: 0px;
 }
+iframe {
+    display: none;
+}
 span.input_prompt {
     color:blue;
     font-family: monospace;
