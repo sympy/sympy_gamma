@@ -171,3 +171,15 @@ div.foot {
     text-align: center;
     font-size: 10pt;
 }
+
+h2 {
+    padding: 10px 8px;
+}
+
+h3 {
+    padding: 5px 8px;
+}
+
+p {
+    padding: 0px 8px;
+}
