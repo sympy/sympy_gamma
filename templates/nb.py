@@ -159,12 +159,7 @@ class InputArea(TextArea):
         elif key_code == KeyboardListener.KEY_ENTER and \
                 modifiers == KeyboardListener.MODIFIER_SHIFT:
             event_preventDefault()
-            print "sending"
-            payload = {"code": self.getText(), "time": "ok"}
-            payload = JSONParser().encode(payload)
-            print "payload: %s" % payload
-            data = urllib.urlencode({"payload": payload})
-            HTTPRequest().asyncPost("/eval_cell/", data, Loader(self))
+            self._worksheet.get_active_cell().evaluate()
             self._worksheet.move_to_next_cell(True)
         elif key_code == KeyboardListener.KEY_ENTER:
             self.update_size(enter_down=True)
@@ -296,6 +291,14 @@ class CellWidget(SimplePanel):
     def id(self):
         return self._id
 
+    def evaluate(self):
+        print "sending"
+        payload = {"code": self._cell_input.getText(), "time": "ok"}
+        payload = JSONParser().encode(payload)
+        print "payload: %s" % payload
+        data = urllib.urlencode({"payload": payload})
+        HTTPRequest().asyncPost("/eval_cell/", data, Loader(self._cell_input))
+
 class Worksheet:
 
     def __init__(self):
@@ -339,6 +342,9 @@ class Worksheet:
             self._cell_list.append(cell)
         self._other.append((cell._output_prompt, cell._cell_output))
         self.print_info("")
+
+    def get_active_cell(self):
+        return self._cell_list[self._active_cell]
 
     def set_active_cell(self, cell_id):
         self._active_cell = self._id2idx[cell_id]
