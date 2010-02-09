@@ -239,10 +239,37 @@ class CellWidget(SimplePanel):
         p.add(cell_output)
         self.add(p)
 
-        # temporary solution:
         self._cell_input = cell_input
         self._cell_output = cell_output
         self._output_prompt = output_prompt
+
+    def set_focus(self):
+        """
+        Focuses this cell.
+        """
+        self._cell_input.setFocus(True)
+
+    def focus_prev_cell(self, prev):
+        """
+        Focuses the "prev" cell.
+
+        Moves the cursor to the proper position.
+        """
+        x, y = self._cell_input.cursor_coordinates()
+        y_new = prev._cell_input.rows() - 1
+        prev._cell_input.set_cursor_coordinates(x, y_new)
+        prev.set_focus()
+
+    def focus_next_cell(self, next):
+        """
+        Focuses the "next" cell.
+
+        Moves the cursor to the proper position.
+        """
+        x, y = self._cell_input.cursor_coordinates()
+        y_new = 0
+        next._cell_input.set_cursor_coordinates(x, y_new)
+        next.set_focus()
 
 class Worksheet:
 
@@ -266,7 +293,7 @@ class Worksheet:
         self._i += 1
         cell = CellWidget(self, self._i)
         RootPanel_insert_before(cell, insert_before)
-        self._cell_list.append(cell._cell_input)
+        self._cell_list.append(cell)
         self._other.append((cell._output_prompt, cell._cell_output))
         self.print_info("")
 
@@ -278,26 +305,21 @@ class Worksheet:
         if self._active_cell > 1:
             current_cell = self._cell_list[self._active_cell-1]
             prev_cell = self._cell_list[self._active_cell-2]
-            x, y = current_cell.cursor_coordinates()
-            y_new = prev_cell.rows() - 1
-            prev_cell.set_cursor_coordinates(x, y_new)
-            prev_cell.setFocus(True)
+            current_cell.focus_prev_cell(prev_cell)
 
     def move_to_next_cell(self):
         if self._active_cell == -1:
-            self._cell_list[0].setFocus(True)
+            self._cell_list[0].set_focus()
         elif self._active_cell < self._i:
             current_cell = self._cell_list[self._active_cell-1]
             next_cell = self._cell_list[self._active_cell]
-            x, y = current_cell.cursor_coordinates()
-            y_new = 0
-            next_cell.set_cursor_coordinates(x, y_new)
-            next_cell.setFocus(True)
+            current_cell.focus_next_cell(next_cell)
 
     def insert_cell(self, id):
-        cell = self._cell_list[id-1].getElement()
-        first_elem = getPrevSibling(getPrevSibling(cell))
-        self.add_cell(first_elem)
+        pass
+        #cell = self._cell_list[id-1].getElement()
+        #first_elem = getPrevSibling(getPrevSibling(cell))
+        #self.add_cell(first_elem)
 
     def join_cells(self):
         current_cell = self._cell_list[self._active_cell-1]
