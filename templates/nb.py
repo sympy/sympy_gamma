@@ -217,15 +217,15 @@ class CellWidget(SimplePanel):
 
     def __init__(self, worksheet, id):
         SimplePanel.__init__(self)
-        self._i = id
+        self._id = id
         insert_new_cell = HTML("", StyleName="insert_new_cell")
-        listener = InsertListener(worksheet, self._i)
+        listener = InsertListener(worksheet, self._id)
         insert_new_cell.addClickListener(listener)
-        input_prompt = HTML("In [%d]:" % self._i, Element=DOM.createSpan(),
+        input_prompt = HTML("In [%d]:" % self._id, Element=DOM.createSpan(),
                 StyleName="input_prompt")
-        cell_input = InputArea(worksheet, self._i, StyleName='cell_input')
+        cell_input = InputArea(worksheet, self._id, StyleName='cell_input')
         output_delimiter = HTML("", StyleName="output_delimiter")
-        output_prompt = HTML("Out[%d]:" % self._i, Element=DOM.createSpan(),
+        output_prompt = HTML("Out[%d]:" % self._id, Element=DOM.createSpan(),
                 StyleName="output_prompt")
         cell_output = HTML("", Element=DOM.createSpan(),
                 StyleName="cell_output")
@@ -291,6 +291,9 @@ class CellWidget(SimplePanel):
         prev._cell_input.set_cursor_coordinates(0, y_new)
         prev.set_focus()
 
+    def id(self):
+        return self._id
+
 class Worksheet:
 
     def __init__(self):
@@ -299,40 +302,43 @@ class Worksheet:
         self._i = 0
         self._active_cell = -1
         self._cell_list = []
+        # cell id -> active index mapping:
+        self._id2active = {}
         self._other = []
         self.print_info("")
 
     def print_info(self, text):
         self._echo.setHTML("INFO: cells: %d, active cell: %d, " % \
-                (self._i, self._active_cell) + text)
+                (self.num_cells(), self._active_cell) + text)
 
     def num_cells(self):
-        return self._i
+        return len(self._cell_list)
 
     def add_cell(self, insert_before=None):
         self._i += 1
         cell = CellWidget(self, self._i)
         RootPanel_insert_before(cell, insert_before)
+        self._id2active[self._i] = len(self._cell_list)
         self._cell_list.append(cell)
         self._other.append((cell._output_prompt, cell._cell_output))
         self.print_info("")
 
     def set_active_cell(self, cell_id):
-        self._active_cell = cell_id
+        self._active_cell = self._id2active[cell_id]
         self.print_info("")
 
     def move_to_prev_cell(self):
-        if self._active_cell > 1:
-            current_cell = self._cell_list[self._active_cell-1]
-            prev_cell = self._cell_list[self._active_cell-2]
+        if self._active_cell > 0:
+            current_cell = self._cell_list[self._active_cell]
+            prev_cell = self._cell_list[self._active_cell-1]
             current_cell.focus_prev_cell(prev_cell)
 
     def move_to_next_cell(self):
         if self._active_cell == -1:
             self._cell_list[0].set_focus()
-        elif self._active_cell < self._i:
-            current_cell = self._cell_list[self._active_cell-1]
-            next_cell = self._cell_list[self._active_cell]
+        elif self._active_cell < self.num_cells()-1:
+            current_cell = self._cell_list[self._active_cell]
+            next_cell = self._cell_list[self._active_cell+1]
             current_cell.focus_next_cell(next_cell)
 
     def insert_cell(self, id):
@@ -342,16 +348,25 @@ class Worksheet:
         #self.add_cell(first_elem)
 
     def join_cells(self):
-        current_cell = self._cell_list[self._active_cell-1]
-        prev_cell = self._cell_list[self._active_cell-2]
+        current_cell = self._cell_list[self._active_cell]
+        prev_cell = self._cell_list[self._active_cell-1]
         id = self._active_cell
         current_cell.join_with_prev(prev_cell)
         self.delete_cell(id)
 
     def delete_cell(self, id):
-        cell = self._cell_list[id-1]
-        self._cell_list = self._cell_list[:id-1] + self._cell_list[id:]
+        cell = self._cell_list[id]
+        self._cell_list = self._cell_list[:id] + self._cell_list[id+1:]
         cell.removeFromParent()
+        self.update_id2active()
+
+    def update_id2active(self):
+        """
+        Updates the cell id -> active index mapping.
+        """
+        self._id2active = {}
+        for n, cell in enumerate(self._cell_list):
+            self._id2active[cell.id()] = n
 
     def show_output(self, id, text):
         if text != "":
