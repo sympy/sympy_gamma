@@ -301,7 +301,7 @@ class Worksheet:
         self._active_cell = 0
         self._cell_list = []
         # cell id -> active index mapping:
-        self._id2active = {}
+        self._id2idx = {}
         self._other = []
         self.print_info("")
 
@@ -316,13 +316,13 @@ class Worksheet:
         self._i += 1
         cell = CellWidget(self, self._i)
         RootPanel_insert_before(cell, insert_before)
-        self._id2active[self._i] = len(self._cell_list)
+        self._id2idx[self._i] = len(self._cell_list)
         self._cell_list.append(cell)
         self._other.append((cell._output_prompt, cell._cell_output))
         self.print_info("")
 
     def set_active_cell(self, cell_id):
-        self._active_cell = self._id2active[cell_id]
+        self._active_cell = self._id2idx[cell_id]
         self.print_info("")
 
     def move_to_prev_cell(self):
@@ -357,23 +357,23 @@ class Worksheet:
     def join_cells(self):
         current_cell = self._cell_list[self._active_cell]
         prev_cell = self._cell_list[self._active_cell-1]
-        id = self._active_cell
         current_cell.join_with_prev(prev_cell)
-        self.delete_cell(id)
+        self.delete_cell(current_cell.id())
 
     def delete_cell(self, id):
-        cell = self._cell_list[id]
-        self._cell_list = self._cell_list[:id] + self._cell_list[id+1:]
+        idx = self._id2idx[id]
+        cell = self._cell_list[idx]
+        self._cell_list = self._cell_list[:idx] + self._cell_list[idx+1:]
         cell.removeFromParent()
-        self.update_id2active()
+        self.update_id2idx()
 
-    def update_id2active(self):
+    def update_id2idx(self):
         """
         Updates the cell id -> active index mapping.
         """
-        self._id2active = {}
+        self._id2idx = {}
         for n, cell in enumerate(self._cell_list):
-            self._id2active[cell.id()] = n
+            self._id2idx[cell.id()] = n
 
     def show_output(self, id, text):
         if text != "":
