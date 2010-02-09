@@ -25,16 +25,12 @@ class InputArea(TextArea):
         self.set_rows(1)
         self.setCharacterWidth(80)
 
-    #def onClick(self, sender):
-    #    pass
-
     def onFocus(self, sender):
-        #print "focus", self._cell_id
         self._worksheet.set_active_cell(self._cell_id)
+        self._worksheet.get_active_cell().set_focus()
 
     def onLostFocus(self, sender):
-        #print "lost-focus", self._cell_id
-        pass
+        self._worksheet.get_active_cell().lost_focus()
 
     def rows(self):
         return self.getVisibleLines()
@@ -229,7 +225,7 @@ class CellWidget(SimplePanel):
                 StyleName="input_prompt")
         cell_input = InputArea(worksheet, self._id, StyleName='cell_input')
         evaluate_button = HTML("evaluate", Element=DOM.createAnchor(),
-                StyleName="eval_button")
+                StyleName="eval_button", Visible=False)
         evaluate_button.getElement().setAttribute("href", "")
         evaluate_button.addClickListener(EvaluateListener(self))
         output_delimiter = HTML("", StyleName="output_delimiter")
@@ -251,6 +247,7 @@ class CellWidget(SimplePanel):
         self._cell_input = cell_input
         self._cell_output = cell_output
         self._output_prompt = output_prompt
+        self._evaluate_button = evaluate_button
 
     def __repr__(self):
         return "<cell: %d>" % self._id
@@ -260,6 +257,13 @@ class CellWidget(SimplePanel):
         Focuses this cell.
         """
         self._cell_input.setFocus(True)
+        self._evaluate_button.setVisible(True)
+
+    def lost_focus(self):
+        """
+        Focus was lost.
+        """
+        self._evaluate_button.setVisible(False)
 
     def focus_prev_cell(self, prev):
         """
