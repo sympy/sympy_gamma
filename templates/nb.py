@@ -215,12 +215,14 @@ class EvaluateListener:
     def onClick(self, event):
         event_preventDefault()
         self._cell.evaluate()
+        self._cell._worksheet.move_to_next_cell(True)
 
 class CellWidget(SimplePanel):
 
     def __init__(self, worksheet, id):
         SimplePanel.__init__(self)
         self._id = id
+        self._worksheet = worksheet
         insert_new_cell = HTML("", StyleName="insert_new_cell")
         insert_new_cell.addClickListener(InsertListener(worksheet, self._id))
         input_prompt = HTML("In [%d]:" % self._id, Element=DOM.createSpan(),
