@@ -359,9 +359,8 @@ class Worksheet:
 
     def insert_cell(self, id):
         self.add_cell(id)
-        #cell = self._cell_list[id-1].getElement()
-        #first_elem = getPrevSibling(getPrevSibling(cell))
-        #self.add_cell(first_elem)
+        idx = self._id2idx[id]
+        self._cell_list[idx-1].set_focus()
 
     def join_cells(self):
         current_cell = self._cell_list[self._active_cell]
