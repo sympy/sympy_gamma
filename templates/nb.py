@@ -1,6 +1,7 @@
 import pyjd # this is dummy in pyjs.
 from pyjamas.ui.RootPanel import RootPanel
 from pyjamas.ui.Label import Label
+from pyjamas.ui.MouseListener import MouseHandler
 from pyjamas.ui.HTML import HTML
 from pyjamas.ui.FlowPanel import FlowPanel
 from pyjamas.ui.SimplePanel import SimplePanel
@@ -29,8 +30,11 @@ class InputArea(TextArea):
         self._worksheet.set_active_cell(self._cell_id)
         self._worksheet.get_active_cell().set_focus()
 
-    def onLostFocus(self, sender):
-        self._worksheet.get_active_cell().lost_focus()
+    def onBrowserEvent(self, event):
+        event_type = DOM.eventGetType(event)
+        if event_type == "blur":
+            self._worksheet.get_active_cell().lost_focus()
+        TextArea.onBrowserEvent(self, event)
 
     def rows(self):
         return self.getVisibleLines()
@@ -213,10 +217,12 @@ class EvaluateListener:
         self._cell.evaluate()
         self._cell._worksheet.move_to_next_cell(True)
 
-class CellWidget(SimplePanel):
+
+class CellWidget(SimplePanel, MouseHandler):
 
     def __init__(self, worksheet, id):
         SimplePanel.__init__(self)
+        MouseHandler.__init__(self)
         self._id = id
         self._worksheet = worksheet
         insert_new_cell = HTML("", StyleName="insert_new_cell")
@@ -228,6 +234,7 @@ class CellWidget(SimplePanel):
                 StyleName="eval_button", Visible=False)
         evaluate_button.getElement().setAttribute("href", "")
         evaluate_button.addClickListener(EvaluateListener(self))
+        evaluate_button.addMouseListener(self)
         output_delimiter = HTML("", StyleName="output_delimiter")
         output_prompt = HTML("Out[%d]:" % self._id, Element=DOM.createSpan(),
                 StyleName="output_prompt")
@@ -249,8 +256,16 @@ class CellWidget(SimplePanel):
         self._output_prompt = output_prompt
         self._evaluate_button = evaluate_button
 
+        self._mouse_in = False
+
     def __repr__(self):
         return "<cell: %d>" % self._id
+
+    def onMouseEnter(self, sender):
+        self._mouse_in = True
+
+    def onMouseLeave(self, sender):
+        self._mouse_in = False
 
     def set_focus(self):
         """
@@ -259,11 +274,12 @@ class CellWidget(SimplePanel):
         self._cell_input.setFocus(True)
         self._evaluate_button.setVisible(True)
 
-    def lost_focus(self):
+    def lost_focus(self, force=False):
         """
         Focus was lost.
         """
-        self._evaluate_button.setVisible(False)
+        if not self._mouse_in or force:
+            self._evaluate_button.setVisible(False)
 
     def focus_prev_cell(self, prev):
         """
@@ -286,6 +302,7 @@ class CellWidget(SimplePanel):
         y_new = 0
         next._cell_input.set_cursor_coordinates(x, y_new)
         next.set_focus()
+        self.lost_focus(force=True)
 
     def join_with_prev(self, prev):
         """
