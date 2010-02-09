@@ -312,12 +312,21 @@ class Worksheet:
     def num_cells(self):
         return len(self._cell_list)
 
-    def add_cell(self, insert_before=None):
+    def add_cell(self, insert_before_id=None):
         self._i += 1
         cell = CellWidget(self, self._i)
-        RootPanel_insert_before(cell, insert_before)
-        self._id2idx[self._i] = len(self._cell_list)
-        self._cell_list.append(cell)
+        if insert_before_id:
+            idx = self._id2idx[insert_before_id]
+            elem = self._cell_list[idx]
+            before_idx = RootPanel().getWidgetIndex(elem)
+            RootPanel().children.insert(before_idx, cell)
+            RootPanel_insert_before(cell, elem.getElement())
+            self._cell_list.insert(idx, cell)
+            self.update_id2idx()
+        else:
+            RootPanel().add(cell)
+            self._id2idx[self._i] = len(self._cell_list)
+            self._cell_list.append(cell)
         self._other.append((cell._output_prompt, cell._cell_output))
         self.print_info("")
 
@@ -349,7 +358,7 @@ class Worksheet:
             self._cell_list[0].set_focus()
 
     def insert_cell(self, id):
-        pass
+        self.add_cell(id)
         #cell = self._cell_list[id-1].getElement()
         #first_elem = getPrevSibling(getPrevSibling(cell))
         #self.add_cell(first_elem)
