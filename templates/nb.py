@@ -238,16 +238,17 @@ class Worksheet:
 
     def add_cell(self, insert_before=None):
         self._i += 1
-        insert_new_cell = HTML('<div class="insert_new_cell"></div>')
+        insert_new_cell = HTML("", StyleName="insert_new_cell")
         listener = InsertListener(self, self._i)
         insert_new_cell.addClickListener(listener)
-        input_prompt = HTML('<span class="input_prompt">In [%d]:</span>' % \
-                self._i)
+        input_prompt = HTML("In [%d]:" % self._i, Element=DOM.createSpan(),
+                StyleName="input_prompt")
         cell_input = InputArea(self, self._i, StyleName='cell_input')
-        output_delimiter = HTML('<div class="output_delimiter"></div>')
-        output_prompt = HTML('<span class="output_prompt">Out[%d]:</span>' % \
-                self._i)
-        cell_output = HTML('<span class="cell_output"></span>')
+        output_delimiter = HTML("", StyleName="output_delimiter")
+        output_prompt = HTML("Out[%d]:" % self._i, Element=DOM.createSpan(),
+                StyleName="output_prompt")
+        cell_output = HTML("", Element=DOM.createSpan(),
+                StyleName="cell_output")
         output_prompt.setVisible(False)
         RootPanel_insert_before(insert_new_cell, insert_before)
         RootPanel_insert_before(insert_new_cell, insert_before)
