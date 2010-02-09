@@ -2,6 +2,7 @@ import pyjd # this is dummy in pyjs.
 from pyjamas.ui.RootPanel import RootPanel
 from pyjamas.ui.HTML import HTML
 from pyjamas.ui.FlowPanel import FlowPanel
+from pyjamas.ui.SimplePanel import SimplePanel
 from pyjamas.ui.TextArea import TextArea
 from pyjamas.ui import KeyboardListener, Event
 from pyjamas.HTTPRequest import HTTPRequest
@@ -212,6 +213,37 @@ class InsertListener:
     def onClick(self, event):
         self._worksheet.insert_cell(self._id)
 
+class CellWidget(SimplePanel):
+
+    def __init__(self, worksheet, id):
+        SimplePanel.__init__(self)
+        self._i = id
+        insert_new_cell = HTML("", StyleName="insert_new_cell")
+        listener = InsertListener(worksheet, self._i)
+        insert_new_cell.addClickListener(listener)
+        input_prompt = HTML("In [%d]:" % self._i, Element=DOM.createSpan(),
+                StyleName="input_prompt")
+        cell_input = InputArea(worksheet, self._i, StyleName='cell_input')
+        output_delimiter = HTML("", StyleName="output_delimiter")
+        output_prompt = HTML("Out[%d]:" % self._i, Element=DOM.createSpan(),
+                StyleName="output_prompt")
+        cell_output = HTML("", Element=DOM.createSpan(),
+                StyleName="cell_output")
+        output_prompt.setVisible(False)
+        p = FlowPanel(StyleName="cell")
+        p.add(insert_new_cell)
+        p.add(input_prompt)
+        p.add(cell_input)
+        p.add(output_delimiter)
+        p.add(output_prompt)
+        p.add(cell_output)
+        self.add(p)
+
+        # temporary solution:
+        self._cell_input = cell_input
+        self._cell_output = cell_output
+        self._output_prompt = output_prompt
+
 class Worksheet:
 
     def __init__(self):
@@ -232,28 +264,10 @@ class Worksheet:
 
     def add_cell(self, insert_before=None):
         self._i += 1
-        insert_new_cell = HTML("", StyleName="insert_new_cell")
-        listener = InsertListener(self, self._i)
-        insert_new_cell.addClickListener(listener)
-        input_prompt = HTML("In [%d]:" % self._i, Element=DOM.createSpan(),
-                StyleName="input_prompt")
-        cell_input = InputArea(self, self._i, StyleName='cell_input')
-        output_delimiter = HTML("", StyleName="output_delimiter")
-        output_prompt = HTML("Out[%d]:" % self._i, Element=DOM.createSpan(),
-                StyleName="output_prompt")
-        cell_output = HTML("", Element=DOM.createSpan(),
-                StyleName="cell_output")
-        output_prompt.setVisible(False)
-        p = FlowPanel(StyleName="cell")
-        p.add(insert_new_cell)
-        p.add(input_prompt)
-        p.add(cell_input)
-        p.add(output_delimiter)
-        p.add(output_prompt)
-        p.add(cell_output)
-        RootPanel_insert_before(p, insert_before)
-        self._cell_list.append(cell_input)
-        self._other.append((output_prompt, cell_output))
+        cell = CellWidget(self, self._i)
+        RootPanel_insert_before(cell, insert_before)
+        self._cell_list.append(cell._cell_input)
+        self._other.append((cell._output_prompt, cell._cell_output))
         self.print_info("")
 
     def set_active_cell(self, cell_id):
