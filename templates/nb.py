@@ -207,6 +207,15 @@ class InsertListener:
     def onClick(self, event):
         self._worksheet.insert_cell(self._id)
 
+class EvaluateListener:
+
+    def __init__(self, cell):
+        self._cell = cell
+
+    def onClick(self, event):
+        event_preventDefault()
+        self._cell.evaluate()
+
 class CellWidget(SimplePanel):
 
     def __init__(self, worksheet, id):
@@ -218,6 +227,11 @@ class CellWidget(SimplePanel):
         input_prompt = HTML("In [%d]:" % self._id, Element=DOM.createSpan(),
                 StyleName="input_prompt")
         cell_input = InputArea(worksheet, self._id, StyleName='cell_input')
+        evaluate_listener = EvaluateListener(self)
+        evaluate_button = HTML("evaluate", Element=DOM.createAnchor(),
+                StyleName="eval_button")
+        evaluate_button.getElement().setAttribute("href", "")
+        evaluate_button.addClickListener(evaluate_listener)
         output_delimiter = HTML("", StyleName="output_delimiter")
         output_prompt = HTML("Out[%d]:" % self._id, Element=DOM.createSpan(),
                 StyleName="output_prompt")
@@ -228,6 +242,7 @@ class CellWidget(SimplePanel):
         p.add(insert_new_cell)
         p.add(input_prompt)
         p.add(cell_input)
+        p.add(evaluate_button)
         p.add(output_delimiter)
         p.add(output_prompt)
         p.add(cell_output)
