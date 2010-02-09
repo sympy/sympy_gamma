@@ -1,5 +1,6 @@
 import pyjd # this is dummy in pyjs.
 from pyjamas.ui.RootPanel import RootPanel
+from pyjamas.ui.Label import Label
 from pyjamas.ui.HTML import HTML
 from pyjamas.ui.FlowPanel import FlowPanel
 from pyjamas.ui.SimplePanel import SimplePanel
@@ -241,6 +242,9 @@ class CellWidget(SimplePanel):
         self._cell_output = cell_output
         self._output_prompt = output_prompt
 
+    def __repr__(self):
+        return "<cell: %d>" % self._id
+
     def set_focus(self):
         """
         Focuses this cell.
@@ -297,6 +301,8 @@ class Worksheet:
     def __init__(self):
         self._echo = HTML()
         RootPanel().add(self._echo)
+        self._echo2 = Label()
+        RootPanel().add(self._echo2)
         self._i = 0
         self._active_cell = 0
         self._cell_list = []
@@ -306,8 +312,12 @@ class Worksheet:
         self.print_info("")
 
     def print_info(self, text):
-        self._echo.setHTML("INFO: cells: %d, active cell: %d, " % \
+        quiet = True
+        if quiet:
+            return
+        self._echo.setHTML("Debugging Info: cells: %d, active cell: %d, " % \
                 (self.num_cells(), self._active_cell) + text)
+        self._echo2.setText("_cells_list: %r" % self._cell_list)
 
     def num_cells(self):
         return len(self._cell_list)
