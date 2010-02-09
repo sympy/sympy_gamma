@@ -1,22 +1,15 @@
 import pyjd # this is dummy in pyjs.
 from pyjamas.ui.RootPanel import RootPanel
-from pyjamas.ui.Button import Button
 from pyjamas.ui.HTML import HTML
 from pyjamas.ui.FlowPanel import FlowPanel
-from pyjamas.ui.Label import Label
 from pyjamas.ui.TextArea import TextArea
 from pyjamas.ui import KeyboardListener, Event
 from pyjamas.HTTPRequest import HTTPRequest
 from pyjamas import DOM
-from pyjamas import Window
 
 from pyjamas.JSONParser import JSONParser
 
 import urllib
-
-def greet(fred):
-    print "greet button"
-    Window.alert("Hello, AJAX!")
 
 class InputArea(TextArea):
 
