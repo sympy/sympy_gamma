@@ -222,16 +222,14 @@ class CellWidget(SimplePanel):
         SimplePanel.__init__(self)
         self._id = id
         insert_new_cell = HTML("", StyleName="insert_new_cell")
-        listener = InsertListener(worksheet, self._id)
-        insert_new_cell.addClickListener(listener)
+        insert_new_cell.addClickListener(InsertListener(worksheet, self._id))
         input_prompt = HTML("In [%d]:" % self._id, Element=DOM.createSpan(),
                 StyleName="input_prompt")
         cell_input = InputArea(worksheet, self._id, StyleName='cell_input')
-        evaluate_listener = EvaluateListener(self)
         evaluate_button = HTML("evaluate", Element=DOM.createAnchor(),
                 StyleName="eval_button")
         evaluate_button.getElement().setAttribute("href", "")
-        evaluate_button.addClickListener(evaluate_listener)
+        evaluate_button.addClickListener(EvaluateListener(self))
         output_delimiter = HTML("", StyleName="output_delimiter")
         output_prompt = HTML("Out[%d]:" % self._id, Element=DOM.createSpan(),
                 StyleName="output_prompt")
