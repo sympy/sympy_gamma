@@ -106,14 +106,34 @@ class InputArea(TextArea):
         self.setText(text)
         self.setCursorPos(pos+len(inserted_text))
 
-    def onKeyUp(self, sender, keyCode, modifiers):
-        #print "on_key_up"
+    def update_size(self, enter_down=False, backspace_down=False):
+        """
+        Updates the size of the textarea to fit the text.
+
+        This method is called from key down and key up events.
+
+        enter_down ... if True, the enter is pressed, but not released
+        backspace_down ... if True, the backspace is pressed but not released
+
+        The enter_down/backspace_down arguments are used to predict the future
+        size (since some browsers already move the cursors but don't adjust the
+        size of the widget), so we need to do it ourselves.
+        """
         x, y = self.cursor_coordinates()
         rows = self.occupied_rows()
-        s = "row/col: (%s, %s), cursor pos: %d, %d, real_rows: %d" % \
-                (self.rows(), self.cols(), x, y, rows)
+        if enter_down:
+            rows += 1
+        if backspace_down:
+            rows -= 1
+        s = "row/col: (%s, %s), cursor pos: %d, %d, real_rows: %d, " \
+                "enter down: %r, backspace down: %r" % \
+                (self.rows(), self.cols(), x, y, rows, enter_down,
+                        backspace_down)
         self.set_rows(rows)
         self._worksheet.print_info(s)
+
+    def onKeyUp(self, sender, keyCode, modifiers):
+        self.update_size()
 
     def onKeyDown(self, sender, key_code, modifiers):
         if key_code == KeyboardListener.KEY_TAB:
@@ -125,6 +145,7 @@ class InputArea(TextArea):
                 event_preventDefault()
                 self._worksheet.join_cells()
             if (x == 0):
+                self.update_size(backspace_down=True)
                 return
             lines = self.getText().split("\n")
             line = lines[y]
@@ -151,6 +172,8 @@ class InputArea(TextArea):
             if self._cell_id == self._worksheet.num_cells():
                 self._worksheet.add_cell()
             self._worksheet.move_to_next_cell()
+        elif key_code == KeyboardListener.KEY_ENTER:
+            self.update_size(enter_down=True)
         elif key_code == KeyboardListener.KEY_UP:
             x, y = self.cursor_coordinates()
             if y == 0:
