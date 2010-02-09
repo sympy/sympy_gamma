@@ -2,6 +2,7 @@ import pyjd # this is dummy in pyjs.
 from pyjamas.ui.RootPanel import RootPanel
 from pyjamas.ui.Button import Button
 from pyjamas.ui.HTML import HTML
+from pyjamas.ui.FlowPanel import FlowPanel
 from pyjamas.ui.Label import Label
 from pyjamas.ui.TextArea import TextArea
 from pyjamas.ui import KeyboardListener, Event
@@ -250,13 +251,14 @@ class Worksheet:
         cell_output = HTML("", Element=DOM.createSpan(),
                 StyleName="cell_output")
         output_prompt.setVisible(False)
-        RootPanel_insert_before(insert_new_cell, insert_before)
-        RootPanel_insert_before(insert_new_cell, insert_before)
-        RootPanel_insert_before(input_prompt, insert_before)
-        RootPanel_insert_before(cell_input, insert_before)
-        RootPanel_insert_before(output_delimiter, insert_before)
-        RootPanel_insert_before(output_prompt, insert_before)
-        RootPanel_insert_before(cell_output, insert_before)
+        p = FlowPanel(StyleName="cell")
+        p.add(insert_new_cell)
+        p.add(input_prompt)
+        p.add(cell_input)
+        p.add(output_delimiter)
+        p.add(output_prompt)
+        p.add(cell_output)
+        RootPanel_insert_before(p, insert_before)
         self._cell_list.append(cell_input)
         self._other.append((output_prompt, cell_output))
         self.print_info("")
