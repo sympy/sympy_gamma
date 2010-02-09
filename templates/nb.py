@@ -164,9 +164,7 @@ class InputArea(TextArea):
             print "payload: %s" % payload
             data = urllib.urlencode({"payload": payload})
             HTTPRequest().asyncPost("/eval_cell/", data, Loader(self))
-            if self._cell_id == self._worksheet.num_cells():
-                self._worksheet.add_cell()
-            self._worksheet.move_to_next_cell()
+            self._worksheet.move_to_next_cell(True)
         elif key_code == KeyboardListener.KEY_ENTER:
             self.update_size(enter_down=True)
         elif key_code == KeyboardListener.KEY_UP:
@@ -300,7 +298,7 @@ class Worksheet:
         self._echo = HTML()
         RootPanel().add(self._echo)
         self._i = 0
-        self._active_cell = -1
+        self._active_cell = 0
         self._cell_list = []
         # cell id -> active index mapping:
         self._id2active = {}
@@ -333,13 +331,22 @@ class Worksheet:
             prev_cell = self._cell_list[self._active_cell-1]
             current_cell.focus_prev_cell(prev_cell)
 
-    def move_to_next_cell(self):
-        if self._active_cell == -1:
-            self._cell_list[0].set_focus()
+    def move_to_next_cell(self, create=False):
+        """
+        Moves to the next cell.
+
+        create .... if True, creates the next cell if we are at the end of the
+        worksheet
+        """
+        if create and self._active_cell >= self.num_cells()-1:
+            self.add_cell()
+            self.move_to_next_cell()
         elif self._active_cell < self.num_cells()-1:
             current_cell = self._cell_list[self._active_cell]
             next_cell = self._cell_list[self._active_cell+1]
             current_cell.focus_next_cell(next_cell)
+        elif self.num_cells() == 1:
+            self._cell_list[0].set_focus()
 
     def insert_cell(self, id):
         pass
@@ -409,6 +416,5 @@ def event_preventDefault():
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
     w = Worksheet()
-    w.add_cell()
-    w.move_to_next_cell()
+    w.move_to_next_cell(True)
     pyjd.run()
