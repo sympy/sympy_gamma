@@ -338,13 +338,13 @@ class Worksheet:
         create .... if True, creates the next cell if we are at the end of the
         worksheet
         """
-        if create and self._active_cell >= self.num_cells()-1:
-            self.add_cell()
-            self.move_to_next_cell()
-        elif self._active_cell < self.num_cells()-1:
+        if self._active_cell < self.num_cells()-1:
             current_cell = self._cell_list[self._active_cell]
             next_cell = self._cell_list[self._active_cell+1]
             current_cell.focus_next_cell(next_cell)
+        elif create:
+            self.add_cell()
+            self.move_to_next_cell()
         elif self.num_cells() == 1:
             self._cell_list[0].set_focus()
 
