@@ -271,6 +271,26 @@ class CellWidget(SimplePanel):
         next._cell_input.set_cursor_coordinates(x, y_new)
         next.set_focus()
 
+    def join_with_prev(self, prev):
+        """
+        Joins this cell with the previous cell.
+
+        It doesn't delete the current cell (this is the job of the Worksheet to
+        properly delete ourselves).
+        """
+        if prev._cell_input.getText() == "":
+            new_text = self._cell_input.getText()
+        else:
+            new_text = prev._cell_input.getText()
+            if self._cell_input.getText() != "":
+                new_text += "\n" + self._cell_input.getText()
+        y_new = prev._cell_input.rows()
+        if prev._cell_input.getText() == "":
+            y_new -= 1
+        prev._cell_input.setText(new_text)
+        prev._cell_input.set_cursor_coordinates(0, y_new)
+        prev.set_focus()
+
 class Worksheet:
 
     def __init__(self):
@@ -324,29 +344,14 @@ class Worksheet:
     def join_cells(self):
         current_cell = self._cell_list[self._active_cell-1]
         prev_cell = self._cell_list[self._active_cell-2]
-        if prev_cell.getText() == "":
-            new_text = current_cell.getText()
-        else:
-            new_text = prev_cell.getText()
-            if current_cell.getText() != "":
-                new_text += "\n" + current_cell.getText()
-        y_new = prev_cell.rows()
-        if prev_cell.getText() == "":
-            y_new -= 1
-        prev_cell.setText(new_text)
-        prev_cell.set_cursor_coordinates(0, y_new)
         id = self._active_cell
-        prev_cell.setFocus(True)
+        current_cell.join_with_prev(prev_cell)
         self.delete_cell(id)
 
     def delete_cell(self, id):
-        print "deleting:", id
-        # this will not work, because we use "id" to access the cells directly
-        # in the list. We need to fix this by creating a class cell() which
-        # would handle one cell and then use a dictionary to access cells
-        #cell = self._cell_list[id-1]
-        #self._cell_list = self._cell_list[:id-1] + self._cell_list[id:]
-        #cell.removeFromParent()
+        cell = self._cell_list[id-1]
+        self._cell_list = self._cell_list[:id-1] + self._cell_list[id:]
+        cell.removeFromParent()
 
     def show_output(self, id, text):
         if text != "":
