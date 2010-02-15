@@ -115,6 +115,24 @@ div.menu a.selected {
     font-weight: bold;
 }
 
+div.menu span.user {
+    float: right;
+    text-decoration: none;
+}
+
+div.menu span.user span.email {
+    color: black !important;
+    font-size: 10pt;
+    font-family: arial, sans-serif;
+    font-weight: bold;
+    margin-right: 0.5em;
+    text-decoration: none;
+}
+
+div.menu span.user a {
+    margin-left: 0.5em;
+}
+
 div.gbh {
     border-top-color:#C9D7F1;
     border-top-style:solid;

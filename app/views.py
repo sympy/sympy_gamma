@@ -21,9 +21,11 @@ e = Eval()
 def get_user_info():
     user = users.get_current_user()
     if user:
-        return user.nickname()
+        return '<span class="email">%s</span>|<a href="">Settings</a>|<a href="%s">Sign out</a>' % \
+                (user.email(), users.create_logout_url("/"))
     else:
-        return "login"
+        return '<a href="%s">Sign in</a>' % \
+                                users.create_login_url("/")
 
 def index(request):
     form = SearchForm()
