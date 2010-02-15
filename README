@@ -2,10 +2,18 @@ Installation
 ------------
 
 ./build.sh
-AUTH_DOMAIN=yes USER_EMAIL=a@a.com ./manage.py runserver
+dev_appserver.py .
 
 Upload to the google app engine
 -------------------------------
 
 ./build.sh
 appcfg.py update .
+
+
+How it works
+------------
+
+It's a regular django application. The google app engine (or the dev_appserver)
+executes the main.py, which calls django. We currently use the google logins,
+so you need to run it through the dev_appserver.
