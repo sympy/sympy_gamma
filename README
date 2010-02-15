@@ -2,7 +2,7 @@ Installation
 ------------
 
 ./build.sh
-./manage.py runserver
+AUTH_DOMAIN=yes USER_EMAIL=a@a.com ./manage.py runserver
 
 Upload to the google app engine
 -------------------------------

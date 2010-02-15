@@ -3,6 +3,8 @@ from django.shortcuts import render_to_response
 from django.utils import simplejson
 from django import forms
 
+from google.appengine.api import users
+
 from utils import log_exception
 from logic import Eval, SymPyGamma
 
@@ -16,12 +18,20 @@ class SearchForm(forms.Form):
 
 e = Eval()
 
+def get_user_info():
+    user = users.get_current_user()
+    if user:
+        return user.nickname()
+    else:
+        return "login"
+
 def index(request):
     form = SearchForm()
     return render_to_response("index.html", {
         "form": form,
         "MEDIA_URL": settings.MEDIA_URL,
         "main_active": "selected",
+        "user_info": get_user_info(),
         })
 
 def input(request):
@@ -36,18 +46,21 @@ def input(request):
                 "result": r,
                 "form": form,
                 "MEDIA_URL": settings.MEDIA_URL,
+                "user_info": get_user_info(),
                 })
 
 def notebook(request):
     return render_to_response("nb.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "nb_active": "selected",
+        "user_info": get_user_info(),
         })
 
 def about(request):
     return render_to_response("about.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "about_active": "selected",
+        "user_info": get_user_info(),
         })
 
 @log_exception
