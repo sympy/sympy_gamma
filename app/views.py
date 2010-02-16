@@ -14,20 +14,34 @@ from logic import Eval, SymPyGamma
 
 import settings
 
+def login_required(func):
+  """Decorator that redirects to the login page if you're not logged in."""
+
+  def login_wrapper(request, *args, **kwds):
+    if request.user is None:
+      return HttpResponseRedirect(
+          users.create_login_url(request.get_full_path().encode('utf-8')))
+    return func(request, *args, **kwds)
+
+  return login_wrapper
+
 
 class SearchForm(forms.Form):
     i = forms.CharField(required=False)
 
-e = Eval()
-
-def get_user_info():
+def get_user_info(request, logout_go_main=False):
     user = users.get_current_user()
     if user:
+        if logout_go_main:
+            logout_url = users.create_logout_url("/")
+        else:
+            logout_url = users.create_logout_url(request.get_full_path()
+                    .encode('utf-8'))
         return '<span class="email">%s</span>|<a href="/settings/">Settings</a>|<a href="%s">Sign out</a>' % \
-                (user.email(), users.create_logout_url("/"))
+                (user.email(), logout_url)
     else:
         return '<a href="%s">Sign in</a>' % \
-                                users.create_login_url("/")
+                users.create_login_url(request.get_full_path().encode('utf-8'))
 
 def index(request):
     form = SearchForm()
@@ -35,7 +49,7 @@ def index(request):
         "form": form,
         "MEDIA_URL": settings.MEDIA_URL,
         "main_active": "selected",
-        "user_info": get_user_info(),
+        "user_info": get_user_info(request),
         })
 
 def input(request):
@@ -50,30 +64,34 @@ def input(request):
                 "result": r,
                 "form": form,
                 "MEDIA_URL": settings.MEDIA_URL,
-                "user_info": get_user_info(),
+                "user_info": get_user_info(result),
                 })
 
 def notebook(request):
     return render_to_response("nb.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "nb_active": "selected",
-        "user_info": get_user_info(),
+        "user_info": get_user_info(request),
         })
 
 def about(request):
     return render_to_response("about.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "about_active": "selected",
-        "user_info": get_user_info(),
+        "user_info": get_user_info(request),
         })
 
+@login_required
 def settings_view(request):
     return render_to_response("settings.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "settings_active": "selected",
-        "user_info": get_user_info(),
+        "user_info": get_user_info(request, logout_go_main=True),
         "account": Account.current_user_account,
         })
+
+
+e = Eval()
 
 @log_exception
 def eval_cell(request):
