@@ -29,7 +29,7 @@ def login_required(func):
 class SearchForm(forms.Form):
     i = forms.CharField(required=False)
 
-def get_user_info(request, logout_go_main=False):
+def get_user_info(request, logout_go_main=False, settings_active=""):
     user = users.get_current_user()
     if user:
         if logout_go_main:
@@ -37,8 +37,8 @@ def get_user_info(request, logout_go_main=False):
         else:
             logout_url = users.create_logout_url(request.get_full_path()
                     .encode('utf-8'))
-        return '<span class="email">%s</span>|<a href="/settings/">Settings</a>|<a href="%s">Sign out</a>' % \
-                (user.email(), logout_url)
+        return '<span class="email">%s</span>|<a class="%s" "href="/settings/">Settings</a>|<a href="%s">Sign out</a>' % \
+                (user.email(), settings_active, logout_url)
     else:
         return '<a href="%s">Sign in</a>' % \
                 users.create_login_url(request.get_full_path().encode('utf-8'))
@@ -85,8 +85,8 @@ def about(request):
 def settings_view(request):
     return render_to_response("settings.html", {
         "MEDIA_URL": settings.MEDIA_URL,
-        "settings_active": "selected",
-        "user_info": get_user_info(request, logout_go_main=True),
+        "user_info": get_user_info(request, logout_go_main=True,
+            settings_active="selected"),
         "account": Account.current_user_account,
         })
 

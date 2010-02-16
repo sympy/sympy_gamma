@@ -133,6 +133,11 @@ div.menu span.user a {
     margin-left: 0.5em;
 }
 
+div.menu span.user a.selected {
+    color: black !important;
+    font-weight: bold;
+}
+
 div.gbh {
     border-top-color:#C9D7F1;
     border-top-style:solid;
