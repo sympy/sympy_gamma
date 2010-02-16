@@ -5,11 +5,20 @@ Settings
 {% endblock %}
 
 {% block content %}
-    <h2>Settings</h2>
+    <h2>Account Information</h2>
     <p>
     <span class="field">Email</span>: {{ account.email }}<br/>
     <span class="field">Nickname</span>: {{ account.nickname }}<br/>
     <span class="field">Last modified</span>: {{ account.modified|date }}<br/>
     <span class="field">Created</span>: {{ account.created|date }}<br/>
+    </p>
+    <h2>Settings</h2>
+    <p>
+    <form action="/settings/" method="POST">
+        {{ form.show_prompts }} Show prompts<br/>
+        {{ form.join_nonempty_fields }} Join non empty fields with
+        backspace<br/>
+        <input class="input_field" type="submit" value="Save Changes" />
+    </form>
     </p>
 {% endblock %}

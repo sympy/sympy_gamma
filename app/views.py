@@ -4,6 +4,7 @@ import cgi
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.utils import simplejson
+from django.core.urlresolvers import reverse
 from django import forms
 
 from google.appengine.api import users
@@ -28,6 +29,10 @@ def login_required(func):
 
 class SearchForm(forms.Form):
     i = forms.CharField(required=False)
+
+class SettingsForm(forms.Form):
+    show_prompts = forms.BooleanField(required=False)
+    join_nonempty_fields = forms.BooleanField(required=False)
 
 def get_user_info(request, logout_go_main=False, settings_active=""):
     user = users.get_current_user()
@@ -83,12 +88,28 @@ def about(request):
 
 @login_required
 def settings_view(request):
-    return render_to_response("settings.html", {
-        "MEDIA_URL": settings.MEDIA_URL,
-        "user_info": get_user_info(request, logout_go_main=True,
-            settings_active="selected"),
-        "account": Account.current_user_account,
-        })
+    account = Account.current_user_account
+    if request.method != "POST":
+        form = SettingsForm(initial={
+            'show_prompts': account.show_prompts,
+            'join_nonempty_fields': account.join_nonempty_fields,
+            })
+        return render_to_response("settings.html", {
+            "form": form,
+            "MEDIA_URL": settings.MEDIA_URL,
+            "user_info": get_user_info(request, logout_go_main=True,
+                settings_active="selected"),
+            "account": Account.current_user_account,
+            })
+    form = SettingsForm(request.POST)
+    if form.is_valid():
+        account.show_prompts = form.cleaned_data.get('show_prompts')
+        account.join_nonempty_fields = \
+            form.cleaned_data.get('join_nonempty_fields')
+        account.put()
+    else:
+        HttpResponseRedirect(reverse(settings_view))
+    return HttpResponseRedirect(reverse(index))
 
 
 e = Eval()
