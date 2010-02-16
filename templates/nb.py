@@ -220,15 +220,18 @@ class EvaluateListener:
 
 class CellWidget(SimplePanel, MouseHandler):
 
-    def __init__(self, worksheet, id):
+    def __init__(self, worksheet, id, show_prompts=True):
         SimplePanel.__init__(self)
         MouseHandler.__init__(self)
         self._id = id
         self._worksheet = worksheet
+        self._show_prompts = show_prompts
         insert_new_cell = HTML("", StyleName="insert_new_cell")
         insert_new_cell.addClickListener(InsertListener(worksheet, self._id))
         input_prompt = HTML("In [%d]:" % self._id, Element=DOM.createSpan(),
                 StyleName="input_prompt")
+        if not self._show_prompts:
+            input_prompt.setVisible(False)
         cell_input = InputArea(worksheet, self._id, StyleName='cell_input')
         evaluate_button = HTML("evaluate", Element=DOM.createAnchor(),
                 StyleName="eval_button", Visible=False)
@@ -349,6 +352,9 @@ class Worksheet:
         self._id2idx = {}
         self._other = []
         self.print_info("")
+        options = read_options()
+        self._show_prompts = (options["show_prompts"] == "True")
+        print "show:", self._show_prompts
 
     def print_info(self, text):
         quiet = True
@@ -363,7 +369,7 @@ class Worksheet:
 
     def add_cell(self, insert_before_id=None):
         self._i += 1
-        cell = CellWidget(self, self._i)
+        cell = CellWidget(self, self._i, show_prompts=self._show_prompts)
         if insert_before_id:
             idx = self._id2idx[insert_before_id]
             elem = self._cell_list[idx]
@@ -438,8 +444,17 @@ class Worksheet:
     def show_output(self, id, text):
         if text != "":
             prompt, cell = self._other[id-1]
-            prompt.setVisible(True)
+            if self._show_prompts:
+                prompt.setVisible(True)
             cell.setHTML('<span class="cell_output">' + text + '</span>')
+
+def read_options():
+    elem = DOM.getElementById("options")
+    show_prompts = elem.getAttribute("content")
+    options = {
+            "show_prompts": show_prompts,
+            }
+    return options
 
 def getPrevSibling(elem):
     parent = DOM.getParent(elem)
