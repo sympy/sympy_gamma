@@ -73,10 +73,12 @@ def input(request):
                 })
 
 def notebook(request):
+    account = Account.current_user_account
     return render_to_response("nb.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "nb_active": "selected",
         "user_info": get_user_info(request),
+        "show_prompts": account.show_prompts
         })
 
 def about(request):

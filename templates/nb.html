@@ -6,10 +6,16 @@ Notebook
 
 {% block head_additional %}
     <meta name="pygwt:module" content="nb">
+    <meta name="pyjamas:show_prompts" content="{{ show_prompts }}">
 {% endblock %}
 
 {% block content %}
     <h2>Interactive Notebook</h2>
     <script language="javascript" src="{{ MEDIA_URL }}js/bootstrap.js"></script>
     <p>Type in Python commands and type Shift+Enter to evaluate:</p>
+    {% if show_prompts %}
+      Show prompts
+    {% else %}
+      Don't show prompts
+    {% endif %}
 {% endblock %}
