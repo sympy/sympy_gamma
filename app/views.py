@@ -1,3 +1,6 @@
+import logging
+import cgi
+
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.utils import simplejson
@@ -5,13 +8,12 @@ from django import forms
 
 from google.appengine.api import users
 
+from models import Account
 from utils import log_exception
 from logic import Eval, SymPyGamma
 
 import settings
 
-import logging
-import cgi
 
 class SearchForm(forms.Form):
     i = forms.CharField(required=False)
@@ -21,7 +23,7 @@ e = Eval()
 def get_user_info():
     user = users.get_current_user()
     if user:
-        return '<span class="email">%s</span>|<a href="">Settings</a>|<a href="%s">Sign out</a>' % \
+        return '<span class="email">%s</span>|<a href="/settings/">Settings</a>|<a href="%s">Sign out</a>' % \
                 (user.email(), users.create_logout_url("/"))
     else:
         return '<a href="%s">Sign in</a>' % \
@@ -63,6 +65,14 @@ def about(request):
         "MEDIA_URL": settings.MEDIA_URL,
         "about_active": "selected",
         "user_info": get_user_info(),
+        })
+
+def settings_view(request):
+    return render_to_response("settings.html", {
+        "MEDIA_URL": settings.MEDIA_URL,
+        "settings_active": "selected",
+        "user_info": get_user_info(),
+        "account": Account.current_user_account,
         })
 
 @log_exception

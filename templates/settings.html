@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}
+Settings
+{% endblock %}
+
+{% block content %}
+    <h2>Settings</h2>
+    <p>
+    <span class="field">Email</span>: {{ account.email }}<br/>
+    <span class="field">Nickname</span>: {{ account.nickname }}<br/>
+    <span class="field">Last modified</span>: {{ account.modified|date }}<br/>
+    <span class="field">Created</span>: {{ account.created|date }}<br/>
+    </p>
+{% endblock %}

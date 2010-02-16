@@ -14,11 +14,11 @@ urlpatterns = patterns('',
     (r'^eval_cell/$', 'app.views.eval_cell'),
 
     (r'^input/', 'app.views.input'),
-    (r'^about/$', 'app.views.about'),
-
     (r'^nb/$', 'app.views.notebook'),
     (r'^nb/(nb.*)$', 'django.views.static.serve',
         {'document_root': os.path.join(p, "js")}),
+    (r'^about/$', 'app.views.about'),
+    (r'^settings/$', 'app.views.settings_view'),
 
     (r'^media_files/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': p}),

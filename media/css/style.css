@@ -201,3 +201,7 @@ h3 {
 p {
     padding: 0px 8px;
 }
+
+span.field {
+    font-weight: bold;
+}
