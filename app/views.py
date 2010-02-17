@@ -76,13 +76,16 @@ def notebook(request):
     account = Account.current_user_account
     if account:
         show_prompts = account.show_prompts
+        join_nonempty_fields = account.join_nonempty_fields
     else:
         show_prompts = True
+        join_nonempty_fields = False
     return render_to_response("nb.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "nb_active": "selected",
         "user_info": get_user_info(request),
-        "show_prompts": show_prompts
+        "show_prompts": show_prompts,
+        "join_nonempty_fields": join_nonempty_fields,
         })
 
 def about(request):

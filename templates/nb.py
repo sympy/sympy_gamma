@@ -139,7 +139,9 @@ class InputArea(TextArea):
             x, y = self.cursor_coordinates()
             if (x == 0) and (y == 0):
                 event_preventDefault()
-                self._worksheet.join_cells()
+                if self._worksheet._join_nonempty_fields or \
+                        self.getText() == "":
+                    self._worksheet.join_cells()
             if (x == 0):
                 self.update_size(backspace_down=True)
                 return
@@ -353,8 +355,8 @@ class Worksheet:
         self._other = []
         self.print_info("")
         options = read_options()
-        self._show_prompts = (options["show_prompts"] == "True")
-        print "show:", self._show_prompts
+        self._show_prompts = options["show_prompts"]
+        self._join_nonempty_fields = options["join_nonempty_fields"]
 
     def print_info(self, text):
         quiet = True
@@ -449,10 +451,11 @@ class Worksheet:
             cell.setHTML('<span class="cell_output">' + text + '</span>')
 
 def read_options():
-    elem = DOM.getElementById("options")
-    show_prompts = elem.getAttribute("content")
+    show_prompts = DOM.getElementById("option1").getAttribute("content")
+    join_nonempty_fields = DOM.getElementById("option2").getAttribute("content")
     options = {
-            "show_prompts": show_prompts,
+            "show_prompts": show_prompts == "True",
+            "join_nonempty_fields": join_nonempty_fields == "True",
             }
     return options
 
