@@ -12,8 +12,8 @@ class Account(db.Model):
     # Current user's Account. Updated by middleware.AddUserToRequestMiddleware.
     current_user_account = None
 
-    show_prompts = db.BooleanProperty(default=True)
-    join_nonempty_fields = db.BooleanProperty(default=False)
+    show_prompts = db.BooleanProperty(default=False)
+    join_nonempty_fields = db.BooleanProperty(default=True)
 
     @classmethod
     def get_account_for_user(cls, user):

@@ -78,8 +78,8 @@ def notebook(request):
         show_prompts = account.show_prompts
         join_nonempty_fields = account.join_nonempty_fields
     else:
-        show_prompts = True
-        join_nonempty_fields = False
+        show_prompts = False
+        join_nonempty_fields = True
     return render_to_response("nb.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "nb_active": "selected",
