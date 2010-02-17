@@ -69,7 +69,7 @@ def input(request):
                 "result": r,
                 "form": form,
                 "MEDIA_URL": settings.MEDIA_URL,
-                "user_info": get_user_info(result),
+                "user_info": get_user_info(request),
                 })
 
 def notebook(request):
