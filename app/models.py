@@ -22,7 +22,8 @@ class Account(db.Model):
         assert email
         id = user.user_id()
         assert id
-        key = str(id)
+        # the names must begging with a letter, so we add "K" at the beginning:
+        key = "K" + str(id)
         account = cls.get_by_key_name(key)
         if account is not None:
             return account
