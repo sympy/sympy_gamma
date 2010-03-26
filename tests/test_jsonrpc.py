@@ -18,3 +18,19 @@ def test_jsonrpc2():
     assert s.add("2", "3")["result"] == "23"
     assert s.add("2", "3")["result"] != 23
     assert s.add("2", "3")["result"] != 5
+
+def test_eval_cell1():
+    s = jsonrpclib.ServerProxy("http://localhost:8080/test-service/")
+    assert s.eval_cell("2 + 3")["result"] == "5"
+    code = """\
+from sympy import sin, integrate, var
+var("x")
+integrate(sin(x), x)
+"""
+    assert s.eval_cell(code)["result"] == "-cos(x)"
+    assert s.eval_cell(code)["result"] != "cos(x)"
+
+def test_eval_cell2():
+    s = jsonrpclib.ServerProxy("http://localhost:8080/test-service/")
+    assert s.eval_cell("a = 2")["result"] == ""
+    assert s.eval_cell("a + 3")["result"] == "5"

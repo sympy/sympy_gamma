@@ -125,7 +125,7 @@ def settings_view(request):
 e = Eval()
 
 @log_exception
-def eval_cell(request):
+def eval_cell_old(request):
     payload = request.POST["payload"]
     payload = simplejson.loads(payload)
     logging.info("-"*70)
@@ -166,3 +166,8 @@ def uppercase(response, msg):
 @jsonremote(testservice)
 def lowercase(response, msg):
     return msg.lower()
+
+@jsonremote(testservice)
+def eval_cell(response, code):
+    r = e.eval(code)
+    return r
