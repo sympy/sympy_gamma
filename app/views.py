@@ -150,12 +150,10 @@ testservice = JSONRPCService()
 @jsonremote(testservice)
 def echo(response, msg):
     return msg
-    #try:
-    #    poll_id = int(msg)
-    #except ValueError:
-    #    return "You must type an integer, you typed: %s" % msg
-    #p = Poll.objects.get(pk=poll_id)
-    #return p.question
+
+@jsonremote(testservice)
+def add(response, a, b):
+    return a+b
 
 @jsonremote(testservice)
 def reverse(response, msg):
