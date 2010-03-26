@@ -193,19 +193,22 @@ class TestService(JSONProxy):
 
 class TestServiceExample:
 
-    def __init__(self, worksheet, id):
+    def __init__(self, cell, code):
+        self._cell = cell
         self.remote_py = TestService()
-        self.button_py = Button("Send to Service", self)
-        RootPanel().add(self.button_py)
+        self.remote_py.eval_cell(code, self)
 
-    def onClick(self, sender):
-        print "clicked"
-        print self.remote_py.eval_cell("2+3", self)
+    def escape_output(self, output):
+        """
+        Escapes the output so that it can be printed on the html page.
+        """
+        if output != "":
+            output = escape(output)
+            output = '<pre class="shrunk">' + output + "</pre>"
+        return output
 
     def onRemoteResponse(self, response, request_info):
-        print "onRemoteResponse"
-        print request_info
-        print response
+        self._cell.handle_eval_data(self.escape_output(response))
 
     def onRemoteError(self, code, errobj, request_info):
         print "onRemoteError"
@@ -368,12 +371,13 @@ class CellWidget(SimplePanel, MouseHandler):
         return self._id
 
     def evaluate(self):
-        print "sending"
-        payload = {"code": self._cell_input.getText(), "time": "ok"}
-        payload = JSONParser().encode(payload)
-        print "payload: %s" % payload
-        data = urllib.urlencode({"payload": payload})
-        HTTPRequest().asyncPost("/eval_cell/", data, Loader(self._cell_input))
+        code = self._cell_input.getText()
+        t = TestServiceExample(self._cell_input, code)
+        #payload = {"code": code, "time": "ok"}
+        #payload = JSONParser().encode(payload)
+        #print "payload: %s" % payload
+        #data = urllib.urlencode({"payload": payload})
+        #HTTPRequest().asyncPost("/eval_cell/", data, Loader(self._cell_input))
 
 class WorksheetWidget:
 
@@ -526,9 +530,15 @@ def event_preventDefault():
     else:
         event.returnValue = False
 
+def escape(s):
+    s = s.replace("&", "&amp;")
+    s = s.replace("<", "&lt;")
+    s = s.replace(">", "&gt;")
+    s = s.replace('"', "&quot;")
+    return s
+
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
-    t = TestServiceExample()
     w = WorksheetWidget()
     w.move_to_next_cell(True)
     pyjd.run()
