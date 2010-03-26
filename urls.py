@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     # (r'^notebook/', include('notebook.foo.urls')),
     (r'^$', 'app.views.index'),
     (r'^eval_cell/$', 'app.views.eval_cell'),
+    (r'^test-service/$', 'app.views.testservice'),
 
     (r'^input/', 'app.views.input'),
     (r'^nb/$', 'app.views.notebook'),

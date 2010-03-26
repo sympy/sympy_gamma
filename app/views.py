@@ -12,6 +12,7 @@ from google.appengine.api import users
 from models import Account
 from utils import log_exception
 from logic import Eval, SymPyGamma
+from network import JSONRPCService, jsonremote
 
 import settings
 
@@ -141,3 +142,29 @@ def eval_cell(request):
     logging.info("Sending payload: " + payload)
     logging.info("-"*70)
     return HttpResponse(payload)
+
+
+
+testservice = JSONRPCService()
+
+@jsonremote(testservice)
+def echo(response, msg):
+    return msg
+    #try:
+    #    poll_id = int(msg)
+    #except ValueError:
+    #    return "You must type an integer, you typed: %s" % msg
+    #p = Poll.objects.get(pk=poll_id)
+    #return p.question
+
+@jsonremote(testservice)
+def reverse(response, msg):
+    return msg[::-1]
+
+@jsonremote(testservice)
+def uppercase(response, msg):
+    return msg.upper()
+
+@jsonremote(testservice)
+def lowercase(response, msg):
+    return msg.lower()
