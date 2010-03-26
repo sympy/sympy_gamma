@@ -189,7 +189,7 @@ class TestService(JSONProxy):
 
     def __init__(self):
         JSONProxy.__init__(self, "/test-service/", ["echo", "reverse",
-            "uppercase", "lowercase"])
+            "uppercase", "lowercase", "eval_cell"])
 
 class TestServiceExample:
 
@@ -200,7 +200,7 @@ class TestServiceExample:
 
     def onClick(self, sender):
         print "clicked"
-        print self.remote_py.reverse("foo", self)
+        print self.remote_py.eval_cell("2+3", self)
 
     def onRemoteResponse(self, response, request_info):
         print "onRemoteResponse"
