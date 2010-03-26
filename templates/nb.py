@@ -1,6 +1,7 @@
 import pyjd # this is dummy in pyjs.
 from pyjamas.ui.RootPanel import RootPanel
 from pyjamas.ui.Label import Label
+from pyjamas.ui.Button import Button
 from pyjamas.ui.MouseListener import MouseHandler
 from pyjamas.ui.HTML import HTML
 from pyjamas.ui.FlowPanel import FlowPanel
@@ -11,6 +12,7 @@ from pyjamas.HTTPRequest import HTTPRequest
 from pyjamas import DOM
 
 from pyjamas.JSONParser import JSONParser
+from pyjamas.JSONService import JSONProxy
 
 import urllib
 
@@ -182,6 +184,39 @@ class InputArea(TextArea):
 
     def handle_eval_data(self, text):
         self._worksheet.show_output(self._cell_id, text)
+
+class TestService(JSONProxy):
+
+    def __init__(self):
+        JSONProxy.__init__(self, "/test-service/", ["echo", "reverse",
+            "uppercase", "lowercase"])
+
+class TestServiceExample:
+
+    def __init__(self, worksheet, id):
+        self.remote_py = TestService()
+        self.button_py = Button("Send to Service", self)
+        RootPanel().add(self.button_py)
+
+    def onClick(self, sender):
+        print "clicked"
+        print self.remote_py.reverse("foo", self)
+
+    def onRemoteResponse(self, response, request_info):
+        print "onRemoteResponse"
+        print request_info
+        print response
+
+    def onRemoteError(self, code, errobj, request_info):
+        print "onRemoteError"
+        message = errobj['message']
+        if code != 0:
+            err_msg = "HTTP error %d: %s" % (code, message)
+        else:
+            code = errobj['code']
+            err_msg = "JSONRPC Error %s: %s" % (code, message)
+        print err_msg
+
 
 class Loader:
 
@@ -493,6 +528,7 @@ def event_preventDefault():
 
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
+    t = TestServiceExample()
     w = WorksheetWidget()
     w.move_to_next_cell(True)
     pyjd.run()
