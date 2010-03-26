@@ -313,8 +313,8 @@ class CellWidget(SimplePanel, MouseHandler):
         """
         Joins this cell with the previous cell.
 
-        It doesn't delete the current cell (this is the job of the Worksheet to
-        properly delete ourselves).
+        It doesn't delete the current cell (this is the job of the
+        WorksheetWidget to properly delete ourselves).
         """
         if prev._cell_input.getText() == "":
             new_text = self._cell_input.getText()
@@ -340,7 +340,7 @@ class CellWidget(SimplePanel, MouseHandler):
         data = urllib.urlencode({"payload": payload})
         HTTPRequest().asyncPost("/eval_cell/", data, Loader(self._cell_input))
 
-class Worksheet:
+class WorksheetWidget:
 
     def __init__(self):
         self._echo = HTML()
@@ -493,6 +493,6 @@ def event_preventDefault():
 
 if __name__ == '__main__':
     pyjd.setup("templates/Hello.html")
-    w = Worksheet()
+    w = WorksheetWidget()
     w.move_to_next_cell(True)
     pyjd.run()
