@@ -368,7 +368,7 @@ class ServerProxy(object):
         self.__verbose = verbose
         self.__allow_none = allow_none
 
-    def __request(self, methodname, params):
+    def request(self, methodname, params):
         """call a method on the remote server
         """
 
@@ -396,11 +396,17 @@ class ServerProxy(object):
 
     def __getattr__(self, name):
         #dispatch
-        return _Method(self.__request, name)
+        return _Method(self.request, name)
 
     # note: to call a remote object with an non-standard name, use
     # result getattr(server, "strange-python-name")(args)
 
+
+class SimpleServerProxy(ServerProxy):
+
+    def request(self, methodname, params):
+        response = ServerProxy.request(self, methodname, params)
+        return response["result"]
 
 if __name__ == "__main__":
     s = ServerProxy("http://localhost:8080/foo/", verbose = 1)
