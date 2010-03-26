@@ -41,7 +41,7 @@ class Eval(object):
             if use_none_for_exceptions:
                 return
             etype, value, tb = sys.exc_info()
-            # If we decide in the future to remove the first frame fromt he
+            # If we decide in the future to remove the first frame from the
             # traceback (since it links to our code, so it could be confusing
             # to the user), it's easy to do:
             #tb = tb.tb_next
