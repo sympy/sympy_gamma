@@ -124,26 +124,6 @@ def settings_view(request):
 
 e = Eval()
 
-@log_exception
-def eval_cell_old(request):
-    payload = request.POST["payload"]
-    payload = simplejson.loads(payload)
-    logging.info("-"*70)
-    logging.info("Got payload:")
-    logging.info(payload)
-    logging.info("evaluating...")
-    r = e.eval(payload["code"])
-    if r != "":
-        r = cgi.escape(r)
-        r = '<pre class="shrunk">' + r + "</pre>"
-    logging.info("encoding to JSON...")
-    payload = {"result": r}
-    payload = simplejson.dumps(payload)
-    logging.info("Sending payload: " + payload)
-    logging.info("-"*70)
-    return HttpResponse(payload)
-
-
 
 testservice = JSONRPCService()
 

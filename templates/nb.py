@@ -8,10 +8,8 @@ from pyjamas.ui.FlowPanel import FlowPanel
 from pyjamas.ui.SimplePanel import SimplePanel
 from pyjamas.ui.TextArea import TextArea
 from pyjamas.ui import KeyboardListener, Event
-from pyjamas.HTTPRequest import HTTPRequest
 from pyjamas import DOM
 
-from pyjamas.JSONParser import JSONParser
 from pyjamas.JSONService import JSONProxy
 
 import urllib
@@ -220,24 +218,6 @@ class TestServiceExample:
             err_msg = "JSONRPC Error %s: %s" % (code, message)
         print err_msg
 
-
-class Loader:
-
-    def __init__(self, cell):
-        self._cell = cell
-
-    def onCompletion(self, text):
-        print "completed", text
-        data = JSONParser().decode(text)
-        self._cell.handle_eval_data(data["result"])
-        print "ok"
-
-    def onError(self, text, code):
-        print "error", text, code
-
-    def onTimeout(self, text):
-        print "timeout", text
-
 class InsertListener:
 
     def __init__(self, worksheet, id):
@@ -373,11 +353,6 @@ class CellWidget(SimplePanel, MouseHandler):
     def evaluate(self):
         code = self._cell_input.getText()
         t = TestServiceExample(self._cell_input, code)
-        #payload = {"code": code, "time": "ok"}
-        #payload = JSONParser().encode(payload)
-        #print "payload: %s" % payload
-        #data = urllib.urlencode({"payload": payload})
-        #HTTPRequest().asyncPost("/eval_cell/", data, Loader(self._cell_input))
 
 class WorksheetWidget:
 
