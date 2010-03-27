@@ -16,4 +16,5 @@ def log_exception(func):
             logging.info(s)
             logging.info("-"*40)
             raise
+    wrapper.__name__ = func.__name__
     return wrapper

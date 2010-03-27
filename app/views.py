@@ -132,6 +132,7 @@ def echo(response, msg):
     return msg
 
 @jsonremote(testservice)
+@log_exception
 def add(response, a, b):
     return a+b
 
