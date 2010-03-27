@@ -127,28 +127,34 @@ e = Eval()
 
 testservice = JSONRPCService()
 
+
+# ---------------------------------
+# A few demo services for testing:
+
 @jsonremote(testservice)
-def echo(response, msg):
+def echo(request, msg):
     return msg
 
 @jsonremote(testservice)
-@log_exception
-def add(response, a, b):
+def add(request, a, b):
     return a+b
 
 @jsonremote(testservice)
-def reverse(response, msg):
+def reverse(request, msg):
     return msg[::-1]
 
 @jsonremote(testservice)
-def uppercase(response, msg):
+def uppercase(request, msg):
     return msg.upper()
 
 @jsonremote(testservice)
-def lowercase(response, msg):
+def lowercase(request, msg):
     return msg.lower()
 
+# ---------------------------------
+
 @jsonremote(testservice)
-def eval_cell(response, code):
+@log_exception
+def eval_cell(request, code):
     r = e.eval(code)
     return r
