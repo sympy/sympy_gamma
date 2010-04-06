@@ -183,3 +183,8 @@ def add_cell(request, token, insert_before_id=None):
 def print_worksheet(request, token):
     w = Worksheet.all().filter("session_token =", token)[0]
     return w.print_worksheet()
+
+@jsonremote
+def get_cell_ids(request, token):
+    w = Worksheet.all().filter("session_token =", token)[0]
+    return w.get_cell_ids()

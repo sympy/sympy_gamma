@@ -50,20 +50,28 @@ class Worksheet(db.Model):
 
     session_token = db.StringProperty(required=True)
 
+    @property
+    def cells(self):
+        return Cell.all().filter("worksheet =", self)
+
     def print_worksheet(self):
-        cells = Cell.all().filter("worksheet =", self)
         s = "Worksheet: token=%s\n" % self.session_token
-        for cell in cells:
+        for cell in self.cells:
             s += cell.print_cell() + "-"*40 + "\n"
         return s
 
+    def get_cell_ids(self):
+        ids = []
+        for cell in self.cells:
+            ids.append(cell.id)
+        return ids
+
     def max_id(self):
-        cells = Cell.all().filter("worksheet =", self)
-        max = 0
-        for cell in cells:
-            if cell.id > max:
-                max = cell.id
-        return max
+        ids = self.get_cell_ids()
+        if len(ids) == 0:
+            return 0
+        else:
+            return max(ids)
 
 class Cell(db.Model):
 
