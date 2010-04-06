@@ -75,10 +75,15 @@ class ProtocolError(Error):
         self.errmsg = errmsg
         self.headers = headers
         self.response = response
+        try:
+            data = simplejson.loads(self.response)
+            self.stack = data["error"]["stack"]
+        except:
+            self.stack = ""
     def __repr__(self):
         return (
-            "<ProtocolError for %s: %s %s>" %
-            (self.url, self.errcode, self.errmsg)
+            "<ProtocolError for %s: %s %s, Server stacktrace:\n%s>" %
+            (self.url, self.errcode, self.errmsg, self.stack)
             )
 
 
