@@ -46,3 +46,32 @@ class Account(db.Model):
             nickname = '%s%d' % (name, suffix)
         return nickname
 
+class Worksheet(db.Model):
+
+    session_token = db.StringProperty(required=True)
+
+    def print_worksheet(self):
+        cells = Cell.all().filter("worksheet =", self)
+        s = "Worksheet: token=%s\n" % self.session_token
+        for cell in cells:
+            s += cell.print_cell() + "-"*40 + "\n"
+        return s
+
+    def max_id(self):
+        cells = Cell.all().filter("worksheet =", self)
+        max = 0
+        for cell in cells:
+            if cell.id > max:
+                max = cell.id
+        return max
+
+class Cell(db.Model):
+
+    worksheet = db.ReferenceProperty(Worksheet, required=True)
+    id = db.IntegerProperty(required=True)
+    input = db.StringProperty()
+    output = db.StringProperty()
+
+    def print_cell(self):
+        return "Cell: id=%d\ninput: %s\noutput: %s\n" % (self.id,
+                self.input, self.output)

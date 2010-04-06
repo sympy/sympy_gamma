@@ -1,5 +1,6 @@
 import logging
 import cgi
+import uuid
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
@@ -9,7 +10,7 @@ from django import forms
 
 from google.appengine.api import users
 
-from models import Account
+from models import Account, Worksheet, Cell
 from utils import log_exception
 from logic import Eval, SymPyGamma
 from jsonrpc import jsonrpc_method
@@ -31,6 +32,7 @@ def login_required(func):
 def jsonremote(func):
 
   @jsonrpc_method(func.__name__)
+  @log_exception
   def remote(*args, **kwds):
     return func(*args, **kwds)
 
@@ -160,18 +162,24 @@ def lowercase(request, msg):
 e = Eval()
 
 @jsonremote
-@log_exception
 def eval_cell(request, code):
     r = e.eval(code)
     return r
 
 @jsonremote
-@log_exception
-#@login_required
-def add_cell(request, insert_before_id=None):
-    # comment out the login stuff for now:
-    #if request.user is None:
-    #        return "no user"
-    #    else:
-    #        return "X" + str(insert_before_id)
-    return "X" + str(insert_before_id)
+def create_worksheet(request):
+    token = str(uuid.uuid4())
+    w = Worksheet(session_token=token)
+    w.save()
+    return token
+
+@jsonremote
+def add_cell(request, token, insert_before_id=None):
+    w = Worksheet.all().filter("session_token =", token)[0]
+    c = Cell(worksheet=w, id=w.max_id()+1)
+    c.save()
+
+@jsonremote
+def print_worksheet(request, token):
+    w = Worksheet.all().filter("session_token =", token)[0]
+    return w.print_worksheet()
