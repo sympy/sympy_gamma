@@ -72,6 +72,7 @@ ROOT_URLCONF = 'urls'
 
 TEMPLATE_DIRS = (
     root_dir + "/templates",
+    root_dir + "/jsonrpc/templates",
 )
 
 INSTALLED_APPS = (

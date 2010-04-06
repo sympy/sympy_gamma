@@ -12,7 +12,7 @@ from google.appengine.api import users
 from models import Account
 from utils import log_exception
 from logic import Eval, SymPyGamma
-from network import JSONRPCService, jsonremote
+from jsonrpc import jsonrpc_method
 
 import settings
 
@@ -27,6 +27,15 @@ def login_required(func):
 
   login_wrapper.__name__ = func.__name__
   return login_wrapper
+
+def jsonremote(func):
+
+  @jsonrpc_method(func.__name__)
+  def remote(*args, **kwds):
+    return func(*args, **kwds)
+
+  remote.__name__ = func.__name__
+  return remote
 
 
 class SearchForm(forms.Form):
@@ -123,44 +132,40 @@ def settings_view(request):
     return HttpResponseRedirect(reverse(index))
 
 
-e = Eval()
-
-
-testservice = JSONRPCService()
-
-
 # ---------------------------------
 # A few demo services for testing:
 
-@jsonremote(testservice)
+@jsonremote
 def echo(request, msg):
     return msg
 
-@jsonremote(testservice)
+@jsonremote
 def add(request, a, b):
     return a+b
 
-@jsonremote(testservice)
+@jsonremote
 def reverse(request, msg):
     return msg[::-1]
 
-@jsonremote(testservice)
+@jsonremote
 def uppercase(request, msg):
     return msg.upper()
 
-@jsonremote(testservice)
+@jsonremote
 def lowercase(request, msg):
     return msg.lower()
 
 # ---------------------------------
 
-@jsonremote(testservice)
+e = Eval()
+
+@jsonremote
 @log_exception
 def eval_cell(request, code):
     r = e.eval(code)
     return r
 
-@jsonremote(testservice)
+@jsonremote
 @log_exception
 #@login_required
 def add_cell(request, insert_before_id=None):

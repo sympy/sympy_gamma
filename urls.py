@@ -1,4 +1,8 @@
 from django.conf.urls.defaults import *
+from jsonrpc import jsonrpc_site
+
+# this is needed so that the jsonrpc methods are loaded:
+import app.views
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -11,8 +15,9 @@ urlpatterns = patterns('',
     # Example:
     # (r'^notebook/', include('notebook.foo.urls')),
     (r'^$', 'app.views.index'),
-    (r'^test-service/$', 'app.views.testservice'),
-
+    url(r'^test-service/$', jsonrpc_site.dispatch, name="jsonrpc_mountpoint"),
+    url(r'^test-service/browse/$',
+        'jsonrpc.views.browse', name="jsonrpc_browser"),
     (r'^input/', 'app.views.input'),
     (r'^nb/$', 'app.views.notebook'),
     (r'^nb/(nb.*)$', 'django.views.static.serve',
