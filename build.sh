@@ -9,4 +9,5 @@ PYJS=~/repos/pyjamas/bin/pyjsbuild
 
 options="$*"
 #if [ -z $options ] ; then options="-O";fi
-$PYJS --print-statements $options -Itemplates -omedia/js nb
+cd media
+$PYJS --print-statements $options -I../templates -ojs nb
