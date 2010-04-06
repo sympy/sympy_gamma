@@ -25,6 +25,7 @@ def login_required(func):
           users.create_login_url(request.get_full_path().encode('utf-8')))
     return func(request, *args, **kwds)
 
+  login_wrapper.__name__ = func.__name__
   return login_wrapper
 
 
@@ -158,3 +159,14 @@ def lowercase(request, msg):
 def eval_cell(request, code):
     r = e.eval(code)
     return r
+
+@jsonremote(testservice)
+@log_exception
+#@login_required
+def add_cell(request, insert_before_id=None):
+    # comment out the login stuff for now:
+    #if request.user is None:
+    #        return "no user"
+    #    else:
+    #        return "X" + str(insert_before_id)
+    return "X" + str(insert_before_id)
