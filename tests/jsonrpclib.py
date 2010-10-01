@@ -96,6 +96,7 @@ def dumps(params, methodname=None, methodresponse=None, encoding=None,
           allow_none=0):    
     if methodname:
         request = {}
+        request["jsonrpc"] = "2.0"
         request["method"] = methodname
         request["params"] = params
         request["id"] = _gen_id()
