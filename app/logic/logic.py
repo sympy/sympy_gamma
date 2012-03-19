@@ -50,6 +50,11 @@ result
                 result.append(
                         {"title": "Series expansion around 0", "input": line,
                             "output": r})
+            for item in range(len(result)):
+                for k in result[item].keys():
+                    if 'None' in result[item][k]:
+                        result[item][k] = result[item][k].replace('None', '')
+            print result
             return result
         else:
             return None
