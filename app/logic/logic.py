@@ -1,5 +1,5 @@
 from utils import Eval
-from sympy import *
+from sympy import pprint 
 
 class SymPyGamma(object):
 
