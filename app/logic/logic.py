@@ -51,13 +51,9 @@ pprint(result)
                 result.append(
                         {"title": "Series expansion around 0", "input": line,
                             "output": r})
-            try:
-                for item in range(len(result)):
-                    for k in result[item].keys():
-                        if 'None' in result[item][k]:
-                            result[item][k] = result[item][k].replace('None', '')
-            except TypeError as e:
-                pass
+            for item in result:
+                for k in item:
+                        item[k] = item[k].replace('None', '')
             return result
         else:
             return None
