@@ -54,7 +54,6 @@ result
                 for k in result[item].keys():
                     if 'None' in result[item][k]:
                         result[item][k] = result[item][k].replace('None', '')
-            print result
             return result
         else:
             return None
