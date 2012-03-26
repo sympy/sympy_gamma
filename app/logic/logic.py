@@ -35,6 +35,8 @@ else:
     result = None
 pprint(result)
 """
+            var = a.eval(code % (s, 'x'), use_none_for_exceptions=True)
+            var = var.replace("\nNone", "")
             line = "simplify(%s)"
             simplified = a.eval(line % s, use_none_for_exceptions=True)
             r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
@@ -42,25 +44,25 @@ pprint(result)
                 result.append(
                         {"title": "Simplification", "input": simplified,
                             "output": r})
-            line = "solve(%s, x)"
-            r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
+            line = "solve(%s, {_var})".format(_var=var)
+            r = a.eval(code % (s, (line % s)), use_none_for_exceptions=True)
             if r and r != "None":
                 result.append(
                         {"title": "Roots", "input": line % simplified,
                             "output": r})
-            line = "diff(%s, x)"
+            line = "diff(%s, {_var})".format(_var=var)
             r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
             if r and r != "None":
                 result.append(
                         {"title": "Derivative", "input": (line % simplified),
                             "output": r})
-            line = "integrate(%s, x)"
+            line = "integrate(%s, {_var})".format(_var=var)
             r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
             if r and r != "None":
                 result.append(
                         {"title": "Indefinite integral", "input": line % simplified,
                             "output": r})
-            line = "series(%s, x, 0, 10)"
+            line = "series(%s, {_var}, 0, 10)".format(_var=var)
             r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
             if r and r != "None":
                 result.append(
