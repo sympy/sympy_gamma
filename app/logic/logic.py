@@ -1,5 +1,5 @@
 from utils import Eval
-from sympy import pprint 
+from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
 
 class SymPyGamma(object):
 
@@ -19,7 +19,7 @@ class SymPyGamma(object):
         # change to True to spare the user from exceptions:
         if not len(s):
             return
-        r = a.eval(u'pprint(%s)' % s, use_none_for_exceptions=False)
+        r = a.eval(s, use_none_for_exceptions=False)
         if r is not None:
             result = [
                     {"title": "Input", "input": s},
@@ -33,7 +33,7 @@ if len(a) == 1:
     result = %s
 else:
     result = None
-pprint(result)
+result
 """
             var = a.eval(code % (s, 'x'), use_none_for_exceptions=True)
             # Come up with a solution to use all variables if more than 1
@@ -41,7 +41,7 @@ pprint(result)
             line = "simplify(%s)"
             simplified = a.eval(line % s, use_none_for_exceptions=True)
             r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
-            if simplified and simplified != "None" and simplified.replace(" ", "") != s:
+            if simplified != "None" and simplified != s:
                 result.append(
                         {"title": "Simplification", "input": simplified,
                             "output": r})
@@ -49,32 +49,34 @@ pprint(result)
                 var = var.replace("None", "").replace("\n", "")
                 if len(var):
                     line = "solve(%s, {_var})".format(_var=var)
-                    r = a.eval(code % (s, (line % s)), use_none_for_exceptions=True)
+                    r = sympify(a.eval(code % (s, (line % s)), use_none_for_exceptions=True))
                     if r and r != "None":
                         result.append(
                                 {"title": "Roots", "input": line % simplified,
-                                    "output": r})
+                                 "pre_output": latex(var), "output": latex(r)})
+
                     line = "diff(%s, {_var})".format(_var=var)
-                    r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
+                    r = sympify(a.eval(code % (s, line % s), use_none_for_exceptions=True))
                     if r and r != "None":
                         result.append(
                                 {"title": "Derivative", "input": (line % simplified),
-                                    "output": r})
+                                 "pre_output": latex(Derivative(s, Symbol(var))), 
+                                 "output": latex(r)})
+
                     line = "integrate(%s, {_var})".format(_var=var)
-                    r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
+                    r = sympify(a.eval(code % (s, line % s), use_none_for_exceptions=True))
                     if r and r != "None":
                         result.append(
                                 {"title": "Indefinite integral", "input": line % simplified,
-                                    "output": r})
+                                 "pre_output": latex(Integral(s,Symbol(var))),
+                                 "output": latex(r)})
+
                     line = "series(%s, {_var}, 0, 10)".format(_var=var)
-                    r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
+                    r = sympify(a.eval(code % (s, line % s), use_none_for_exceptions=True))
                     if r and r != "None":
                         result.append(
                                 {"title": "Series expansion around 0", "input": line % simplified,
-                                    "output": r})
-            for item in result:
-                for k in item:
-                        item[k] = item[k].replace('None', '')
+                                 "output": latex(r)})
             return result
         else:
             return None
