@@ -40,11 +40,11 @@ result
             # is entered.
             line = "simplify(%s)"
             simplified = a.eval(line % s, use_none_for_exceptions=True)
-            r = a.eval(code % (s, line % s), use_none_for_exceptions=True)
+            r = sympify(a.eval(code % (s, line % s), use_none_for_exceptions=True))
             if simplified != "None" and simplified != s:
                 result.append(
                         {"title": "Simplification", "input": simplified,
-                            "output": r})
+                            "output": latex(r)})
             if var != None: # See a better way to do this.
                 var = var.replace("None", "").replace("\n", "")
                 if len(var):
