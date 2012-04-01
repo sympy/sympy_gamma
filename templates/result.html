@@ -1,34 +1,37 @@
 {% extends "base.html" %}
+    {% block title %}
+    SymPy Gamma
+    {% endblock %}
 
-{% block title %}
-SymPy Gamma
-{% endblock %}
-
-{% block content %}
-    <div class="input">
-        <form action="/input/" method="GET">
-            {{ form.i }}
-            <input class="input_field" type="submit" value="=" />
-        </form>
-    </div>
-    <div class="result">
-        {% for cell in result %}
-            <div class="cell1">
-                <div class="cell_title">
-                    {{ cell.title }}:
-                </div>
-                <div class="cell_input">
-                    <pre>{{ cell.input }}</pre>
-                </div>
-                {% if cell.output %}
-                    <div class="cell_output">
-                        <pre>{{ cell.output }}</pre>
-                    </div>
-                {% endif %}
-            </div>
-        {% endfor %}
-        <div class="foot">
-            <a class="wolfram" href="http://www.wolframalpha.com/input/?i={{ input|urlencode }}">Wolfram|Alpha</a>
+    {% block content %}
+        <div class="input">
+            <form action="/input/" method="GET">
+                {{ form.i }}
+                <input class="input_field" type="submit" value="=" />
+            </form>
         </div>
-    </div>
+        <div class="result">
+            {% for cell in result %}
+                <div class="cell1">
+                    <div class="cell_title">
+                        {{ cell.title }}:
+                    </div>
+                    <div class="cell_input">
+                        <pre>{{ cell.input }}</pre>
+                    </div>
+                    {% if cell.output %}
+                        <div class="cell_output">
+                            {% if cell.pre_output %}
+                            {{ cell.pre_output }} =
+                            {% endif %}
+                            {{ cell.output }}
+                            </script>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <div class="foot">
+                <a class="wolfram" href="http://www.wolframalpha.com/input/?i={{ input|urlencode }}">Wolfram|Alpha</a>
+            </div>
+         </div>
 {% endblock %}
