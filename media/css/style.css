@@ -1,39 +1,39 @@
 * {
-    padding: 0px;
-    margin: 0px;
+  padding: 0px;
+  margin: 0px;
 }
 iframe {
-    display: none;
+  display: none;
 }
 span.input_prompt {
-    color:blue;
-    font-family: monospace;
-    font-size:12pt;
-    float: left;
-    clear: left;
+  color:blue;
+  font-family: monospace;
+  font-size:12pt;
+  float: left;
+  clear: left;
 }
 span.output_prompt {
-    color:red;
-    /*display:none;*/
-    clear: left;
-    font-family: monospace;
-    font-size:12pt;
-    float: left;
+  color:red;
+  /*display:none;*/
+  clear: left;
+  font-family: monospace;
+  font-size:12pt;
+  float: left;
 }
 div.output_delimiter {
-    height: 3px;
-    clear: left;
+  height: 3px;
+  clear: left;
 }
 span.cell_output {
-    color: #0000AA;
-    font-size: 12pt;
-    float: left;
-    position: relative;
-    left: 8px;
+  color: #0000AA;
+  font-size: 12pt;
+  float: left;
+  position: relative;
+  left: 8px;
 }
 pre.shrunk {
-    margin-top: 0px;
-    margin-bottom: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 div.disabled {
   display:none;
@@ -45,15 +45,15 @@ div.cell {
 }
 
 div.insert_new_cell {
-    height:6px;
-    margin:3px;
-    width: 100%;
+  height:6px;
+  margin:3px;
+  width: 100%;
 }
 
 div.insert_new_cell:hover {
-    background-color:#8888FE;
-    margin:3px;
-    width: 100%;
+  background-color:#8888FE;
+  margin:3px;
+  width: 100%;
 }
 
 textarea.cell_input {
@@ -99,87 +99,87 @@ a.eval_button {
 }
 
 div.menu {
-    padding: 2px 8px;
+  padding: 2px 8px;
 }
 
 div.menu a {
-    color: blue !important;
-    font-size: 10pt;
-    font-family: arial, sans-serif;
-    margin-right: 0.5em;
+  color: blue !important;
+  font-size: 10pt;
+  font-family: arial, sans-serif;
+  margin-right: 0.5em;
 }
 
 div.menu a.selected {
-    color: black !important;
-    text-decoration: none;
-    font-weight: bold;
+  color: black !important;
+  text-decoration: none;
+  font-weight: bold;
 }
 
 div.gbh {
-    border-top-color:#C9D7F1;
-    border-top-style:solid;
-    border-top-width:1px;
-    font-size:1px;
-    height:0;
-    position:absolute;
-    top:24px;
-    width:100%;
+  border-top-color:#C9D7F1;
+  border-top-style:solid;
+  border-top-width:1px;
+  font-size:1px;
+  height:0;
+  position:absolute;
+  top:24px;
+  width:100%;
 }
 
 div.result {
-    width: 600px;
-    margin: 10px auto;
+  width: 600px;
+  margin: 10px auto;
 }
 
 div.cell1 {
-    border: 2px solid  #a8a8a8;
-    margin: 10px;
+  border: 2px solid  #a8a8a8;
+  margin: 10px;
 }
 
 div.cell_title {
-    color: gray;
-    font-size:10pt;
-    margin: 5px;
+  color: gray;
+  font-size:10pt;
+  margin: 5px;
 }
 
 div.cell_input {
-    color: black;
-    font-size:12pt;
-    margin: 10px;
-    border: 1px solid  #a8a8a8;
+  color: black;
+  font-size:12pt;
+  margin: 10px;
+  border: 1px solid  #a8a8a8;
 }
 
 div.cell_output {
-    color: black;
-    font-size:20pt;
-    margin: 10px;
-    border: 1px solid  #a8a8a8;
+  color: black;
+  font-size:20pt;
+  margin: 10px;
+  border: 1px solid  #a8a8a8;
 }
 
 div.input {
-    text-align: center;
-    width: 550px;
-    margin: 40px auto;
+  text-align: center;
+  width: 550px;
+  margin: 40px auto;
 }
 
 div.input input[type="text"] {
-    margin: 20px auto;
-    width: 500px;
+  margin: 20px auto;
+  width: 500px;
 }
 
 div.foot {
-    text-align: center;
-    font-size: 10pt;
+  text-align: center;
+  font-size: 10pt;
 }
 
 h2 {
-    padding: 10px 8px;
+  padding: 10px 8px;
 }
 
 h3 {
-    padding: 5px 8px;
+  padding: 5px 8px;
 }
 
 p {
-    padding: 0px 8px;
+  padding: 0px 8px;
 }
