@@ -10,3 +10,7 @@ handlers:
 
 - url: /.*
   script: main.py
+
+libraries:
+- name: django
+  version: "1.3"
