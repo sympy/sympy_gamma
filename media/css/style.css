@@ -7,59 +7,11 @@
 
 body {
   font-family: 'Gentium Book Basic', serif;
-  background: #E4EBE4;
 }
 
 h1 {
   font-weight: normal;
   color: #3B5526;
-}
-
-span.cell_output {
-  color: #0000AA;
-  font-size: 12pt;
-  float: left;
-  position: relative;
-  left: 8px;
-}
-pre.shrunk {
-  margin-top: 0px;
-  margin-bottom: 0px;
-}
-div.disabled {
-  display:none;
-}
-div.cell {
-  width: 100%;
-  float: left;
-  clear: left;
-}
-
-textarea.cell_input {
-  color:#000000;
-  background-color: white;
-  border: 1px solid  #a8a8a8;
-  font-family: monospace;
-  font-size:12pt;
-  overflow:hidden;
-  padding-left:6px;
-  padding-top:4px;
-  padding-bottom:4px;
-  margin-bottom:0px;
-  margin-top:0px;
-  line-height:1.2em;
-  float: left;
-}
-
-a.eval_button {
-  top: 2px;
-  margin:0px;
-  padding:0px;
-  font-size:10pt;
-  float: left;
-  clear: left;
-  position: relative;
-  left: 72px;
 }
 
 div.menu {
@@ -86,15 +38,15 @@ div.result {
 }
 
 div.result_card {
-  border: 2px solid  #a8a8a8;
+  border: 2px solid #a8a8a8;
   margin: 10px;
   background: #FFF;
 }
 
 div.card_title {
-  color: gray;
-  font-size:10pt;
+  font-size: 12pt;
   margin: 5px;
+  color: #3B5526;
 }
 
 div.cell_input {
