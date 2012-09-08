@@ -1,6 +1,8 @@
 from utils import Eval
 from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
 
+import sympy.parsing.sympy_parser as sympy_parser
+
 PREEXEC = """from sympy import (symbols, Function, Symbol, simplify, solve,
     diff, integrate, series, exp, ln, log)
 x, y, z = symbols('x,y,z')
@@ -26,6 +28,7 @@ class SymPyGamma(object):
         # change to True to spare the user from exceptions:
         if not len(s):
             return
+        s = repr(sympify(s))
         r = a.eval(s, use_none_for_exceptions=False)
         if r is not None:
             result = [
