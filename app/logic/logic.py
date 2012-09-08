@@ -1,6 +1,11 @@
 from utils import Eval
 from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
 
+PREEXEC = """from sympy import symbols, Function
+x, y, z = symbols('x,y,z')
+k, m, n = symbols('k,m,n', integer=True)
+f, g, h = map(Function, 'fgh')"""
+
 class SymPyGamma(object):
 
     def eval(self, s):
@@ -15,6 +20,7 @@ class SymPyGamma(object):
     def try_sympy(self, s):
         namespace = {}
         exec "from sympy.interactive import *" in {}, namespace
+        exec PREEXEC in {}, namespace
         a = Eval(namespace)
         # change to True to spare the user from exceptions:
         if not len(s):
@@ -60,7 +66,7 @@ result
                     if r and r != "None":
                         result.append(
                                 {"title": "Derivative", "input": (line % simplified),
-                                 "pre_output": latex(Derivative(s, Symbol(var))), 
+                                 "pre_output": latex(Derivative(s, Symbol(var))),
                                  "output": latex(r)})
 
                     line = "integrate(%s, {_var})".format(_var=var)

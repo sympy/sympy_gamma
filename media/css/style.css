@@ -7,28 +7,6 @@ body {
   font-family: 'PT Serif', serif;
 }
 
-iframe {
-  display: none;
-}
-span.input_prompt {
-  color:blue;
-  font-family: monospace;
-  font-size:12pt;
-  float: left;
-  clear: left;
-}
-span.output_prompt {
-  color:red;
-  /*display:none;*/
-  clear: left;
-  font-family: monospace;
-  font-size:12pt;
-  float: left;
-}
-div.output_delimiter {
-  height: 3px;
-  clear: left;
-}
 span.cell_output {
   color: #0000AA;
   font-size: 12pt;
@@ -47,18 +25,6 @@ div.cell {
   width: 100%;
   float: left;
   clear: left;
-}
-
-div.insert_new_cell {
-  height:6px;
-  margin:3px;
-  width: 100%;
-}
-
-div.insert_new_cell:hover {
-  background-color:#8888FE;
-  margin:3px;
-  width: 100%;
 }
 
 textarea.cell_input {
