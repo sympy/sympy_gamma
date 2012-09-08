@@ -1,7 +1,8 @@
 from utils import Eval
 from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
 
-PREEXEC = """from sympy import symbols, Function
+PREEXEC = """from sympy import (symbols, Function, Symbol, simplify, solve,
+    diff, integrate, series)
 x, y, z = symbols('x,y,z')
 k, m, n = symbols('k,m,n', integer=True)
 f, g, h = map(Function, 'fgh')"""
