@@ -1,10 +1,18 @@
+@import url(http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic);
+
 * {
   padding: 0px;
   margin: 0px;
 }
 
 body {
-  font-family: 'PT Serif', serif;
+  font-family: 'Gentium Book Basic', serif;
+  background: #E4EBE4;
+}
+
+h1 {
+  font-weight: normal;
+  color: #3B5526;
 }
 
 span.cell_output {
@@ -80,6 +88,7 @@ div.result {
 div.result_card {
   border: 2px solid  #a8a8a8;
   margin: 10px;
+  background: #FFF;
 }
 
 div.card_title {
