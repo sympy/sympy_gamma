@@ -67,6 +67,11 @@ div.cell_output {
   padding: 10px 0 0 0;
 }
 
+div.cell_output div.cell_output_plain {
+  font-family: monospace;
+  text-align: center;
+}
+
 div.input {
   text-align: center;
   width: 550px;

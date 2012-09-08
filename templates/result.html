@@ -24,7 +24,11 @@
                             {% if cell.pre_output %}
                             $ {{ cell.pre_output }} = $
                             {% endif %}
+                            {% if cell.use_mathjax %}
                             $$ {{ cell.output }} $$
+                            {% else %}
+                            <div class="cell_output_plain">{{ cell.output }}</div>
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>
