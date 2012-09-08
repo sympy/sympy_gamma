@@ -23,10 +23,9 @@
                     {% if cell.output %}
                         <div class="cell_output">
                             {% if cell.pre_output %}
-                            {{ cell.pre_output }} =
+                            $ {{ cell.pre_output }} = $
                             {% endif %}
-                            {{ cell.output }}
-                            </script>
+                            $$ {{ cell.output }} $$
                         </div>
                     {% endif %}
                 </div>
