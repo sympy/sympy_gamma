@@ -1,3 +1,4 @@
+from __future__ import division
 import traceback
 import sys
 from StringIO import StringIO
@@ -26,7 +27,7 @@ class Eval(object):
             try:
                 old_stdout = sys.stdout
                 sys.stdout = StringIO()
-                eval(compile(s, '', 'exec'), globals, globals)
+                eval(compile(s, '', 'exec', division.compiler_flag), globals, globals)
 
                 if not z is None:
                     r = repr(eval(z, globals))
