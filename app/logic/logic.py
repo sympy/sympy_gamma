@@ -1,10 +1,10 @@
 from utils import Eval
 from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
-
+import sympy
 import sympy.parsing.sympy_parser as sympy_parser
 
-PREEXEC = """from sympy import (symbols, Function, Symbol, simplify, solve,
-    diff, integrate, series, exp, ln, log)
+PREEXEC = """from __future__ import division
+from sympy import *
 x, y, z = symbols('x,y,z')
 k, m, n = symbols('k,m,n', integer=True)
 f, g, h = map(Function, 'fgh')"""
@@ -22,13 +22,12 @@ class SymPyGamma(object):
 
     def try_sympy(self, s):
         namespace = {}
-        exec "from sympy.interactive import *" in {}, namespace
         exec PREEXEC in {}, namespace
         a = Eval(namespace)
         # change to True to spare the user from exceptions:
         if not len(s):
             return
-        s = repr(sympify(s))
+        s = repr(sympy_parser.parse_expr(s))
         r = a.eval(s, use_none_for_exceptions=False)
         if r is not None:
             result = [
