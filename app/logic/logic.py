@@ -38,8 +38,14 @@ class SymPyGamma(object):
             }
             return [
                 {"title": "Input", "input": s},
-                {"title": "Error", "input": s, "error": error}
+                {"title": "Error", "input": s, "exception_info": error}
             ]
+        except sympy_parser.TokenError:
+            return [
+                {"title": "Input", "input": s},
+                {"title": "Error", "input": s, "error": "Invalid input"}
+            ]
+
         r = a.eval(s, use_none_for_exceptions=False)
         if r is not None:
             result = [
