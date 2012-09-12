@@ -27,7 +27,19 @@ class SymPyGamma(object):
         # change to True to spare the user from exceptions:
         if not len(s):
             return
-        s = repr(sympy_parser.parse_expr(s, convert_xor=True))
+        try:
+            s = repr(sympy_parser.parse_expr(s, convert_xor=True))
+        except SyntaxError as e:
+            error = {
+                "input_start": e.text[:e.offset],
+                "input_end": e.text[e.offset:],
+                "msg": e.msg,
+                "offset": e.offset
+            }
+            return [
+                {"title": "Input", "input": s},
+                {"title": "Error", "input": s, "error": error}
+            ]
         r = a.eval(s, use_none_for_exceptions=False)
         if r is not None:
             result = [

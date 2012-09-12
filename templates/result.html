@@ -12,7 +12,7 @@
         </div>
         <div class="result">
             {% for cell in result %}
-                <div class="result_card">
+                <div class="result_card{% if cell.error %} result_card_error{%endif%}">
                     <div class="card_title">
                         {{ cell.title }}:
                     </div>
@@ -30,6 +30,20 @@
                             <div class="cell_output_plain">{{ cell.output }}</div>
                             {% endif %}
                         </div>
+                    {% else %}
+                        {% comment %}Ugly hack since Django 1.3 (latest
+                        supported on GAE) doesn't support elif {% endcomment %}
+                        {% if cell.error %}
+                            <div class="cell_output">
+                                <div class="cell_output_plain">
+                                    <span>{{ cell.error.input_start }}</span>
+                                    <span>{{ cell.error.input_end }}</span>
+                                </div>
+                                <div class="cell_output_plain">
+                                    {{ cell.error.offset }}: {{ cell.error.msg }}
+                                </div>
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             {% endfor %}

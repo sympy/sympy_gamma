@@ -50,6 +50,15 @@ div.result_card {
   background: #FFF;
 }
 
+div.result_card.result_card_error {
+  border: 2px solid #F00;
+}
+
+/* Highlight position of a syntax error */
+div.result_card_error .cell_output_plain span:first-child {
+  border-right: 1px solid #F00;
+}
+
 div.card_title {
   font-size: 12pt;
 }
