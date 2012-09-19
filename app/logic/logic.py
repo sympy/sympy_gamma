@@ -1,3 +1,4 @@
+import sys
 from utils import Eval
 from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
 import sympy
@@ -20,16 +21,14 @@ class SymPyGamma(object):
                     "output": "Can't handle the input."},
                 ]
 
-    def try_sympy(self, s):
-        namespace = {}
-        exec PREEXEC in {}, namespace
-        a = Eval(namespace)
-        # change to True to spare the user from exceptions:
-        if not len(s):
-            return
+    def get_syntax_error(self, s):
         try:
-            s = repr(sympy_parser.parse_expr(s, convert_xor=True))
+            sympy_parser.parse_expr(s, convert_xor=True)
         except SyntaxError as e:
+            return e
+
+    def handle_error(self, s, e):
+        if isinstance(e, SyntaxError):
             error = {
                 "input_start": e.text[:e.offset],
                 "input_end": e.text[e.offset:],
@@ -40,11 +39,28 @@ class SymPyGamma(object):
                 {"title": "Input", "input": s},
                 {"title": "Error", "input": s, "exception_info": error}
             ]
+        else:
+            return [
+                {"title": "Input", "input": s},
+                {"title": "Error", "input": s, "error": str(e)}
+            ]
+
+    def try_sympy(self, s):
+        namespace = {}
+        exec PREEXEC in {}, namespace
+        a = Eval(namespace)
+        # change to True to spare the user from exceptions:
+        if not len(s):
+            return
+        try:
+            s = repr(sympy_parser.parse_expr(s, convert_xor=True))
         except sympy_parser.TokenError:
             return [
                 {"title": "Input", "input": s},
                 {"title": "Error", "input": s, "error": "Invalid input"}
             ]
+        except Exception as e:
+            return self.handle_error(s, e)
 
         r = a.eval(s, use_none_for_exceptions=False)
         if r is not None:
