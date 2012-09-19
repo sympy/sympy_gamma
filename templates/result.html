@@ -12,7 +12,7 @@
         </div>
         <div class="result">
             {% for cell in result %}
-                <div class="result_card{% if cell.error %} result_card_error{%endif%}">
+                <div class="result_card{% if cell.error or cell.exception_info %} result_card_error{%endif%}">
                     <div class="card_title">
                         {{ cell.title }}:
                     </div>
@@ -22,10 +22,10 @@
                     {% if cell.output %}
                         <div class="cell_output">
                             {% if cell.pre_output %}
-                            $ {{ cell.pre_output }} = $
+                            <script type="math/tex"> {{ cell.pre_output }} = </script> 
                             {% endif %}
                             {% if cell.use_mathjax %}
-                            $$ {{ cell.output }} $$
+                            <script type="math/tex; mode=display"> {{ cell.output }} </script>
                             {% else %}
                             <div class="cell_output_plain">{{ cell.output }}</div>
                             {% endif %}
@@ -44,11 +44,13 @@
                                 </div>
                             </div>
                         {% else %}
+                            {% if cell.error %}
                             <div class="cell_output">
                                 <div class="cell_output_plain">
                                     {{ cell.error }}
                                 </div>
                             </div>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
                 </div>

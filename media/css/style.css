@@ -48,6 +48,8 @@ div.result_card {
   margin: 10px;
   padding: 10px;
   background: #FFF;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 div.result_card.result_card_error {
@@ -74,6 +76,7 @@ div.cell_output {
   font-size: 12pt;
   border-top: 1px solid  #a8a8a8;
   padding: 10px 0 0 0;
+  opacity: 0.1;
 }
 
 div.cell_output div.cell_output_plain {
@@ -145,4 +148,37 @@ h3 {
 
 p {
   padding: 0px 8px;
+}
+
+@media screen and (max-device-width: 960px) {
+  .menu {
+    font-size: 1.25em;
+  }
+  
+  div.input form {
+    margin: 0 auto;
+    margin-top: 10px;
+    width: auto;
+  }
+
+  div.input input[type="text"] {
+    margin: 0 auto;
+    width: 90%;
+  }
+
+  div.input input[type="submit"] {
+    width: 50%;
+    height: 150%;
+    line-height: 150%;
+  }
+
+  input {
+    border-radius: 0;
+  }
+
+  div.result {
+    width: auto;
+    max-width: 800px;
+    margin: 10px auto;
+  }
 }
