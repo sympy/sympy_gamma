@@ -21,12 +21,6 @@ class SymPyGamma(object):
                     "output": "Can't handle the input."},
                 ]
 
-    def get_syntax_error(self, s):
-        try:
-            sympy_parser.parse_expr(s, convert_xor=True)
-        except SyntaxError as e:
-            return e
-
     def handle_error(self, s, e):
         if isinstance(e, SyntaxError):
             error = {
