@@ -86,7 +86,6 @@ div.cell_output div.cell_output_plain {
 
 div.input {
   text-align: center;
-  width: 550px;
   padding: 20px 0;
   width: 100%;
   background: #3B5526;
@@ -99,20 +98,24 @@ div.input form {
 }
 
 div.input input[type="text"] {
+  font-family: monospace;
   width: 83%;
-  height: 1.25em;
-  line-height: 1.25em;
-  font-size: 1.25em;
+  height: 1.5em;
+  line-height: 1.75em;
+  font-size: 1.5em;
   padding: 0 0.25em;
   border: 0;
+  vertical-align: top;
 }
 
 div.input input[type="submit"] {
+  vertical-align: top;
+  font-family: monospace;
   width: 15%;
-  line-height: 1.25em;
-  font-size: 1.25em;
+  height: 1.5em;
+  line-height: 1.8em;
+  font-size: 1.5em;
   color: #FFF;
-  padding: 0 1em;
   border: 0;
   background-color: #96C56F;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #96C56F), color-stop(100%, #81B953));
