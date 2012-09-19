@@ -18,6 +18,15 @@ h1 {
   color: #FFF;
 }
 
+h1 a:link, h1 a:visited, h1 a:active {
+  color: #FFF;
+  text-decoration: none;
+}
+
+h1 a:hover {
+  color: #96C56F;
+}
+
 div.menu {
   padding: 0 0.5em;
   font-family: sans-serif;
@@ -27,8 +36,8 @@ div.menu {
 div.menu a {
   color: #00F !important;
   text-decoration: none;
-  font-size: 0.75em;
-  line-height: 0.75em;
+  font-size: 1em;
+  line-height: 1em;
   margin-right: 0.5em;
 }
 
