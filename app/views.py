@@ -10,8 +10,16 @@ import settings
 import logging
 import cgi
 
+class MobileTextInput(forms.widgets.TextInput):
+    def render(self, name, value, attrs=None):
+        if attrs is None:
+            attrs = {}
+        attrs['autocorrect'] = 'off'
+        attrs['autocapitalize'] = 'off'
+        return super(MobileTextInput, self).render(name, value, attrs)
+
 class SearchForm(forms.Form):
-    i = forms.CharField(required=False)
+    i = forms.CharField(required=False, widget=MobileTextInput())
 
 e = Eval()
 
