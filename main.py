@@ -31,12 +31,4 @@ def log_exception(*args, **kwds):
 #    django.db._rollback_on_exception,
 #    django.core.signals.got_request_exception)
 
-def main():
-  # Create a Django application for WSGI.
-  application = django.core.handlers.wsgi.WSGIHandler()
-
-  # Run the WSGI CGI handler with that application.
-  util.run_wsgi_app(application)
-
-if __name__ == '__main__':
-  main()
+application = django.core.handlers.wsgi.WSGIHandler()

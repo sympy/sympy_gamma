@@ -1,6 +1,7 @@
 application: sympy-gamma
 version: 2
-runtime: python
+runtime: python27
+threadsafe: true
 api_version: 1
 
 handlers:
@@ -8,4 +9,8 @@ handlers:
   static_dir: static
 
 - url: /.*
-  script: main.py
+  script: main.application
+
+libraries:
+- name: django
+  version: "1.3"

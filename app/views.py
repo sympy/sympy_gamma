@@ -3,7 +3,6 @@ from django.shortcuts import render_to_response
 from django.utils import simplejson
 from django import forms
 
-from utils import log_exception
 from logic import Eval, SymPyGamma
 
 import settings
@@ -11,8 +10,16 @@ import settings
 import logging
 import cgi
 
+class MobileTextInput(forms.widgets.TextInput):
+    def render(self, name, value, attrs=None):
+        if attrs is None:
+            attrs = {}
+        attrs['autocorrect'] = 'off'
+        attrs['autocapitalize'] = 'off'
+        return super(MobileTextInput, self).render(name, value, attrs)
+
 class SearchForm(forms.Form):
-    i = forms.CharField(required=False)
+    i = forms.CharField(required=False, widget=MobileTextInput())
 
 e = Eval()
 
@@ -38,33 +45,8 @@ def input(request):
                 "MEDIA_URL": settings.MEDIA_URL,
                 })
 
-def notebook(request):
-    return render_to_response("nb.html", {
-        "MEDIA_URL": settings.MEDIA_URL,
-        "nb_active": "selected",
-        })
-
 def about(request):
     return render_to_response("about.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "about_active": "selected",
         })
-
-@log_exception
-def eval_cell(request):
-    payload = request.POST["payload"]
-    payload = simplejson.loads(payload)
-    logging.info("-"*70)
-    logging.info("Got payload:")
-    logging.info(payload)
-    logging.info("evaluating...")
-    r = e.eval(payload["code"])
-    if r != "":
-        r = cgi.escape(r)
-        r = '<pre class="shrunk">' + r + "</pre>"
-    logging.info("encoding to JSON...")
-    payload = {"result": r}
-    payload = simplejson.dumps(payload)
-    logging.info("Sending payload: " + payload)
-    logging.info("-"*70)
-    return HttpResponse(payload)
