@@ -47,7 +47,8 @@ class SymPyGamma(object):
         if not len(s):
             return
         try:
-            s = repr(sympy_parser.parse_expr(s, convert_xor=True))
+            input_repr = repr(sympy_parser.parse_expr(s, convert_xor=True))
+            namespace['input_evaluated'] = sympy_parser.parse_expr(s, convert_xor=True)
         except sympy_parser.TokenError:
             return [
                 {"title": "Input", "input": s},
@@ -56,16 +57,15 @@ class SymPyGamma(object):
         except Exception as e:
             return self.handle_error(s, e)
 
-        r = a.eval(s, use_none_for_exceptions=False)
+        r = input_repr
         if r is not None:
             result = [
-                {"title": "Input", "input": s},
-                {"title": "SymPy", "input": s, "output": r,
+                {"title": "Input", "input": input_repr},
+                {"title": "SymPy", "input": input_repr, "output": r,
                  "use_mathjax": False},
                     ]
             code = """\
-s = %s
-a = s.atoms(Symbol)
+a = input_evaluated.atoms(Symbol)
 if len(a) == 1:
     x = a.pop()
     result = %s
@@ -73,13 +73,14 @@ else:
     result = None
 result
 """
-            var = a.eval(code % (s, 'x'), use_none_for_exceptions=True)
+            var = a.eval(code % ('x'), use_none_for_exceptions=True)
             # Come up with a solution to use all variables if more than 1
             # is entered.
-            line = "simplify(%s)"
-            simplified = a.eval(line % s, use_none_for_exceptions=True)
-            r = sympify(a.eval(code % (s, line % s), use_none_for_exceptions=True))
-            if simplified != "None" and simplified != s:
+            line = "simplify(input_evaluated)"
+            simplified = a.eval(line, use_none_for_exceptions=True)
+            r = sympify(a.eval(code % (line), use_none_for_exceptions=True))
+            s = 'input_evaluated'
+            if simplified != "None" and simplified != input_repr:
                 result.append(
                         {"title": "Simplification", "input": simplified,
                          "output": latex(r), "use_mathjax": True})
@@ -87,7 +88,7 @@ result
                 var = var.replace("None", "").replace("\n", "")
                 if len(var):
                     line = "solve(%s, {_var})".format(_var=var)
-                    r = sympify(a.eval(code % (s, (line % s)), use_none_for_exceptions=True))
+                    r = sympify(a.eval(code % (line % s), use_none_for_exceptions=True))
                     if r and r != "None":
                         result.append(
                             {"title": "Roots", "input": line % simplified,
@@ -95,23 +96,23 @@ result
                              "use_mathjax": True})
 
                     line = "diff(%s, {_var})".format(_var=var)
-                    r = sympify(a.eval(code % (s, line % s), use_none_for_exceptions=True))
+                    r = sympify(a.eval(code % (line % s), use_none_for_exceptions=True))
                     if r and r != "None":
                         result.append(
                                 {"title": "Derivative", "input": (line % simplified),
-                                 "pre_output": latex(Derivative(s, Symbol(var))),
+                                 "pre_output": latex(Derivative(input_repr, Symbol(var))),
                                  "output": latex(r), "use_mathjax": True})
 
                     line = "integrate(%s, {_var})".format(_var=var)
-                    r = sympify(a.eval(code % (s, line % s), use_none_for_exceptions=True))
+                    r = sympify(a.eval(code % (line % s), use_none_for_exceptions=True))
                     if r and r != "None":
                         result.append(
                                 {"title": "Indefinite integral", "input": line % simplified,
-                                 "pre_output": latex(Integral(s,Symbol(var))),
+                                 "pre_output": latex(Integral(input_repr,Symbol(var))),
                                  "output": latex(r), "use_mathjax": True})
 
                     line = "series(%s, {_var}, 0, 10)".format(_var=var)
-                    r = sympify(a.eval(code % (s, line % s), use_none_for_exceptions=True))
+                    r = sympify(a.eval(code % (line % s), use_none_for_exceptions=True))
                     if r and r != "None":
                         result.append(
                                 {"title": "Series expansion around 0", "input": line % simplified,
