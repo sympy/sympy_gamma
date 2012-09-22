@@ -5,15 +5,15 @@
 
     {% block content %}
         <div class="input">
+            <h1><a href="/">SymPy Gamma</a></h1>
             <form action="/input/" method="GET">
-                {{ form.i }}
-                <input class="input_field" type="submit" value="=" />
+                {{ form.i }}<input class="input_field" type="submit" value="=" />
             </form>
         </div>
         <div class="result">
             {% for cell in result %}
-                <div class="cell1">
-                    <div class="cell_title">
+                <div class="result_card{% if cell.error or cell.exception_info %} result_card_error{%endif%}">
+                    <div class="card_title">
                         {{ cell.title }}:
                     </div>
                     <div class="cell_input">
@@ -22,11 +22,36 @@
                     {% if cell.output %}
                         <div class="cell_output">
                             {% if cell.pre_output %}
-                            {{ cell.pre_output }} =
+                            <script type="math/tex"> {{ cell.pre_output|safe }} = </script> 
                             {% endif %}
-                            {{ cell.output }}
-                            </script>
+                            {% if cell.use_mathjax %}
+                            <script type="math/tex; mode=display"> {{ cell.output|safe }} </script>
+                            {% else %}
+                            <div class="cell_output_plain">{{ cell.output }}</div>
+                            {% endif %}
                         </div>
+                    {% else %}
+                        {% comment %}Ugly hack since Django 1.3 (latest
+                        supported on GAE) doesn't support elif {% endcomment %}
+                        {% if cell.exception_info %}
+                            <div class="cell_output">
+                                <div class="cell_output_plain">
+                                    <span>{{ cell.exception_info.input_start }}</span>
+                                    <span>{{ cell.exception_info.input_end }}</span>
+                                </div>
+                                <div class="cell_output_plain">
+                                    {{ cell.exception_info.offset }}: {{ cell.exception_info.msg }}
+                                </div>
+                            </div>
+                        {% else %}
+                            {% if cell.error %}
+                            <div class="cell_output">
+                                <div class="cell_output_plain">
+                                    {{ cell.error }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
                 </div>
             {% endfor %}

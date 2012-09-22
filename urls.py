@@ -11,20 +11,15 @@ urlpatterns = patterns('',
     # Example:
     # (r'^notebook/', include('notebook.foo.urls')),
     (r'^$', 'app.views.index'),
-    (r'^eval_cell/$', 'app.views.eval_cell'),
 
     (r'^input/', 'app.views.input'),
     (r'^about/$', 'app.views.about'),
-
-    (r'^nb/$', 'app.views.notebook'),
-    (r'^nb/(nb.*)$', 'django.views.static.serve',
-        {'document_root': os.path.join(p, "js")}),
 
     (r'^media_files/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': p}),
 
 
-    # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
+    # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
     # to INSTALLED_APPS to enable admin documentation:
     # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
