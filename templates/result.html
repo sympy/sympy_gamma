@@ -22,10 +22,10 @@
                     {% if cell.output %}
                         <div class="cell_output">
                             {% if cell.pre_output %}
-                            <script type="math/tex"> {{ cell.pre_output }} = </script> 
+                            <script type="math/tex"> {{ cell.pre_output|safe }} = </script> 
                             {% endif %}
                             {% if cell.use_mathjax %}
-                            <script type="math/tex; mode=display"> {{ cell.output }} </script>
+                            <script type="math/tex; mode=display"> {{ cell.output|safe }} </script>
                             {% else %}
                             <div class="cell_output_plain">{{ cell.output }}</div>
                             {% endif %}
