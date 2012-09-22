@@ -47,11 +47,6 @@ div.menu a.selected {
   font-weight: bold;
 }
 
-div.result {
-  width: 600px;
-  margin: 10px auto;
-}
-
 div.result_card {
   border: 2px solid #a8a8a8;
   margin: 10px;
@@ -191,6 +186,13 @@ p {
   div.result {
     width: auto;
     max-width: 800px;
+    margin: 10px auto;
+  }
+}
+
+@media screen and (min-device-width: 1280px) {
+  div.result {
+    width: 600px;
     margin: 10px auto;
   }
 }
