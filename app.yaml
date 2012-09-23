@@ -1,4 +1,4 @@
-application: sympy-gamma
+application: sympy-gamma-hrd
 version: 3
 runtime: python27
 threadsafe: true
