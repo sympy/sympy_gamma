@@ -98,7 +98,7 @@ class SymPyGamma(object):
                     line = card.result_statement.format(_var=var)
                     r = sympify(a.eval(line % 'input_evaluated',
                                        use_none_for_exceptions=True))
-                    if r and r != "None":
+                    if r != "None":
                         formatted_input = card.format_input(input_repr)
                         result.append(dict(
                             title=card.title,
