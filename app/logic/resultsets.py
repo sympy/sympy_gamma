@@ -159,15 +159,31 @@ def eval_factorization(evaluator, variable):
 
 no_pre_output = lambda *args: ""
 
-roots = ResultCard("Roots", "solve(%s, {_var})",
-                   lambda statement, var, *args: var)
-integral = ResultCard("Integral", "integrate(%s, {_var})", sympy.Integral)
-diff = ResultCard("Derivative", "diff(%s, {_var})", sympy.Derivative)
-series = ResultCard("Series expansion around 0", "series(%s, {_var}, 0, 10)",
-                    no_pre_output)
-digits = ResultCard("Digits in base-10 expansion of number", "len(str(%s))",
-                    no_pre_output,
-                    format_input_function=format_long_integer)
+roots = ResultCard(
+    "Roots",
+    "solve(%s, {_var})",
+    lambda statement, var, *args: var)
+
+integral = ResultCard(
+    "Integral",
+    "integrate(%s, {_var})",
+    sympy.Integral)
+
+diff = ResultCard("Derivative",
+    "diff(%s, {_var})",
+    sympy.Derivative)
+
+series = ResultCard(
+    "Series expansion around 0",
+    "series(%s, {_var}, 0, 10)",
+    no_pre_output)
+
+digits = ResultCard(
+    "Digits in base-10 expansion of number",
+    "len(str(%s))",
+    no_pre_output,
+    format_input_function=format_long_integer)
+
 factorization = FakeResultCard(
     "Factors less than 100",
     "sympy.ntheory.factorint(%s, limit=100)",
@@ -175,23 +191,43 @@ factorization = FakeResultCard(
     format_input_function=format_long_integer,
     format_output_function=format_dict_title("Factor", "Times"),
     eval_method=eval_factorization)
-float_approximation = ResultCard("Floating-point approximation",
-                                 "(%s).evalf()", no_pre_output)
-fractional_approximation = ResultCard("Fractional approximation",
-                                      "nsimplify(%s)", no_pre_output)
-absolute_value = ResultCard("Absolute value", "Abs(%s)",
-                            lambda s, *args: "|{}|".format(s))
-polar_angle = ResultCard("Angle in the complex plane",
-                         "atan2(*(%s).as_real_imag()).evalf()",
-                         lambda s, *args:
-                         sympy.atan2(*sympy.sympify(s).as_real_imag()))
-conjugate = ResultCard("Complex conjugate", "conjugate(%s)",
-                       lambda s, *args: sympy.conjugate(s))
-trigexpand = ResultCard("Alternate form", "(%s).expand(trig=True)",
-                        lambda statement, var, *args: statement)
-graph = FakeResultCard("Graph", "plot(%s)", no_pre_output,
-                       format_output_function=format_graph,
-                       eval_method=eval_graph)
+
+float_approximation = ResultCard(
+    "Floating-point approximation",
+    "(%s).evalf()",
+    no_pre_output)
+
+fractional_approximation = ResultCard(
+    "Fractional approximation",
+    "nsimplify(%s)",
+    no_pre_output)
+
+absolute_value = ResultCard(
+    "Absolute value",
+    "Abs(%s)",
+    lambda s, *args: "|{}|".format(s))
+
+polar_angle = ResultCard(
+    "Angle in the complex plane",
+    "atan2(*(%s).as_real_imag()).evalf()",
+    lambda s, *args: sympy.atan2(*sympy.sympify(s).as_real_imag()))
+
+conjugate = ResultCard(
+    "Complex conjugate",
+    "conjugate(%s)",
+    lambda s, *args: sympy.conjugate(s))
+
+trigexpand = ResultCard(
+    "Alternate form",
+    "(%s).expand(trig=True)",
+    lambda statement, var, *args: statement)
+
+graph = FakeResultCard(
+    "Graph",
+    "plot(%s)",
+    no_pre_output,
+    format_output_function=format_graph,
+    eval_method=eval_graph)
 
 
 result_sets = [
