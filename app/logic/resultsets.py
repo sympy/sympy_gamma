@@ -83,10 +83,10 @@ def is_complex(input_evaluated):
 
 def is_trig(input_evaluated):
     try:
-        if any(input_evaluated.find(func) for func in (sympy.sin, sympy.cos,
-                                                       sympy.tan, sympy.csc,
-                                                       sympy.sec,
-                                                       sympy.cot)):
+        if (isinstance(input_evaluated, sympy.Basic) and
+            any(input_evaluated.find(func)
+                for func in (sympy.sin, sympy.cos, sympy.tan,
+                             sympy.csc, sympy.sec, sympy.cot))):
             return TRUE_AND_FIND_MORE
         return False
     except AttributeError:
@@ -186,7 +186,7 @@ digits = ResultCard(
 
 factorization = FakeResultCard(
     "Factors less than 100",
-    "sympy.ntheory.factorint(%s, limit=100)",
+    "factorint(%s, limit=100)",
     no_pre_output,
     format_input_function=format_long_integer,
     format_output_function=format_dict_title("Factor", "Times"),

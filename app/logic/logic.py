@@ -69,12 +69,12 @@ class SymPyGamma(object):
         except Exception as e:
             return self.handle_error(s, e)
 
-        r = input_repr
-        if r is not None:
+        if input_repr is not None:
             result = [
                 {"title": "Input", "input": s},
-                {"title": "SymPy", "input": s, "output": r},
+                {"title": "SymPy", "input": s, "output": input_repr},
             ]
+
             if isinstance(evaluated, sympy.Basic):
                 variables = evaluated.atoms(Symbol)
                 if len(variables) == 1:
@@ -83,8 +83,10 @@ class SymPyGamma(object):
                     var = None
             else:
                 var = None
+
             convert_input, cards = find_result_set(evaluated)
             namespace['input_evaluated'], var = convert_input(evaluated, var)
+
             # Come up with a solution to use all variables if more than 1
             # is entered.
             if var != None:  # See a better way to do this.
