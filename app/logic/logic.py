@@ -75,9 +75,12 @@ class SymPyGamma(object):
                 {"title": "Input", "input": s},
                 {"title": "SymPy", "input": s, "output": r},
             ]
-            variables = evaluated.atoms(Symbol)
-            if len(variables) == 1:
-                var = variables.pop()
+            if isinstance(evaluated, sympy.Basic):
+                variables = evaluated.atoms(Symbol)
+                if len(variables) == 1:
+                    var = variables.pop()
+                else:
+                    var = None
             else:
                 var = None
             convert_input, cards = find_result_set(evaluated)
