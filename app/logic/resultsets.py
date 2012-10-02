@@ -176,7 +176,7 @@ factorization = FakeResultCard(
     format_output_function=format_dict_title("Factor", "Times"),
     eval_method=eval_factorization)
 float_approximation = ResultCard("Floating-point approximation",
-                                 "%s.evalf()", no_pre_output)
+                                 "(%s).evalf()", no_pre_output)
 fractional_approximation = ResultCard("Fractional approximation",
                                       "nsimplify(%s)", no_pre_output)
 absolute_value = ResultCard("Absolute value", "Abs(%s)",
