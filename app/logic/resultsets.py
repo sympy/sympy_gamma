@@ -71,6 +71,10 @@ def is_float(input_evaluated):
 def is_numbersymbol(input_evaluated):
     return isinstance(input_evaluated, sympy.NumberSymbol)
 
+def is_constant(input_evaluated):
+    return (hasattr(input_evaluated, 'is_constant') and
+            input_evaluated.is_constant())
+
 def is_complex(input_evaluated):
     try:
         return sympy.I in input_evaluated.atoms()
@@ -142,6 +146,14 @@ def eval_graph(evaluator, variable):
     series = series.get_points()[0]
     return sympy.jscode(sympy.sympify(func)), json.dumps(series.tolist())
 
+def eval_factorization(evaluator, variable):
+    number = evaluator.eval("input_evaluated")
+    factors = sympy.ntheory.factorint(number, limit=100)
+    smallfactors = {}
+    for factor in factors:
+        if factor <= 100:
+            smallfactors[factor] = factors[factor]
+    return smallfactors
 
 # Result cards
 
@@ -156,12 +168,13 @@ series = ResultCard("Series expansion around 0", "series(%s, {_var}, 0, 10)",
 digits = ResultCard("Digits in base-10 expansion of number", "len(str(%s))",
                     no_pre_output,
                     format_input_function=format_long_integer)
-factorization = ResultCard("Factors less than 100",
-                           "sympy.ntheory.factorint(%s, limit=100)",
-                           no_pre_output,
-                           format_input_function=format_long_integer,
-                           format_output_function=format_dict_title("Factor",
-                                                                    "Times"))
+factorization = FakeResultCard(
+    "Factors less than 100",
+    "sympy.ntheory.factorint(%s, limit=100)",
+    no_pre_output,
+    format_input_function=format_long_integer,
+    format_output_function=format_dict_title("Factor", "Times"),
+    eval_method=eval_factorization)
 float_approximation = ResultCard("Floating-point approximation",
                                  "%s.evalf()", no_pre_output)
 fractional_approximation = ResultCard("Fractional approximation",
@@ -188,6 +201,7 @@ result_sets = [
     (is_rational, default_variable, [float_approximation]),
     (is_float, default_variable, [fractional_approximation]),
     (is_numbersymbol, default_variable, [float_approximation]),
+    (is_constant, default_variable, [float_approximation]),
     (is_complex, default_variable, [absolute_value, polar_angle,
                                     conjugate]),
     (is_trig, do_nothing, [trigexpand]),
