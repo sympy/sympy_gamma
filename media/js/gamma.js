@@ -82,7 +82,8 @@ function plotFunction(svg, xscale, yscale, xvalues, func) {
     drawPath(svg.append('g'), xscale, yscale, xvalues, func);
 }
 
-function traceMouse(svg, xscale, yscale, xmin, xmax, width, func) {
+function traceMouse(svg, xscale, yscale, xmin, xmax, width, func,
+                    variable, output_variable) {
     var g = svg.append('g');
     var circle = g.append('svg:circle')
         .attr('r', 5)
@@ -102,7 +103,8 @@ function traceMouse(svg, xscale, yscale, xmin, xmax, width, func) {
             circle.attr('cx', xscale(xval));
             circle.attr('cy', yscale(yval));
 
-            text.text("x: " + format(xval) + ", y: " + format(yval));
+            text.text(variable + ": " + format(xval) + ", " +
+                      output_variable + ": " + format(yval));
             var bbox = text[0][0].getBBox();
             text.attr('x', width / 2 - (bbox.width / 2));
             text.attr('y', bbox.height);
@@ -126,7 +128,12 @@ function setupGraphs() {
         var MARGIN_TOP = 25;
 
         var equation = $(this).data('function').trim();
-        var f = eval("(function(x) { return " + equation + "; } );");
+        var variable = $(this).data('variable');
+        var output_variable = 'y';
+        if (variable == 'y') {
+            output_variable = 'x';
+        }
+        var f = new Function(variable, 'return ' + equation + ';');
 
         var xvalues = $(this).data('xvalues');
         var xmin = d3.min(xvalues);
@@ -163,13 +170,15 @@ function setupGraphs() {
             attr('width', WIDTH + 'px').
             attr('height', HEIGHT + 'px');
 
+        // TODO refactor this into a 'Plot' object akin to SymPy's plot
+        // object
         drawAxis(x, svg.append('g'), 0,
                  MARGIN_TOP + ((HEIGHT - OFFSET_Y) / 2),
                  'bottom');
         drawAxis(y, svg.append('g'), WIDTH / 2, 0, 'right');
         plotFunction(svg, x, y, xvalues, f);
 
-        traceMouse(svg, x, y, xmin, xmax, WIDTH, f);
+        traceMouse(svg, x, y, xmin, xmax, WIDTH, f, variable, output_variable);
 
         // http://stackoverflow.com/questions/2483919
         $(svg[0][0]).attr({

@@ -131,20 +131,28 @@ def format_dict_title(*title):
     return _format_dict
 
 GRAPHING_CODE = """
-<div class="graph" data-function="{}" data-xvalues="{}">
+<div class="graph"
+     data-function="{function}"
+     data-variable="{variable}"
+     data-xvalues="{xvalues}"
+     data-yvalues="{yvalues}">
 </div>
 """
 
-def format_graph(js, formatter):
-    js, series = js
-    return GRAPHING_CODE.format(js, series)
+def format_graph(graph_data, formatter):
+    return GRAPHING_CODE.format(**graph_data)
 
 def eval_graph(evaluator, variable):
     from sympy.plotting.plot import LineOver1DRangeSeries
     func = evaluator.eval("input_evaluated")
     series = LineOver1DRangeSeries(func, (variable, -10, 10), nb_of_points=100)
-    series = series.get_points()[0]
-    return sympy.jscode(sympy.sympify(func)), json.dumps(series.tolist())
+    series = series.get_points()
+    return {
+        'function': sympy.jscode(sympy.sympify(func)),
+        'variable': repr(variable),
+        'xvalues': json.dumps(series[0].tolist()),
+        'yvalues': json.dumps(series[1].tolist())
+    }
 
 def eval_factorization(evaluator, variable):
     number = evaluator.eval("input_evaluated")
