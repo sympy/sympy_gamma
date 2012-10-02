@@ -102,6 +102,26 @@ div.cell_output td, div.cell_output th {
   padding: 0.25em 0.5em;
 }
 
+div.result_card button.card_options_toggle {
+  background: none;
+  border: none;
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+div.result_card div.card_options {
+  border-top: 1px solid #a8a8a8;
+  font-size: 1em;
+}
+
+div.result_card div.card_options h2 {
+  font-size: 1em;
+  margin: 0.5em 0;
+  padding: 0;
+}
+
 div.input {
   text-align: center;
   padding: 20px 0;

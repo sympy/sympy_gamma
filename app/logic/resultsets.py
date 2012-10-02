@@ -1,3 +1,4 @@
+import json
 import sympy
 from operator import itemgetter
 
@@ -20,15 +21,35 @@ class ResultCard(object):
         self.result_statement = result_statement
         self.pre_output_function = pre_output_function
 
-    def format_input(self, input_repr):
+    def eval(self, evaluator, variable):
+        line = self.result_statement.format(_var=variable) % 'input_evaluated'
+        return sympy.sympify(evaluator.eval(line, use_none_for_exceptions=True))
+
+    def format_input(self, input_repr, variable):
+        line = self.result_statement.format(_var=variable)
         if 'format_input_function' in self.card_info:
-            return self.card_info['format_input_function'](input_repr)
-        return input_repr
+            return line % self.card_info['format_input_function'](input_repr)
+        return line % input_repr
 
     def format_output(self, output, formatter):
         if 'format_output_function' in self.card_info:
             return self.card_info['format_output_function'](output, formatter)
         return formatter(output)
+
+
+class FakeResultCard(ResultCard):
+    """ResultCard whose displayed expression != actual code.
+
+    Used when creating the result to be displayed involves code that a user
+    would not normally need to do, e.g. calculating plot points (where a
+    user would simply use ``plot``)."""
+
+    def __init__(self, *args, **kwargs):
+        super(FakeResultCard, self).__init__(*args, **kwargs)
+        assert 'eval_method' in kwargs
+
+    def eval(self, evaluator, variable):
+        return self.card_info['eval_method'](evaluator, variable)
 
 
 # Decide which result card set to use
@@ -94,7 +115,6 @@ def format_long_integer(integer):
         return intstr[:20] + "..." + intstr[len(intstr) - 21:]
     return intstr
 
-
 def format_dict_title(*title):
     def _format_dict(dictionary, formatter):
         html = ['<table>',
@@ -105,6 +125,22 @@ def format_dict_title(*title):
         html.append('</tbody></table>')
         return '\n'.join(html)
     return _format_dict
+
+GRAPHING_CODE = """
+<div class="graph" data-function="{}" data-xvalues="{}">
+</div>
+"""
+
+def format_graph(js, formatter):
+    js, series = js
+    return GRAPHING_CODE.format(js, series)
+
+def eval_graph(evaluator, variable):
+    from sympy.plotting.plot import LineOver1DRangeSeries
+    func = evaluator.eval("input_evaluated")
+    series = LineOver1DRangeSeries(func, (variable, -10, 10), nb_of_points=100)
+    series = series.get_points()[0]
+    return sympy.jscode(sympy.sympify(func)), json.dumps(series.tolist())
 
 
 # Result cards
@@ -139,7 +175,10 @@ polar_angle = ResultCard("Angle in the complex plane",
 conjugate = ResultCard("Complex conjugate", "conjugate(%s)",
                        lambda s, *args: sympy.conjugate(s))
 trigexpand = ResultCard("Alternate form", "(%s).expand(trig=True)",
-                        lambda s, *args: s)
+                        lambda statement, var, *args: statement)
+graph = FakeResultCard("Graph", "plot(%s)", no_pre_output,
+                       format_output_function=format_graph,
+                       eval_method=eval_graph)
 
 
 result_sets = [
@@ -152,7 +191,7 @@ result_sets = [
     (is_complex, default_variable, [absolute_value, polar_angle,
                                     conjugate]),
     (is_trig, do_nothing, [trigexpand]),
-    (lambda x: True, do_nothing, [roots, diff, integral, series])
+    (lambda x: True, do_nothing, [graph, roots, diff, integral, series])
 ]
 
 def find_result_set(input_evaluated):

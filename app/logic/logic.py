@@ -56,7 +56,8 @@ class SymPyGamma(object):
             return
         try:
             evaluated = sympify(s, convert_xor=True, locals={
-                'integrate': sympy.Integral
+                'integrate': sympy.Integral,
+                'plot': lambda func: func
             })
             input_repr = repr(evaluated)
             namespace['input_evaluated'] = evaluated
@@ -95,18 +96,19 @@ class SymPyGamma(object):
                          "output": mathjax_latex(r)})
 
                 for card in cards:
-                    line = card.result_statement.format(_var=var)
-                    r = sympify(a.eval(line % 'input_evaluated',
-                                       use_none_for_exceptions=True))
-                    if r != "None":
-                        formatted_input = card.format_input(input_repr)
-                        result.append(dict(
-                            title=card.title,
-                            input=line % formatted_input,
-                            pre_output=latex(
-                                card.pre_output_function(formatted_input, var)),
-                            output=card.format_output(r, mathjax_latex)
-                        ))
+                    try:
+                        r = card.eval(a, var)
+                        if r != "None":
+                            formatted_input = card.format_input(input_repr, var)
+                            result.append(dict(
+                                title=card.title,
+                                input=formatted_input,
+                                pre_output=latex(
+                                    card.pre_output_function(formatted_input, var)),
+                                output=card.format_output(r, mathjax_latex)
+                            ))
+                    except SyntaxError:
+                        pass
             return result
         else:
             return None
