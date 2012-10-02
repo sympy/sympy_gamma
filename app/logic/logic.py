@@ -104,7 +104,7 @@ class SymPyGamma(object):
                                 title=card.title,
                                 input=formatted_input,
                                 pre_output=latex(
-                                    card.pre_output_function(formatted_input, var)),
+                                    card.pre_output_function(input_repr, var)),
                                 output=card.format_output(r, mathjax_latex)
                             ))
                     except SyntaxError:
