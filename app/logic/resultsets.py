@@ -120,7 +120,7 @@ def is_constant(input_evaluated):
 def is_complex(input_evaluated):
     try:
         return sympy.I in input_evaluated.atoms()
-    except AttributeError:
+    except (AttributeError, TypeError):
         return False
 
 def is_trig(input_evaluated):
