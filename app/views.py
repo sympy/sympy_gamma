@@ -17,7 +17,7 @@ LIVE_PROMOTION_MESSAGES = [
     'Want a full Python shell? Use ' + LIVE_URL + '.',
     'Experiment with SymPy at ' + LIVE_URL + '.',
     'Want to compute something more complicated?' +
-    ' Try a full Python/SymPy console at' + LIVE_URL + '.'
+    ' Try a full Python/SymPy console at ' + LIVE_URL + '.'
 ]
 
 class MobileTextInput(forms.widgets.TextInput):
