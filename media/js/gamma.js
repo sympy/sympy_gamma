@@ -97,7 +97,11 @@ function traceMouse(svg, xscale, yscale, xmin, xmax, width, func,
     var format = d3.format(".4r");
 
     $(svg[0][0]).mousemove(function(e) {
-        var xval = ((e.offsetX - (width / 2)) / width) * (xmax - xmin);
+        var offsetX = e.offsetX;
+        if (typeof e.offsetX == "undefined") {
+            offsetX = e.pageX - $(e.target).offset().left;
+        }
+        var xval = ((offsetX - (width / 2)) / width) * (xmax - xmin);
         var yval = func(xval);
         if ($.isNumeric(yval)) {
             circle.attr('cx', xscale(xval));
@@ -209,7 +213,7 @@ $(document).ready(function() {
     $('.cell_output:not(:has(script))').css('opacity', 1);
     MathJax.Hub.Register.MessageHook("New Math", function (message) {
         var script = MathJax.Hub.getJaxFor(message[1]).SourceElement();
-        $(script).parent().animate({
+        $(script).parents('.cell_output').animate({
             opacity: 1
         }, 700);
     });
