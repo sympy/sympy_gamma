@@ -1,0 +1,35 @@
+<!-- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" -->
+<!--     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> -->
+<!-- <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> -->
+<!--     <head> -->
+<!--         <title>SymPy Gamma: Error</title> -->
+
+<!--         <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> -->
+<!--         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0, maximum-scale=1" /> -->
+<!--     </head> -->
+<!--     <body> -->
+<!--         <div class="main"> -->
+<!--             <h1>Oops!</h1> -->
+
+<!--             <p>It looks like we've had a problem...</p> -->
+<!--         </div> -->
+<!--     </body> -->
+<!-- </html> -->
+
+{% extends "base.html" %}
+    {% block head_additional %}
+    <link rel="stylesheet" href="/media_files/css/style.css" type="text/css" />
+    {% endblock %}
+    {% block title %}
+    SymPy Gamma
+    {% endblock %}
+
+    {% block content %}
+        <div class="input">
+            <h1><a href="/">SymPy Gamma</a></h1>
+        </div>
+        <div class="result">
+            <h2>Oops!</h2>
+            <p>Looks like we've had a problem...</p>
+        </div>
+    {% endblock %}

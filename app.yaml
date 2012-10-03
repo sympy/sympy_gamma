@@ -14,3 +14,5 @@ handlers:
 libraries:
 - name: django
   version: "1.3"
+- name: numpy
+  version: "1.6.1"

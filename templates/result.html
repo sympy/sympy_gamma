@@ -17,18 +17,16 @@
                         {{ cell.title }}:
                     </div>
                     <div class="cell_input">
-                        <pre>{{ cell.input }}</pre>
+                        <pre>{{ cell.input|safe }}</pre>
                     </div>
                     {% if cell.output %}
                         <div class="cell_output">
                             {% if cell.pre_output %}
-                            <script type="math/tex"> {{ cell.pre_output|safe }} = </script> 
+                            <div class="cell_pre_output">
+                                <script type="math/tex"> {{cell.pre_output|safe }} = </script>
+                            </div>
                             {% endif %}
-                            {% if cell.use_mathjax %}
-                            <script type="math/tex; mode=display"> {{ cell.output|safe }} </script>
-                            {% else %}
-                            <div class="cell_output_plain">{{ cell.output }}</div>
-                            {% endif %}
+                            {{ cell.output|safe }}
                         </div>
                     {% else %}
                         {% comment %}Ugly hack since Django 1.3 (latest
@@ -56,7 +54,10 @@
                 </div>
             {% endfor %}
             <div class="foot">
-                <a class="wolfram" href="http://www.wolframalpha.com/input/?i={{ input|urlencode }}">Wolfram|Alpha</a>
+                See what <a class="wolfram"
+                href="http://www.wolframalpha.com/input/?i={{input|urlencode}}">
+                    Wolfram|Alpha</a> has to say.
+                <p>{{ promote_live|safe }}</p>
             </div>
          </div>
 {% endblock %}

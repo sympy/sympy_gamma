@@ -1,14 +1,22 @@
 import sys
 from utils import Eval
+from resultsets import find_result_set
 from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
 import sympy
 import sympy.parsing.sympy_parser as sympy_parser
 
 PREEXEC = """from __future__ import division
 from sympy import *
+import sympy
 x, y, z = symbols('x,y,z')
 k, m, n = symbols('k,m,n', integer=True)
 f, g, h = map(Function, 'fgh')"""
+
+
+def mathjax_latex(obj):
+    return ''.join(['<script type="math/tex; mode=display">', latex(obj),
+                    '</script>'])
+
 
 class SymPyGamma(object):
 
@@ -47,8 +55,12 @@ class SymPyGamma(object):
         if not len(s):
             return
         try:
-            input_repr = repr(sympy_parser.parse_expr(s, convert_xor=True))
-            namespace['input_evaluated'] = sympy_parser.parse_expr(s, convert_xor=True)
+            evaluated = sympify(s, convert_xor=True, locals={
+                'integrate': sympy.Integral,
+                'plot': lambda func: func
+            })
+            input_repr = repr(evaluated)
+            namespace['input_evaluated'] = evaluated
         except sympy_parser.TokenError:
             return [
                 {"title": "Input", "input": s},
@@ -57,66 +69,51 @@ class SymPyGamma(object):
         except Exception as e:
             return self.handle_error(s, e)
 
-        r = input_repr
-        if r is not None:
+        if input_repr is not None:
             result = [
-                {"title": "Input", "input": input_repr},
-                {"title": "SymPy", "input": input_repr, "output": r,
-                 "use_mathjax": False},
-                    ]
-            code = """\
-a = input_evaluated.atoms(Symbol)
-if len(a) == 1:
-    x = a.pop()
-    result = %s
-else:
-    result = None
-result
-"""
-            var = a.eval(code % ('x'), use_none_for_exceptions=True)
+                {"title": "Input", "input": s},
+                {"title": "SymPy", "input": s, "output": input_repr},
+            ]
+
+            if isinstance(evaluated, sympy.Basic):
+                variables = evaluated.atoms(Symbol)
+                if len(variables) == 1:
+                    var = variables.pop()
+                else:
+                    var = None
+            else:
+                var = None
+
+            convert_input, cards = find_result_set(evaluated)
+            namespace['input_evaluated'], var = convert_input(evaluated, var)
+
             # Come up with a solution to use all variables if more than 1
             # is entered.
-            line = "simplify(input_evaluated)"
-            simplified = a.eval(line, use_none_for_exceptions=True)
-            r = sympify(a.eval(code % (line), use_none_for_exceptions=True))
-            s = 'input_evaluated'
-            if simplified != "None" and simplified != input_repr:
-                result.append(
+            if var != None:  # See a better way to do this.
+                input_repr = repr(namespace['input_evaluated'])
+                line = "simplify(input_evaluated)"
+                simplified = a.eval(line, use_none_for_exceptions=True)
+                r = sympify(a.eval(line, use_none_for_exceptions=True))
+
+                if simplified != "None" and simplified != input_repr:
+                    result.append(
                         {"title": "Simplification", "input": simplified,
-                         "output": latex(r), "use_mathjax": True})
-            if var != None: # See a better way to do this.
-                var = var.replace("None", "").replace("\n", "")
-                if len(var):
-                    line = "solve(%s, {_var})".format(_var=var)
-                    r = sympify(a.eval(code % (line % s), use_none_for_exceptions=True))
-                    if r and r != "None":
-                        result.append(
-                            {"title": "Roots", "input": line % simplified,
-                             "pre_output": latex(var), "output": latex(r),
-                             "use_mathjax": True})
+                         "output": mathjax_latex(r)})
 
-                    line = "diff(%s, {_var})".format(_var=var)
-                    r = sympify(a.eval(code % (line % s), use_none_for_exceptions=True))
-                    if r and r != "None":
-                        result.append(
-                                {"title": "Derivative", "input": (line % simplified),
-                                 "pre_output": latex(Derivative(input_repr, Symbol(var))),
-                                 "output": latex(r), "use_mathjax": True})
-
-                    line = "integrate(%s, {_var})".format(_var=var)
-                    r = sympify(a.eval(code % (line % s), use_none_for_exceptions=True))
-                    if r and r != "None":
-                        result.append(
-                                {"title": "Indefinite integral", "input": line % simplified,
-                                 "pre_output": latex(Integral(input_repr,Symbol(var))),
-                                 "output": latex(r), "use_mathjax": True})
-
-                    line = "series(%s, {_var}, 0, 10)".format(_var=var)
-                    r = sympify(a.eval(code % (line % s), use_none_for_exceptions=True))
-                    if r and r != "None":
-                        result.append(
-                                {"title": "Series expansion around 0", "input": line % simplified,
-                                 "output": latex(r), "use_mathjax": True})
+                for card in cards:
+                    try:
+                        r = card.eval(a, var)
+                        if r != "None":
+                            formatted_input = card.format_input(input_repr, var)
+                            result.append(dict(
+                                title=card.title,
+                                input=formatted_input,
+                                pre_output=latex(
+                                    card.pre_output_function(input_repr, var)),
+                                output=card.format_output(r, mathjax_latex)
+                            ))
+                    except SyntaxError:
+                        pass
             return result
         else:
             return None
