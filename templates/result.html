@@ -17,7 +17,7 @@
                         {{ cell.title }}:
                     </div>
                     <div class="cell_input">
-                        <pre>{{ cell.input }}</pre>
+                        <pre>{{ cell.input|safe }}</pre>
                     </div>
                     {% if cell.output %}
                         <div class="cell_output">

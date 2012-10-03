@@ -102,6 +102,10 @@ div.cell_output td, div.cell_output th {
   padding: 0.25em 0.5em;
 }
 
+div.cell_output ul {
+  list-style-type: none;
+}
+
 div.result_card button.card_options_toggle {
   background: none;
   border: none;

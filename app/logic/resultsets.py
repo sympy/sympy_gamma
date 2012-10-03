@@ -52,6 +52,46 @@ class FakeResultCard(ResultCard):
         return self.card_info['eval_method'](evaluator, variable)
 
 
+class MultiResultCard(ResultCard):
+    """Tries multiple statements and displays the first that works."""
+
+    def __init__(self, title, *cards):
+        super(MultiResultCard, self).__init__(title, '', lambda *args: '')
+        self.cards = cards
+        self.cards_used = []
+
+    def eval(self, evaluator, variable):
+        self.cards_used = []
+        original = sympy.sympify(evaluator.eval("input_evaluated"))
+        results = []
+        for card in self.cards:
+            result = card.eval(evaluator, variable)
+            if result != None and result != original and result not in results:
+                # TODO Implicit state is bad, come up with better API
+                self.cards_used.append(card)
+                results.append((card, result))
+        if results:
+            return results
+        return "None"
+
+    def format_input(self, input_repr, variable):
+        html = ["<ul>"]
+        html.extend(
+            "<li>" + str(c.format_input(input_repr, variable)) + "</li>"
+            for c in self.cards_used)
+        html.append("</ul>")
+        return "\n".join(html)
+
+    def format_output(self, output, formatter):
+        html = ["<ul>"]
+        for card, result in output:
+            html.append("<li>")
+            html.append(card.format_output(result, formatter))
+            html.append("</li>")
+        html.append("</ul>")
+        return "\n".join(html)
+
+
 # Decide which result card set to use
 
 TRUE_AND_FIND_MORE = "True, and look for more result sets"
@@ -72,8 +112,10 @@ def is_numbersymbol(input_evaluated):
     return isinstance(input_evaluated, sympy.NumberSymbol)
 
 def is_constant(input_evaluated):
-    return (hasattr(input_evaluated, 'is_constant') and
-            input_evaluated.is_constant())
+    # is_constant reduces trig identities (even with simplify=False?) so we
+    # check free_symbols instead
+    return (hasattr(input_evaluated, 'free_symbols') and
+            not input_evaluated.free_symbols)
 
 def is_complex(input_evaluated):
     try:
@@ -145,7 +187,7 @@ def format_graph(graph_data, formatter):
 def eval_graph(evaluator, variable):
     from sympy.plotting.plot import LineOver1DRangeSeries
     func = evaluator.eval("input_evaluated")
-    series = LineOver1DRangeSeries(func, (variable, -10, 10), nb_of_points=100)
+    series = LineOver1DRangeSeries(func, (variable, -10, 10), nb_of_points=200)
     series = series.get_points()
     return {
         'function': sympy.jscode(sympy.sympify(func)),
@@ -230,6 +272,32 @@ trigexpand = ResultCard(
     "(%s).expand(trig=True)",
     lambda statement, var, *args: statement)
 
+trigsimp = ResultCard(
+    "Alternate form",
+    "trigsimp(%s)",
+    lambda statement, var, *args: statement)
+
+trigsincos = ResultCard(
+    "Alternate form",
+    "(%s).rewrite(csc, sin, sec, cos, cot, tan)",
+    lambda statement, var, *args: statement
+)
+
+
+trigexp = ResultCard(
+    "Alternate form",
+    "(%s).rewrite(sin, exp, cos, exp, tan, exp)",
+    lambda statement, var, *args: statement
+)
+
+trig_alternate = MultiResultCard(
+    "Alternate form",
+    trigexpand,
+    trigsimp,
+    trigsincos,
+    trigexp
+)
+
 graph = FakeResultCard(
     "Graph",
     "plot(%s)",
@@ -248,7 +316,7 @@ result_sets = [
     (is_constant, default_variable, [float_approximation]),
     (is_complex, default_variable, [absolute_value, polar_angle,
                                     conjugate]),
-    (is_trig, do_nothing, [trigexpand]),
+    (is_trig, do_nothing, [trig_alternate]),
     (lambda x: True, do_nothing, [graph, roots, diff, integral, series])
 ]
 
