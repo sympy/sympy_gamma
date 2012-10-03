@@ -27,6 +27,10 @@ h1 a:hover {
   color: #96C56F;
 }
 
+h1 a img {
+  vertical-align: bottom;
+}
+
 div.menu {
   padding: 0 0.5em;
   font-family: sans-serif;
