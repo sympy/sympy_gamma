@@ -45,14 +45,14 @@ function drawAxis(scale, g, x, y, orientation) {
     return axis;
 }
 
-function drawCircles(g, xscale, yscale, xvalues, func) {
+function drawCircles(g, xscale, yscale, xvalues, yvalues) {
     var pts = g.selectAll('circle').data(xvalues).enter();
     pts.append('circle')
         .attr('cx', function(value) {
             return xscale(value);
         })
-        .attr('cy', function(value) {
-            var value = func(value);
+        .attr('cy', function(value, index) {
+            var value = yvalues[index];
             if (!$.isNumeric(value)) return -100;
             return yscale(value);
         })
@@ -60,13 +60,13 @@ function drawCircles(g, xscale, yscale, xvalues, func) {
         .attr('fill', d3.rgb(0,100,200));
 }
 
-function drawPath(g, xscale, yscale, xvalues, func) {
+function drawPath(g, xscale, yscale, xvalues, yvalues) {
     var line = d3.svg.line()
         .x(function(value) {
             return xscale(value);
         })
-        .y(function(value) {
-            var value = func(value);
+        .y(function(value, index) {
+            var value = yvalues[index];
             if (!$.isNumeric(value)) return -100;
             return yscale(value);
         });
@@ -77,9 +77,9 @@ function drawPath(g, xscale, yscale, xvalues, func) {
         .attr('stroke', d3.rgb(0, 100, 200));
 }
 
-function plotFunction(svg, xscale, yscale, xvalues, func) {
-    drawCircles(svg.append('g'), xscale, yscale, xvalues, func);
-    drawPath(svg.append('g'), xscale, yscale, xvalues, func);
+function plotFunction(svg, xscale, yscale, xvalues, yvalues) {
+    drawCircles(svg.append('g'), xscale, yscale, xvalues, yvalues);
+    drawPath(svg.append('g'), xscale, yscale, xvalues, yvalues);
 }
 
 function traceMouse(svg, xscale, yscale, xmin, xmax, width, func,
@@ -140,13 +140,7 @@ function setupGraphs() {
         var xmax = d3.max(xvalues);
         var dx = Math.PI / 16;
 
-        var yvalues = [];
-        var delta = (xmax - xmin) / 32;
-        for (var i = xmin; i < xmax; i+=delta) {
-            var v = f(i);
-            if (!$.isNumeric(v)) continue;
-            yvalues.push(f(i));
-        }
+        var yvalues = $(this).data('yvalues');
         var ymin = d3.min(yvalues);
         var ymax = d3.max(yvalues);
 
@@ -176,7 +170,7 @@ function setupGraphs() {
                  MARGIN_TOP + ((HEIGHT - OFFSET_Y) / 2),
                  'bottom');
         drawAxis(y, svg.append('g'), WIDTH / 2, 0, 'right');
-        plotFunction(svg, x, y, xvalues, f);
+        plotFunction(svg, x, y, xvalues, yvalues);
 
         traceMouse(svg, x, y, xmin, xmax, WIDTH, f, variable, output_variable);
 
