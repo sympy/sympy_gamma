@@ -54,7 +54,10 @@
                 </div>
             {% endfor %}
             <div class="foot">
-                <a class="wolfram" href="http://www.wolframalpha.com/input/?i={{ input|urlencode }}">Wolfram|Alpha</a>
+                See what <a class="wolfram"
+                href="http://www.wolframalpha.com/input/?i={{input|urlencode}}">
+                    Wolfram|Alpha</a> has to say.
+                <p>{{ promote_live|safe }}</p>
             </div>
          </div>
 {% endblock %}
