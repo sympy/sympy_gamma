@@ -9,6 +9,16 @@ import settings
 
 import logging
 import cgi
+import random
+
+LIVE_URL = '<a href="http://live.sympy.org">SymPy Live</a>'
+LIVE_PROMOTION_MESSAGES = [
+    'Need more control? Try ' + LIVE_URL + '.',
+    'Want a full Python shell? Use ' + LIVE_URL + '.',
+    'Experiment with SymPy at ' + LIVE_URL + '.',
+    'Want to compute something more complicated?' +
+    ' Try a full Python/SymPy console at ' + LIVE_URL + '.'
+]
 
 class MobileTextInput(forms.widgets.TextInput):
     def render(self, name, value, attrs=None):
@@ -38,11 +48,14 @@ def input(request):
             input = form.cleaned_data["i"]
             g = SymPyGamma()
             r = g.eval(input)
+
+            # For some reason the |random tag always returns the same result
             return render_to_response("result.html", {
                 "input": input,
                 "result": r,
                 "form": form,
                 "MEDIA_URL": settings.MEDIA_URL,
+                "promote_live": random.choice(LIVE_PROMOTION_MESSAGES)
                 })
 
 def about(request):

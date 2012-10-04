@@ -83,11 +83,47 @@ div.cell_output {
   opacity: 0.1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-div.cell_output div.cell_output_plain {
   font-family: monospace;
   text-align: center;
+}
+
+div.cell_output div.cell_pre_output {
+  text-align: left;
+}
+
+div.cell_output table {
+  border-collapse: collapse;
+  border: 1px solid #000;
+  margin: auto;
+}
+
+div.cell_output td, div.cell_output th {
+  border: 1px solid #000;
+  padding: 0.25em 0.5em;
+}
+
+div.cell_output ul {
+  list-style-type: none;
+}
+
+div.result_card button.card_options_toggle {
+  background: none;
+  border: none;
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+div.result_card div.card_options {
+  border-top: 1px solid #a8a8a8;
+  font-size: 1em;
+}
+
+div.result_card div.card_options h2 {
+  font-size: 1em;
+  margin: 0.5em 0;
+  padding: 0;
 }
 
 div.input {
