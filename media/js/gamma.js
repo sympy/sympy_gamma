@@ -176,20 +176,13 @@ function setupGraphs() {
         var ymax = d3.max(yvalues);
         var ymean = d3.mean(yvalues);
 
-        if (Math.abs(ymin) >= Math.abs(ymax)) {
-            ymax = -ymin;
-        }
-        else {
-            ymin = -ymax;
-        }
-
         // Prevent asymptotes from dominating the graph
         if (Math.abs(ymax) >= 10 * Math.abs(ymean)) {
             ymax = Math.abs(ymean);
-            ymin = -ymax;
         }
-
-        console.log(ymin, ymax, ymean);
+        if (Math.abs(ymin) >= 10 * Math.abs(ymean)) {
+            ymin = -Math.abs(ymean);
+        }
 
         var x = d3.scale.linear()
             .domain([xmin, xmax])
@@ -206,9 +199,7 @@ function setupGraphs() {
 
         // TODO refactor this into a 'Plot' object akin to SymPy's plot
         // object
-        drawAxis(x, svg.append('g'), 0,
-                 MARGIN_TOP + ((HEIGHT - OFFSET_Y) / 2),
-                 'bottom');
+        drawAxis(x, svg.append('g'), 0, y(0), 'bottom');
         drawAxis(y, svg.append('g'), WIDTH / 2, 0, 'right');
         plotFunction(svg, x, y, xvalues, yvalues);
 
