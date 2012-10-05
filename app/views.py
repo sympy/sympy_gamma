@@ -3,9 +3,12 @@ from django.shortcuts import render_to_response
 from django.utils import simplejson
 from django import forms
 
+from google.appengine.api import users
+
 from logic import Eval, SymPyGamma
 
 import settings
+import models
 
 import logging
 import cgi
@@ -31,17 +34,38 @@ class MobileTextInput(forms.widgets.TextInput):
 class SearchForm(forms.Form):
     i = forms.CharField(required=False, widget=MobileTextInput())
 
-e = Eval()
+def authenticate(view):
+    def _wrapper(request):
+        user = users.get_current_user()
+        template, kwargs = view(request, user)
+        if user:
+            kwargs['auth_url'] = users.create_logout_url("/")
+            kwargs['auth_message'] = "Logout"
+        else:
+            kwargs['auth_url'] = users.create_login_url("/")
+            kwargs['auth_message'] = "Login/Register"
+        return render_to_response(template, kwargs)
+    return _wrapper
 
-def index(request):
+@authenticate
+def index(request, user):
     form = SearchForm()
-    return render_to_response("index.html", {
+
+    if user:
+        history = models.Query.query(models.Query.user_id==user.user_id())
+        history = history.order(-models.Query.date).fetch(10)
+    else:
+        history = None
+
+    return ("index.html", {
         "form": form,
         "MEDIA_URL": settings.MEDIA_URL,
         "main_active": "selected",
+        "history": history
         })
 
-def input(request):
+@authenticate
+def input(request, user):
     if request.method == "GET":
         form = SearchForm(request.GET)
         if form.is_valid():
@@ -49,8 +73,19 @@ def input(request):
             g = SymPyGamma()
             r = g.eval(input)
 
+            if not r:
+                r =  [{
+                    "title": "Input",
+                    "input": input,
+                    "output": "Can't handle the input."
+                }]
+            elif user:
+                if not models.Query.query(models.Query.text==input).get():
+                    query = models.Query(text=input, user_id=user.user_id())
+                    query.put()
+
             # For some reason the |random tag always returns the same result
-            return render_to_response("result.html", {
+            return ("result.html", {
                 "input": input,
                 "result": r,
                 "form": form,
@@ -58,8 +93,9 @@ def input(request):
                 "promote_live": random.choice(LIVE_PROMOTION_MESSAGES)
                 })
 
-def about(request):
-    return render_to_response("about.html", {
+@authenticate
+def about(request, user):
+    return ("about.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "about_active": "selected",
         })

@@ -283,7 +283,6 @@ trigsincos = ResultCard(
     lambda statement, var, *args: statement
 )
 
-
 trigexp = ResultCard(
     "Alternate form",
     "(%s).rewrite(sin, exp, cos, exp, tan, exp)",

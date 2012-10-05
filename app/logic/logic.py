@@ -24,10 +24,6 @@ class SymPyGamma(object):
         r = self.try_sympy(s)
         if r:
             return r
-        return [
-                {"title": "Input", "input": s,
-                    "output": "Can't handle the input."},
-                ]
 
     def handle_error(self, s, e):
         if isinstance(e, SyntaxError):
