@@ -201,12 +201,20 @@ def eval_graph(evaluator, variable):
     if len(free_symbols) != 1 or variable not in free_symbols:
         raise ValueError("Cannot graph function of multiple variables")
     series = LineOver1DRangeSeries(func, (variable, -10, 10), nb_of_points=200)
-    series = series.get_points()
+    # returns a list of [[x,y], [next_x, next_y]] pairs
+    series = series.get_segments()
+    xvalues = []
+    yvalues = []
+    for point in series:
+        xvalues.append(point[0][0])
+        yvalues.append(point[0][1])
+    xvalues.append(series[-1][1][0])
+    yvalues.append(series[-1][1][1])
     return {
         'function': sympy.jscode(sympy.sympify(func)),
         'variable': repr(variable),
-        'xvalues': json.dumps(series[0].tolist()),
-        'yvalues': json.dumps(series[1].tolist())
+        'xvalues': json.dumps(xvalues),
+        'yvalues': json.dumps(yvalues)
     }
 
 def eval_factorization(evaluator, variable):

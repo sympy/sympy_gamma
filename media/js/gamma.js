@@ -174,6 +174,7 @@ function setupGraphs() {
         var yvalues = $(this).data('yvalues');
         var ymin = d3.min(yvalues);
         var ymax = d3.max(yvalues);
+        var ymean = d3.mean(yvalues);
 
         if (Math.abs(ymin) >= Math.abs(ymax)) {
             ymax = -ymin;
@@ -181,6 +182,14 @@ function setupGraphs() {
         else {
             ymin = -ymax;
         }
+
+        // Prevent asymptotes from dominating the graph
+        if (Math.abs(ymax) >= 10 * Math.abs(ymean)) {
+            ymax = Math.abs(ymean);
+            ymin = -ymax;
+        }
+
+        console.log(ymin, ymax, ymean);
 
         var x = d3.scale.linear()
             .domain([xmin, xmax])
@@ -211,8 +220,6 @@ function setupGraphs() {
             xmlns: "http://www.w3.org/2000/svg"
         });
 
-        // https://developer.mozilla.org/en-US/docs/DOM/window.btoa
-        // supported in everything except IE < 10
         var serializer = new XMLSerializer();
         var svgData = window.btoa(serializer.serializeToString(svg[0][0]));
 
