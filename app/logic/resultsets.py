@@ -96,6 +96,9 @@ class MultiResultCard(ResultCard):
 
 TRUE_AND_FIND_MORE = "True, and look for more result sets"
 
+def is_derivative(input_evaluated):
+    return isinstance(input_evaluated, sympy.Derivative)
+
 def is_integral(input_evaluated):
     return isinstance(input_evaluated, sympy.Integral)
 
@@ -139,11 +142,17 @@ def is_trig(input_evaluated):
 
 def extract_integrand(input_evaluated, variable):
     assert isinstance(input_evaluated, sympy.Integral)
-    if len(input_evaluated.limits[0]) > 1:  # if there are limits]
+    if len(input_evaluated.limits[0]) > 1:  # if there are limits
         variable = input_evaluated.limits[0]
     elif len(input_evaluated.variables) == 1:
         variable = input_evaluated.variables[0]
     return input_evaluated.function, variable
+
+def extract_derivative(input_evaluated, variable):
+    assert isinstance(input_evaluated, sympy.Derivative)
+    if len(input_evaluated.variables) == 1:
+        variable = input_evaluated.variables[0]
+    return input_evaluated.expr, variable
 
 def do_nothing(input_evaluated, variable):
     return input_evaluated, variable
@@ -307,6 +316,7 @@ graph = FakeResultCard(
 
 result_sets = [
     (is_integral, extract_integrand, [integral]),
+    (is_derivative, extract_derivative, [diff]),
     (is_integer, default_variable,
      [digits, float_approximation, factorization]),
     (is_rational, default_variable, [float_approximation]),

@@ -53,7 +53,8 @@ class SymPyGamma(object):
         try:
             evaluated = sympify(s, convert_xor=True, locals={
                 'integrate': sympy.Integral,
-                'plot': lambda func: func
+                'plot': lambda func: func,
+                'diff': sympy.Derivative
             })
             input_repr = repr(evaluated)
             namespace['input_evaluated'] = evaluated
