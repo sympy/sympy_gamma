@@ -236,17 +236,7 @@ function setupGraphs() {
     });
 }
 
-$(document).ready(function() {
-    $('.cell_output:not(:has(script))').css('opacity', 1);
-    MathJax.Hub.Register.MessageHook("New Math", function (message) {
-        var script = MathJax.Hub.getJaxFor(message[1]).SourceElement();
-        $(script).parents('.cell_output').animate({
-            opacity: 1
-        }, 700);
-    });
-
-    setupGraphs();
-
+function setupExamples() {
     var delay = 0;
     $('.example-group div.contents').each(function() {
         var contents = $(this);
@@ -267,9 +257,38 @@ $(document).ready(function() {
             createCookie(header.html(), contents.is(':visible'), 365);
         });
     });
+
     $('#random-example').click(function(e) {
         var examples = $('.example-group a');
-        var index = Math.round(Math.random() * examples.length);
+        var index = Math.floor(Math.random() * examples.length);
         window.location = $(examples[index]).attr('href');
     });
+}
+
+function setupSavedQueries() {
+    $('div.col.recent a.remove').click(function(e) {
+        var link = $(e.target);
+        e.preventDefault();
+        link.parent().slideUp(300);
+        $.get(link.attr('href'));
+    });
+
+    $('#clear-all-recent').click(function() {
+        $('div.col.recent a.remove').click();
+    })
+}
+
+$(document).ready(function() {
+    $('.cell_output:not(:has(script))').css('opacity', 1);
+    MathJax.Hub.Register.MessageHook("New Math", function (message) {
+        var script = MathJax.Hub.getJaxFor(message[1]).SourceElement();
+        $(script).parents('.cell_output').animate({
+            opacity: 1
+        }, 700);
+    });
+
+    setupGraphs();
+
+    setupExamples();
+    setupSavedQueries();
 });

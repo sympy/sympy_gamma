@@ -13,6 +13,7 @@ import models
 import logging
 import cgi
 import random
+import json
 
 LIVE_URL = '<a href="http://live.sympy.org">SymPy Live</a>'
 LIVE_PROMOTION_MESSAGES = [
@@ -35,16 +36,16 @@ class SearchForm(forms.Form):
     i = forms.CharField(required=False, widget=MobileTextInput())
 
 def authenticate(view):
-    def _wrapper(request):
+    def _wrapper(request, **kwargs):
         user = users.get_current_user()
-        template, kwargs = view(request, user)
+        template, params = view(request, user, **kwargs)
         if user:
-            kwargs['auth_url'] = users.create_logout_url("/")
-            kwargs['auth_message'] = "Logout"
+            params['auth_url'] = users.create_logout_url("/")
+            params['auth_message'] = "Logout"
         else:
-            kwargs['auth_url'] = users.create_login_url("/")
-            kwargs['auth_message'] = "Login/Register"
-        return render_to_response(template, kwargs)
+            params['auth_url'] = users.create_login_url("/")
+            params['auth_message'] = "Login/Register"
+        return render_to_response(template, params)
     return _wrapper
 
 @authenticate
@@ -99,3 +100,19 @@ def about(request, user):
         "MEDIA_URL": settings.MEDIA_URL,
         "about_active": "selected",
         })
+
+def remove_query(request, qid):
+    user = users.get_current_user()
+
+    if user:
+        models.ndb.Key(urlsafe=qid).delete()
+        response = {
+            'result': 'success',
+        }
+    else:
+        response = {
+            'result': 'error',
+            'message': 'Not logged in or invalid user.'
+        }
+
+    return HttpResponse(json.dumps(response), mimetype='application/json')
