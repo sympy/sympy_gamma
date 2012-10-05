@@ -51,10 +51,6 @@ div.menu a.selected {
   font-weight: bold;
 }
 
-div.menu div.menu_right {
-  float: right;
-}
-
 div.result_card {
   border: 2px solid #a8a8a8;
   margin: 10px;
@@ -265,6 +261,10 @@ div.example-group h3:before {
   content: "▸ ";
 }
 
+div.example-group h3.shown:before {
+  content: "▾ ";
+}
+
 div.example-group li {
   margin: 0 1em;
 }
@@ -298,6 +298,20 @@ p {
 }
 
 @media screen and (max-device-width: 960px) {
+  div.col {
+    width: auto;
+    margin: 10px 10px;
+    font-size: 125%;
+  }
+
+  div.col.example div.example-group li {
+    margin: 0.25em 0;
+  }
+
+  div.col.example div.example-group li span {
+    display: block;
+    float: none;
+  }
   
   div.input form {
     margin: 0 auto;

@@ -44,7 +44,7 @@ def authenticate(view):
             params['auth_message'] = "Logout"
         else:
             params['auth_url'] = users.create_login_url("/")
-            params['auth_message'] = "Login/Register"
+            params['auth_message'] = "Login"
         return render_to_response(template, params)
     return _wrapper
 
