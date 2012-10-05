@@ -196,6 +196,10 @@ def format_graph(graph_data, formatter):
 def eval_graph(evaluator, variable):
     from sympy.plotting.plot import LineOver1DRangeSeries
     func = evaluator.eval("input_evaluated")
+
+    free_symbols = sympy.sympify(func).free_symbols
+    if len(free_symbols) != 1 or variable not in free_symbols:
+        raise ValueError("Cannot graph function of multiple variables")
     series = LineOver1DRangeSeries(func, (variable, -10, 10), nb_of_points=200)
     series = series.get_points()
     return {
@@ -316,7 +320,7 @@ graph = FakeResultCard(
 
 result_sets = [
     (is_integral, extract_integrand, [integral]),
-    (is_derivative, extract_derivative, [diff]),
+    (is_derivative, extract_derivative, [diff, graph]),
     (is_integer, default_variable,
      [digits, float_approximation, factorization]),
     (is_rational, default_variable, [float_approximation]),
