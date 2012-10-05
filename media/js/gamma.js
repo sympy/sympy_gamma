@@ -130,6 +130,7 @@ function traceMouse(svg, xscale, yscale, xmin, xmax, width, func,
         }
         var xval = ((offsetX - (width / 2)) / width) * (xmax - xmin);
         var yval = func(xval);
+
         if ($.isNumeric(yval)) {
             circle.attr('cx', xscale(xval));
             circle.attr('cy', yscale(yval));
@@ -174,14 +175,26 @@ function setupGraphs() {
         var yvalues = $(this).data('yvalues');
         var ymin = d3.min(yvalues);
         var ymax = d3.max(yvalues);
-        var ymean = d3.mean(yvalues);
+
+        var ypos = [];
+        var yneg = [];
+        for (var i = 0; i < yvalues.length; i++) {
+            if (yvalues[i] >= 0) {
+                ypos.push(yvalues[i]);
+            }
+            if (yvalues[i] <= 0) {
+                yneg.push(yvalues[i]);
+            }
+        }
+        var yposmean = Math.abs(d3.mean(ypos));
+        var ynegmean = Math.abs(d3.mean(yneg));
 
         // Prevent asymptotes from dominating the graph
-        if (Math.abs(ymax) >= 10 * Math.abs(ymean)) {
-            ymax = Math.abs(ymean);
+        if (Math.abs(ymax) >= 10 * yposmean) {
+            ymax = yposmean;
         }
-        if (Math.abs(ymin) >= 10 * Math.abs(ymean)) {
-            ymin = -Math.abs(ymean);
+        if (Math.abs(ymin) >= 10 * ynegmean) {
+            ymin = -ynegmean;
         }
 
         var x = d3.scale.linear()
@@ -245,6 +258,9 @@ function setupExamples() {
             contents.delay(500 + delay).slideUp(500);
             delay += 100;
         }
+        else {
+            header.toggleClass('shown');
+        }
     });
 
     $('.example-group h3').click(function(e) {
@@ -254,6 +270,7 @@ function setupExamples() {
         contents.stop(false, true).slideToggle(500, function() {
             createCookie(header.html(), contents.is(':visible'), 365);
         });
+        header.toggleClass('shown');
     });
 
     $('#random-example').click(function(e) {
