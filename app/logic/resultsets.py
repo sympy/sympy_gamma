@@ -200,9 +200,14 @@ def eval_graph(evaluator, variable):
     free_symbols = sympy.sympify(func).free_symbols
     if len(free_symbols) != 1 or variable not in free_symbols:
         raise ValueError("Cannot graph function of multiple variables")
-    series = LineOver1DRangeSeries(func, (variable, -10, 10), nb_of_points=200)
-    # returns a list of [[x,y], [next_x, next_y]] pairs
-    series = series.get_segments()
+
+    try:
+        series = LineOver1DRangeSeries(func, (variable, -10, 10), nb_of_points=200)
+        # returns a list of [[x,y], [next_x, next_y]] pairs
+        series = series.get_segments()
+    except TypeError:
+        raise ValueError("Cannot graph function")
+
     xvalues = []
     yvalues = []
     for point in series:
