@@ -24,6 +24,33 @@
         };
 }());
 
+// http://www.quirksmode.org/js/cookies.html
+// Used under terms at http://www.quirksmode.org/about/copyright.html
+function createCookie(name,value,days) {
+	if (days) {
+		var date = new Date();
+		date.setTime(date.getTime()+(days*24*60*60*1000));
+		var expires = "; expires="+date.toGMTString();
+	}
+	else var expires = "";
+	document.cookie = name+"="+value+expires+"; path=/";
+}
+
+function readCookie(name) {
+	var nameEQ = name + "=";
+	var ca = document.cookie.split(';');
+	for(var i=0;i < ca.length;i++) {
+		var c = ca[i];
+		while (c.charAt(0)==' ') c = c.substring(1,c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+	}
+	return null;
+}
+
+function eraseCookie(name) {
+	createCookie(name,"",-1);
+}
+
 function drawAxis(scale, g, x, y, orientation) {
     var color = d3.rgb(50,50,50);
     var strokeWidth = 0.5;
@@ -219,4 +246,30 @@ $(document).ready(function() {
     });
 
     setupGraphs();
+
+    var delay = 0;
+    $('.example-group div.contents').each(function() {
+        var contents = $(this);
+        var header = $(this).siblings('h3');
+        var wasOpen = readCookie(header.html());
+
+        if (!wasOpen || wasOpen === 'false') {
+            contents.delay(500 + delay).slideUp(500);
+            delay += 100;
+        }
+    });
+
+    $('.example-group h3').click(function(e) {
+        var header = $(e.target);
+        var contents = header.siblings('div.contents');
+
+        contents.stop(false, true).slideToggle(500, function() {
+            createCookie(header.html(), contents.is(':visible'), 365);
+        });
+    });
+    $('#random-example').click(function(e) {
+        var examples = $('.example-group a');
+        var index = Math.round(Math.random() * examples.length);
+        window.location = $(examples[index]).attr('href');
+    });
 });

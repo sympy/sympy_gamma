@@ -51,6 +51,10 @@ div.menu a.selected {
   font-weight: bold;
 }
 
+div.menu div.menu_right {
+  float: right;
+}
+
 div.result_card {
   border: 2px solid #a8a8a8;
   margin: 10px;
@@ -187,6 +191,100 @@ div.foot {
   font-size: 10pt;
 }
 
+/* Main page columns (saved and example queries) */
+
+div.col {
+}
+
+div.col h2 {
+  text-align: center;
+  font-size: 1.25em;
+  font-weight: normal;
+}
+
+div.col ul {
+  list-style-type: none;
+}
+
+div.col.recent li {
+  border-bottom: 0.15em solid #a8a8a8;
+  margin: 0.5em 0;
+  height: 1.25em;
+  line-height: 1.25em;
+  -webkit-transition: all 0.5s ease-out;
+  -moz-transition: all 0.5s ease-out;
+  -ms-transition: all 0.5s ease-out;
+  -o-transition: all 0.5s ease-out;
+  transition: all 0.5s ease-out;
+}
+
+div.col.recent li:hover {
+  background-color: #CCC;
+}
+
+div.col.recent a:link, div.col.recent a:visited,
+div.col.recent a:hover, div.col.recent a:active {
+  text-decoration: none;
+  color: #3B5526;
+  height: 100%;
+  width: 90%;
+  display: inline-block;
+  font-family: monospace;
+}
+
+div.col.recent a.remove {
+  width: auto;
+  float: right;
+  margin-top: -1.32em;
+  display: none;
+}
+
+div.col.recent li:hover a.remove {
+  display: block;
+}
+
+div.example-group {
+  margin: 0.5em 0;
+}
+
+div.example-group h3 {
+  font-size: 1em;
+  font-weight: normal;
+  padding: 0;
+  border-bottom: 0.15em solid #a8a8a8;
+  cursor: pointer;
+}
+
+div.example-group h4 {
+  font-size: 0.9em;
+  font-weight: normal;
+  margin-top: 0.25em;
+}
+
+div.example-group h3:before {
+  content: "▸ ";
+}
+
+div.example-group li {
+  margin: 0 1em;
+}
+
+div.col.example a:link, div.col.example a:visited,
+div.col.example a:hover, div.col.example a:active {
+  text-decoration: none;
+  color: #3B5526;
+  font-family: monospace;
+}
+
+div.example-group li span {
+  display: inline-block;
+  float: right;
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+/* General styling */
+
 h2 {
   padding: 10px 8px;
 }
@@ -200,9 +298,6 @@ p {
 }
 
 @media screen and (max-device-width: 960px) {
-  .menu {
-    font-size: 1.25em;
-  }
   
   div.input form {
     margin: 0 auto;
@@ -235,5 +330,28 @@ p {
   div.result {
     width: 600px;
     margin: 10px auto;
+  }
+
+  div.main {
+    width: 800px;
+    margin: 10px auto;
+  }
+
+  div.col {
+    width: 390px;
+  }
+
+  div.col.recent {
+    float: left;
+    height: 100%;
+  }
+
+  div.col.example {
+    margin: auto;
+  }
+
+  div.col.recent~div.col.example {
+    float: right;
+    height: 100%;
   }
 }

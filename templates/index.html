@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load extra_tags %}
 {% block title %}
 SymPy Gamma
 {% endblock %}
@@ -14,5 +14,100 @@ SymPy Gamma
         <form action="/input/" method="GET">
             {{ form.i }}<input class="input_field" type="submit" value="=" />
         </form>
+    </div>
+
+    <div class="main">
+        {% if history %}
+        <div class="col recent">
+            <h2>Recent queries</h2>
+            <a href="#">Clear All</a>
+            <ul>
+                {% for query in history %}
+                <li>
+                    <a href="{% make_query query.text %}">{{ query.text }}</a>
+                    <a href="/user/remove/{{query.key.urlsafe}}" class="remove">remove</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <div class="col example">
+            <h2>Examples</h2>
+            <a href="#" id="random-example">Random Example</a>
+            
+            <div class="example-group">
+                <h3>Arithmetic</h3>
+
+                <div class="contents">
+                    <h4>Fractions</h4>
+                    <ul>
+                        <li>{% make_query_link '242/33' %}
+                            <span>Simplify fractions</span></li>
+                        <li>{% make_query_link '0.[123]' %}
+                            <span>Rationalize repeating decimals</span></li>
+                    </ul>
+
+                    <h4>Approximations</h4>
+                    <ul>
+                        <li>{% make_query_link 'pi' %}</li>
+                        <li>{% make_query_link 'E' %}</li>
+                        <li>{% make_query_link 'exp(pi)' %}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="example-group">
+                <h3>Algebra</h3>
+                
+                <div class="contents">
+                    <ul>
+                        <li>{% make_query_link 'x' %}</li>
+                        <li>{% make_query_link '(x+2)/((x+3)(x-4))' %}</li>
+                        <li>{% make_query_link 'simplify((x**2 - 4)/((x+3)(x-2)))' %}</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="example-group">
+                <h3>Trigonometry</h3>
+                
+                <div class="contents">
+                    <ul>
+                        <li>{% make_query_link 'sin(2*x)' %}</li>
+                        <li>{% make_query_link 'tan(1 + x)' %}</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="example-group">
+                <h3>Calculus</h3>
+                
+                <div class="contents">
+                    <h4>Integrals</h4>
+                    <ul>
+                        <li>{% make_query_link 'integrate(tan(x))' %}</li>
+                        <li>{% make_query_link 'integrate(2*x + y, y)' %}
+                            <span>Multiple variables</span></li>
+                        <li>{% make_query_link 'integrate(2*x + y, (x, 1, 3))' %}
+                            <span>Limits of integration</span></li>
+                        <li>{% make_query_link 'integrate(tan(x), (x, 0, pi/2))' %}
+                            <span>Improper integrals</span></li>
+                        <li>{% make_query_link 'integrate(1/(x**2 + 1), (x, 0, oo))' %}
+                            <span>Exact answers</span></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="example-group">
+                <h3>Number Theory</h3>
+                
+                <div class="contents">
+                    <ul>
+                        <li>{% make_query_link '1006!' %}</li>
+                        <li>{% make_query_link 'factorint(12321)' %}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
