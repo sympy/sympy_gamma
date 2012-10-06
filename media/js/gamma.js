@@ -269,7 +269,7 @@ function setupExamples() {
             }
         }
         else {
-            header.toggleClass('shown');
+            header.addClass('shown');
         }
     });
 
