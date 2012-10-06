@@ -249,6 +249,7 @@ div.example-group h3 {
   padding: 0;
   border-bottom: 0.15em solid #a8a8a8;
   cursor: pointer;
+  height: 1.25em;
 }
 
 div.example-group h4 {
@@ -269,8 +270,8 @@ div.example-group li {
   margin: 0 1em;
 }
 
-div.col.example a:link, div.col.example a:visited,
-div.col.example a:hover, div.col.example a:active {
+div.example-group a:link, div.example-group a:visited,
+div.example-group a:hover, div.example-group a:active {
   text-decoration: none;
   color: #3B5526;
   font-family: monospace;
