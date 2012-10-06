@@ -253,10 +253,20 @@ function setupExamples() {
         var contents = $(this);
         var header = $(this).siblings('h3');
         var wasOpen = readCookie(header.html());
+        var visitedBefore = readCookie('visitedBefore');
+
+        if (!visitedBefore) {
+            createCookie('visitedBefore', true, 365);
+        }
 
         if (!wasOpen || wasOpen === 'false') {
-            contents.delay(500 + delay).slideUp(500);
-            delay += 100;
+            if (!visitedBefore) {
+                contents.delay(500 + delay).slideUp(500);
+                delay += 100;
+            }
+            else {
+                contents.hide();
+            }
         }
         else {
             header.toggleClass('shown');
