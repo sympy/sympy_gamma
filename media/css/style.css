@@ -239,6 +239,7 @@ div.example-group h3 {
   padding: 0;
   border-bottom: 0.15em solid #a8a8a8;
   cursor: pointer;
+  height: 1.25em;
 }
 
 div.example-group h4 {
