@@ -328,9 +328,13 @@ p {
     width: 100%;
     margin: 10px auto;
   }
+
+  div.menu_right {
+    display: inline;
+  }
 }
 
-@media screen and (min-device-width: 1280px) {
+@media screen and (min-device-width: 1024px) {
   div.result {
     width: 600px;
     margin: 10px auto;
