@@ -252,7 +252,7 @@ div.example-group h3 {
 }
 
 div.example-group h4 {
-  font-size: 0.9em;
+  font-size: 1em;
   font-weight: normal;
   margin-top: 0.25em;
 }
@@ -279,7 +279,6 @@ div.col.example a:hover, div.col.example a:active {
 div.example-group li > span {
   display: inline-block;
   float: right;
-  font-size: 0.9em;
   font-style: italic;
 }
 
