@@ -219,7 +219,13 @@ def extract_series(input_evaluated, variable):
     args = input_evaluated.args
     if len(args) >= 2:
         return input_evaluated, args[1]
-    return input_evaluated, None
+    elif len(args) == 1:
+        try:
+            equation = sympy.sympify(args[0])
+            return input_evaluated, equation.free_symbols.pop()
+        except SympifyError:
+            pass
+    return input_evaluated, variable
 
 def extract_solve(input_evaluated, variable):
     assert (isinstance(input_evaluated, FakeSymPyFunction) and
@@ -227,7 +233,13 @@ def extract_solve(input_evaluated, variable):
     args = input_evaluated.args
     if len(args) >= 2:
         return input_evaluated, args[1]
-    return input_evaluated, None
+    elif len(args) == 1:
+        try:
+            equation = sympy.sympify(args[0])
+            return input_evaluated, equation.free_symbols.pop()
+        except SympifyError:
+            pass
+    return input_evaluated, variable
 
 def extract_solve_poly_system(input_evaluated, variable):
     assert (isinstance(input_evaluated, FakeSymPyFunction) and
