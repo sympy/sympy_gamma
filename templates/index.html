@@ -85,10 +85,9 @@ SymPy Gamma
                 <div class="contents">
                     <h4>Limits</h4>
                     <ul>
-                        <li>{% make_query_link 'diff(f(x)*g(x)*h(x))' %}
-                            <span>Derive the product rule</span></li>
-                        <li>{% make_query_link 'diff(f(x)*g(x)*h(x))' %}
-                            <span>…as well as the quotient rule</span></li>
+                        <li>{% make_query_link 'limit(tan(x), x, pi/2)' %}</li>
+                        <!-- TODO: sympify() doesn't parse keyword arguments -->
+                        <li>{% make_query_link 'limit(tan(x), x, pi/2, "-")' %}</li>
                     </ul>
                 </div>
                 
@@ -116,6 +115,13 @@ SymPy Gamma
                             <span>Exact answers</span></li>
                     </ul>
                 </div>
+                
+                <div class="contents">
+                    <h4>Series</h4>
+                    <ul>
+                        <li>{% make_query_link 'series(sin(x), x, pi/2)' %}</li>
+                    </ul>
+                </div>
             </div>
             
             <div class="example-group">
@@ -135,6 +141,8 @@ SymPy Gamma
                             </span>
                         </li>
                         <li>{% make_query_link 'isprime(42)' %}</li>
+                        <li>{% make_query_link 'nextprime(42)' %}
+                            <span>First prime after 42</span></li>
                     </ul>
                 </div>
             </div>

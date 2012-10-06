@@ -3,6 +3,39 @@ import sympy
 from operator import itemgetter
 
 
+class FakeSymPyFunction(object):
+    """Used to delay evaluation of a SymPy function.
+
+    In logic.py, add a namespace entry to ``sympify`` that shadows the
+    function to be delayed whose value is
+    ``fake_sympy_function('function_name')``.
+
+    """
+    def __init__(self, fname, args, kwargs):
+        self.function = fname
+        self.args = args
+        self.kwargs = kwargs
+
+    def __repr__(self):
+        if self.kwargs:
+            kwargs = ', '.join(key + '=' + repr(arg)
+                               for key, arg in self.kwargs.items())
+            kwargs = ', ' + kwargs
+        else:
+            kwargs = ''
+        return '{function}({args}{kwargs})'.format(
+            function=self.function,
+            args=', '.join(map(repr, self.args)),
+            kwargs=kwargs
+        )
+
+
+def fake_sympy_function(fname):
+    def _faker(*args, **kwargs):
+        return FakeSymPyFunction(fname, args, kwargs)
+    return _faker
+
+
 class ResultCard(object):
     """
     Operations to generate a result card.
@@ -35,6 +68,12 @@ class ResultCard(object):
         if 'format_output_function' in self.card_info:
             return self.card_info['format_output_function'](output, formatter)
         return formatter(output)
+
+    def format_title(self, input_evaluated):
+        if 'format_title_function' in self.card_info:
+            return self.card_info['format_title_function'](self.title,
+                                                           input_evaluated)
+        return self.title
 
 
 class FakeResultCard(ResultCard):
@@ -102,6 +141,10 @@ def is_derivative(input_evaluated):
 def is_integral(input_evaluated):
     return isinstance(input_evaluated, sympy.Integral)
 
+def is_series(input_evaluated):
+    return (isinstance(input_evaluated, FakeSymPyFunction) and
+            input_evaluated.function == 'series')
+
 def is_integer(input_evaluated):
     return isinstance(input_evaluated, sympy.Integer)
 
@@ -154,6 +197,14 @@ def extract_derivative(input_evaluated, variable):
         variable = input_evaluated.variables[0]
     return input_evaluated.expr, variable
 
+def extract_series(input_evaluated, variable):
+    assert (isinstance(input_evaluated, FakeSymPyFunction) and
+            input_evaluated.function == 'series')
+    args = input_evaluated.args
+    if len(args) >= 2:
+        return input_evaluated, args[1]
+    return input_evaluated, None
+
 def do_nothing(input_evaluated, variable):
     return input_evaluated, variable
 
@@ -180,6 +231,17 @@ def format_dict_title(*title):
         html.append('</tbody></table>')
         return '\n'.join(html)
     return _format_dict
+
+def format_series_fake_title(title, evaluated):
+    if len(evaluated.args) >= 3:
+        about = evaluated.args[2]
+    else:
+        about = 0
+    if len(evaluated.args) >= 4:
+        up_to = evaluated.args[3]
+    else:
+        up_to = 6
+    return title.format(about, up_to)
 
 GRAPHING_CODE = """
 <div class="graph"
@@ -230,6 +292,10 @@ def eval_factorization(evaluator, variable):
         if factor <= 100:
             smallfactors[factor] = factors[factor]
     return smallfactors
+
+def eval_fake_series(evaluator, variable):
+    func = evaluator.get('input_evaluated')
+    return sympy.series(*func.args)
 
 # Result cards
 
@@ -330,10 +396,19 @@ graph = FakeResultCard(
     format_output_function=format_graph,
     eval_method=eval_graph)
 
+series_fake = FakeResultCard(
+    "Series expansion about {0} up to {1}",
+    "%s",
+    no_pre_output,
+    format_title_function=format_series_fake_title,
+    eval_method=eval_fake_series
+)
+
 
 result_sets = [
     (is_integral, extract_integrand, [integral]),
     (is_derivative, extract_derivative, [diff, graph]),
+    (is_series, extract_series, [series_fake]),
     (is_integer, default_variable,
      [digits, float_approximation, factorization]),
     (is_rational, default_variable, [float_approximation]),

@@ -1,6 +1,6 @@
 import sys
 from utils import Eval
-from resultsets import find_result_set
+from resultsets import find_result_set, fake_sympy_function
 from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
 import sympy
 import sympy.parsing.sympy_parser as sympy_parser
@@ -54,7 +54,8 @@ class SymPyGamma(object):
             evaluated = sympify(s, convert_xor=True, locals={
                 'integrate': sympy.Integral,
                 'plot': lambda func: func,
-                'diff': sympy.Derivative
+                'diff': sympy.Derivative,
+                'series': fake_sympy_function('series')
             })
             input_repr = repr(evaluated)
             namespace['input_evaluated'] = evaluated
@@ -103,7 +104,7 @@ class SymPyGamma(object):
                         if r != "None":
                             formatted_input = card.format_input(input_repr, var)
                             result.append(dict(
-                                title=card.title,
+                                title=card.format_title(evaluated),
                                 input=formatted_input,
                                 pre_output=latex(
                                     card.pre_output_function(input_repr, var)),
