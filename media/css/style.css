@@ -207,15 +207,6 @@ div.col.recent li {
   margin: 0.5em 0;
   height: 1.25em;
   line-height: 1.25em;
-  -webkit-transition: all 0.5s ease-out;
-  -moz-transition: all 0.5s ease-out;
-  -ms-transition: all 0.5s ease-out;
-  -o-transition: all 0.5s ease-out;
-  transition: all 0.5s ease-out;
-}
-
-div.col.recent li:hover {
-  background-color: #CCC;
 }
 
 div.col.recent a:link, div.col.recent a:visited,
@@ -223,7 +214,6 @@ div.col.recent a:hover, div.col.recent a:active {
   text-decoration: none;
   color: #3B5526;
   height: 100%;
-  width: 90%;
   display: inline-block;
   font-family: monospace;
 }
@@ -231,7 +221,7 @@ div.col.recent a:hover, div.col.recent a:active {
 div.col.recent a.remove {
   width: auto;
   float: right;
-  margin-top: -1.32em;
+  line-height: 200%;
   display: none;
 }
 
@@ -271,7 +261,7 @@ div.example-group li {
 }
 
 div.example-group a:link, div.example-group a:visited,
-div.example-group a:hover, div.example-group a:active {
+div.example-group a:hover, div.example-group a:active, a#random-example {
   text-decoration: none;
   color: #3B5526;
   font-family: monospace;
@@ -308,7 +298,7 @@ p {
     margin: 0.25em 0;
   }
 
-  div.col.example div.example-group li span {
+  div.col.example div.example-group li > span {
     display: block;
     float: none;
   }
