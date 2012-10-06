@@ -55,7 +55,9 @@ class SymPyGamma(object):
                 'integrate': sympy.Integral,
                 'plot': lambda func: func,
                 'diff': sympy.Derivative,
-                'series': fake_sympy_function('series')
+                'series': fake_sympy_function('series'),
+                'solve': fake_sympy_function('solve'),
+                'solve_poly_system': fake_sympy_function('solve_poly_system')
             })
             input_repr = repr(evaluated)
             namespace['input_evaluated'] = evaluated
@@ -101,7 +103,7 @@ class SymPyGamma(object):
                 for card in cards:
                     try:
                         r = card.eval(a, var)
-                        if r != "None":
+                        if r != "None" and r is not None:
                             formatted_input = card.format_input(input_repr, var)
                             result.append(dict(
                                 title=card.format_title(evaluated),

@@ -29,6 +29,20 @@ class FakeSymPyFunction(object):
             kwargs=kwargs
         )
 
+    @staticmethod
+    def make_result_card(func, title, **kwargs):
+        def eval_fake(evaluator, variable):
+            func_data = evaluator.get('input_evaluated')
+            return func(*func_data.args)
+
+        return FakeResultCard(
+            title,
+            "%s",
+            no_pre_output,
+            eval_method=eval_fake,
+            **kwargs
+        )
+
 
 def fake_sympy_function(fname):
     def _faker(*args, **kwargs):
@@ -70,7 +84,7 @@ class ResultCard(object):
         return formatter(output)
 
     def format_title(self, input_evaluated):
-        if 'format_title_function' in self.card_info:
+        if self.card_info.get('format_title_function'):
             return self.card_info['format_title_function'](self.title,
                                                            input_evaluated)
         return self.title
@@ -135,15 +149,17 @@ class MultiResultCard(ResultCard):
 
 TRUE_AND_FIND_MORE = "True, and look for more result sets"
 
+def is_fake_function(function):
+    def _check(input_evaluated):
+        return (isinstance(input_evaluated, FakeSymPyFunction) and
+                input_evaluated.function == function)
+    return _check
+
 def is_derivative(input_evaluated):
     return isinstance(input_evaluated, sympy.Derivative)
 
 def is_integral(input_evaluated):
     return isinstance(input_evaluated, sympy.Integral)
-
-def is_series(input_evaluated):
-    return (isinstance(input_evaluated, FakeSymPyFunction) and
-            input_evaluated.function == 'series')
 
 def is_integer(input_evaluated):
     return isinstance(input_evaluated, sympy.Integer)
@@ -205,6 +221,22 @@ def extract_series(input_evaluated, variable):
         return input_evaluated, args[1]
     return input_evaluated, None
 
+def extract_solve(input_evaluated, variable):
+    assert (isinstance(input_evaluated, FakeSymPyFunction) and
+            input_evaluated.function == 'solve')
+    args = input_evaluated.args
+    if len(args) >= 2:
+        return input_evaluated, args[1]
+    return input_evaluated, None
+
+def extract_solve_poly_system(input_evaluated, variable):
+    assert (isinstance(input_evaluated, FakeSymPyFunction) and
+            input_evaluated.function == 'solve_poly_system')
+    args = input_evaluated.args
+    if len(args) >= 2:
+        return input_evaluated, args[1:]
+    return input_evaluated, None
+
 def do_nothing(input_evaluated, variable):
     return input_evaluated, variable
 
@@ -231,6 +263,16 @@ def format_dict_title(*title):
         html.append('</tbody></table>')
         return '\n'.join(html)
     return _format_dict
+
+def format_list(items, formatter):
+    try:
+        html = ['<ul>']
+        for item in items:
+            html.append('<li>{}</li>'.format(formatter(item)))
+        html.append('</ul>')
+        return '\n'.join(html)
+    except TypeError:  # not iterable, like None
+        return items
 
 def format_series_fake_title(title, evaluated):
     if len(evaluated.args) >= 3:
@@ -292,10 +334,6 @@ def eval_factorization(evaluator, variable):
         if factor <= 100:
             smallfactors[factor] = factors[factor]
     return smallfactors
-
-def eval_fake_series(evaluator, variable):
-    func = evaluator.get('input_evaluated')
-    return sympy.series(*func.args)
 
 # Result cards
 
@@ -396,19 +434,29 @@ graph = FakeResultCard(
     format_output_function=format_graph,
     eval_method=eval_graph)
 
-series_fake = FakeResultCard(
+series_fake = FakeSymPyFunction.make_result_card(
+    sympy.series,
     "Series expansion about {0} up to {1}",
-    "%s",
-    no_pre_output,
-    format_title_function=format_series_fake_title,
-    eval_method=eval_fake_series
-)
+    format_title_function=format_series_fake_title)
+
+solve_fake = FakeSymPyFunction.make_result_card(
+    sympy.solve,
+    "Solutions",
+    format_output_function=format_list)
+
+solve_poly_system_fake = FakeSymPyFunction.make_result_card(
+    sympy.solve_poly_system,
+    "Solutions",
+    format_output_function=format_list)
 
 
 result_sets = [
     (is_integral, extract_integrand, [integral]),
     (is_derivative, extract_derivative, [diff, graph]),
-    (is_series, extract_series, [series_fake]),
+    (is_fake_function('series'), extract_series, [series_fake]),
+    (is_fake_function('solve'), extract_solve, [solve_fake]),
+    (is_fake_function('solve_poly_system'), extract_solve_poly_system,
+     [solve_poly_system_fake]),
     (is_integer, default_variable,
      [digits, float_approximation, factorization]),
     (is_rational, default_variable, [float_approximation]),
