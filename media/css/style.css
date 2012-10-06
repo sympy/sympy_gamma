@@ -368,4 +368,8 @@ p {
     float: right;
     height: 100%;
   }
+
+  div.menu_right {
+    float: right;
+  }
 }
