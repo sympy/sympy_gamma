@@ -276,7 +276,7 @@ div.col.example a:hover, div.col.example a:active {
   font-family: monospace;
 }
 
-div.example-group li span {
+div.example-group li > span {
   display: inline-block;
   float: right;
   font-size: 0.9em;

@@ -24,6 +24,9 @@
                 TeX: {
                     extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
                 },
+                "HTML-CSS": {
+                    minScaleAdjust: 100
+                },
                 menuSettings: {
                     context: "MathJax",
                     zoom: "Hover",
@@ -32,7 +35,7 @@
                 MathZoom: {
                     delay: 100
                 },
-                extensions: []
+                extensions: ["tex2jax.js"]
             });
         </script>
         <script type="text/javascript"
