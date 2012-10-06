@@ -71,8 +71,9 @@ class SymPyGamma(object):
 
         if input_repr is not None:
             result = [
-                {"title": "Input", "input": s},
-                {"title": "SymPy", "input": s, "output": input_repr},
+                {"title": "SymPy",
+                 "input": input_repr,
+                 "output": mathjax_latex(evaluated)},
             ]
 
             if isinstance(evaluated, sympy.Basic):
