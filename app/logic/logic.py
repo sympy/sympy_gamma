@@ -14,7 +14,11 @@ f, g, h = map(Function, 'fgh')"""
 
 
 def mathjax_latex(obj):
-    return ''.join(['<script type="math/tex; mode=display">', latex(obj),
+    if hasattr(obj, 'as_latex'):
+        tex_code = obj.as_latex()
+    else:
+        tex_code = latex(obj)
+    return ''.join(['<script type="math/tex; mode=display">', tex_code,
                     '</script>'])
 
 

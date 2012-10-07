@@ -29,6 +29,19 @@ class FakeSymPyFunction(object):
             kwargs=kwargs
         )
 
+    def as_latex(self):
+        if self.kwargs:
+            kwargs = ', '.join(key + '=' + sympy.latex(arg)
+                               for key, arg in self.kwargs.items())
+            kwargs = ', ' + kwargs
+        else:
+            kwargs = ''
+            return '{function}({args}{kwargs})'.format(
+                function='\\mathrm{' + self.function + '}',
+                args=', '.join(map(sympy.latex, self.args)),
+                kwargs=kwargs
+            )
+
     @staticmethod
     def make_result_card(func, title, **kwargs):
         def eval_fake(evaluator, variable):
