@@ -37,7 +37,7 @@ class FakeSymPyFunction(object):
         else:
             kwargs = ''
             return '{function}({args}{kwargs})'.format(
-                function='\\mathrm{' + self.function + '}',
+                function='\\mathrm{' + self.function.replace('_', '\\_') + '}',
                 args=', '.join(map(sympy.latex, self.args)),
                 kwargs=kwargs
             )
