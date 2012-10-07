@@ -86,10 +86,10 @@ class ResultCard(object):
         return sympy.sympify(evaluator.eval(line, use_none_for_exceptions=True))
 
     def format_input(self, input_repr, variable):
-        line = self.result_statement.format(_var=variable)
         if 'format_input_function' in self.card_info:
-            return line % self.card_info['format_input_function'](input_repr)
-        return line % input_repr
+            return self.card_info['format_input_function'](
+                self.result_statement, input_repr, variable)
+        return self.result_statement.format(_var=variable) % input_repr
 
     def format_output(self, output, formatter):
         if 'format_output_function' in self.card_info:
@@ -215,9 +215,9 @@ def is_trig(input_evaluated):
 def extract_integrand(input_evaluated, variable):
     assert isinstance(input_evaluated, sympy.Integral)
     if len(input_evaluated.limits[0]) > 1:  # if there are limits
-        variable = input_evaluated.limits[0]
+        variable = input_evaluated.limits
     elif len(input_evaluated.variables) == 1:
-        variable = input_evaluated.variables[0]
+        variable = (input_evaluated.variables[0],)
     return input_evaluated.function, variable
 
 def extract_derivative(input_evaluated, variable):
@@ -271,12 +271,15 @@ def default_variable(input_evaluated, variable):
 
 # Formatting functions
 
-def format_long_integer(integer):
+def format_long_integer(line, integer, variable):
     intstr = str(integer)
     if len(intstr) > 100:
         # \xe2 is Unicode ellipsis
         return intstr[:20] + "..." + intstr[len(intstr) - 21:]
-    return intstr
+    return line % intstr
+
+def format_integral(line, integrand, limits):
+    return line.format(_var=', '.join(map(repr, limits))) % integrand
 
 def format_dict_title(*title):
     def _format_dict(dictionary, formatter):
@@ -360,6 +363,9 @@ def eval_factorization(evaluator, variable):
             smallfactors[factor] = factors[factor]
     return smallfactors
 
+def eval_integral(evaluator, variable):
+    return sympy.integrate(evaluator.eval("input_evaluated"), *variable)
+
 # Result cards
 
 no_pre_output = lambda *args: ""
@@ -373,6 +379,14 @@ integral = ResultCard(
     "Integral",
     "integrate(%s, {_var})",
     sympy.Integral)
+
+integral_fake = FakeResultCard(
+    "Integral",
+    "integrate(%s, {_var})",
+    lambda i, var: sympy.Integral(i, *var),
+    eval_method=eval_integral,
+    format_input_function=format_integral
+)
 
 diff = ResultCard("Derivative",
     "diff(%s, {_var})",
@@ -476,7 +490,7 @@ solve_poly_system_fake = FakeSymPyFunction.make_result_card(
 
 
 result_sets = [
-    (is_integral, extract_integrand, [integral]),
+    (is_integral, extract_integrand, [integral_fake]),
     (is_derivative, extract_derivative, [diff, graph]),
     (is_fake_function('series'), extract_series, [series_fake]),
     (is_fake_function('solve'), extract_solve, [solve_fake]),
