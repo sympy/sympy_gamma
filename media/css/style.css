@@ -387,4 +387,13 @@ p {
   div.col {
     width: 390px;
   }
+
+  div.col.example div.example-group li {
+    margin: 0;
+  }
+
+  div.col.example div.example-group li > span {
+    display: block;
+    float: right;
+  }
 }
