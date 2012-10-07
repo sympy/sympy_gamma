@@ -287,7 +287,8 @@ p {
   padding: 0px 8px;
 }
 
-@media screen and (max-device-width: 960px) {
+@media screen and (max-device-width: 480px) or
+  ((max-device-width: 1280px) and (-webkit-min-device-pixel-ratio: 1.1)) {
   div.col {
     width: auto;
     margin: 10px 10px;
@@ -334,19 +335,19 @@ p {
   }
 }
 
-@media screen and (min-device-width: 1024px) {
+@media screen and (min-device-width: 768px) and (-webkit-max-device-pixel-ratio: 1.0) {
   div.result {
     width: 600px;
     margin: 10px auto;
   }
 
   div.main {
-    width: 800px;
+    width: 740px;
     margin: 10px auto;
   }
-
+  
   div.col {
-    width: 390px;
+    width: 360px;
   }
 
   div.col.recent {
@@ -363,7 +364,28 @@ p {
     height: 100%;
   }
 
+  div.col.example div.example-group li {
+    margin: 0.25em 0;
+  }
+
+  div.col.example div.example-group li > span {
+    display: block;
+    float: none;
+  }
+
   div.menu_right {
     float: right;
+    display: block;
+  }
+}
+
+@media screen and (min-device-width: 1024px) {
+  div.main {
+    width: 800px;
+    margin: 10px auto;
+  }
+
+  div.col {
+    width: 390px;
   }
 }
