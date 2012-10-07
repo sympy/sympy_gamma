@@ -287,8 +287,7 @@ p {
   padding: 0px 8px;
 }
 
-@media screen and (max-device-width: 480px) or
-  ((max-device-width: 1280px) and (-webkit-min-device-pixel-ratio: 1.1)) {
+@media screen and (max-device-width: 960px) {
   div.col {
     width: auto;
     margin: 10px 10px;
