@@ -41,10 +41,14 @@ SymPy Gamma
                 <div class="contents">
                     <h4>Fractions</h4>
                     <ul>
-                        <li>{% make_query_link '242/33' %}
-                            <span>Simplify fractions</span></li>
-                        <li>{% make_query_link '0.[123]' %}
-                            <span>Rationalize repeating decimals</span></li>
+                        <li>
+                            <span>Simplify fractions</span>
+                            {% make_query_link '242/33' %}
+                        </li>
+                        <li>
+                            <span>Rationalize repeating decimals</span>
+                            {% make_query_link '0.[123]' %}
+                        </li>
                     </ul>
 
                     <h4>Approximations</h4>
@@ -70,25 +74,35 @@ SymPy Gamma
                 <div class="contents">
                     <h4>Polynomial and Rational Functions</h4>
                     <ul>
-                        <li>{% make_query_link 'div(x**2 - 4 + x, x-2)' %}
-                            <span>Polynomial division</span></li>
-                        <li>{% make_query_link 'gcd(2*x**2 + 6*x, 12*x)' %}
-                            <span>Greatest common divisor…</span></li>
-                        <li>{% make_query_link 'lcm(2*x**2 + 6*x, 12*x)' %}
-                            <span>…and least common multiple</span></li>
-                        <li>{% make_query_link 'factor(x**4/2 + 5*x**3/12 - x**2/3)' %}
-                            <span>Factorization</span></li>
-                        <li>{% make_query_link 'factor(x**2 + 4*x*y + 4*y**2)' %}
-                            <span>Multivariate factorization</span></li>
-                        <li>{% make_query_link 'solve(x**2 + 4*x*y + 4*y**2)' %}
-                            <span>Symbolic roots</span></li>
+                        <li><span>Polynomial division</span>
+                            {% make_query_link 'div(x**2 - 4 + x, x-2)' %}</li>
+                        <li><span>Greatest common divisor…</span>
+                            {% make_query_link 'gcd(2*x**2 + 6*x, 12*x)' %}</li>
+                        <li><span>…and least common multiple</span>
+                            {% make_query_link 'lcm(2*x**2 + 6*x, 12*x)' %}</li>
+                        <li><span>Factorization</span>
+                            {% make_query_link 'factor(x**4/2 + 5*x**3/12 - x**2/3)' %}</li>
+                        <li>
+                            <span>Multivariate factorization</span>
+                            {% make_query_link 'factor(x**2 + 4*x*y + 4*y**2)' %}
+                        </li>
+                        <li>
+                            <span>Symbolic roots</span>
+                            {% make_query_link 'solve(x**2 + 4*x*y + 4*y**2)' %}
+                        </li>
                         <li>{% make_query_link 'solve(x**2 + 4*x*y + 4*y**2, y)' %}</li>
-                        <li>{% make_query_link 'solve(x**2 + 4*x + 181, x)' %}
-                            <span>Complex roots</span></li>
-                        <li>{% make_query_link 'solve(x**3 + 4*x + 181, x)' %}
-                            <span>Irrational roots</span></li>
-                        <li>{% make_query_link 'solve_poly_system([y**2 - x**3 + 1, y*x], x, y)' %}
-                            <span>Systems of equations</span></li>
+                        <li>
+                            <span>Complex roots</span>
+                            {% make_query_link 'solve(x**2 + 4*x + 181, x)' %}
+                        </li>
+                        <li>
+                            <span>Irrational roots</span>
+                            {% make_query_link 'solve(x**3 + 4*x + 181, x)' %}
+                        </li>
+                        <li>
+                            <span>Systems of equations</span>
+                            {% make_query_link 'solve_poly_system([y**2 - x**3 + 1, y*x], x, y)' %}
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -119,10 +133,14 @@ SymPy Gamma
                 <div class="contents">
                     <h4>Derivatives</h4>
                     <ul>
-                        <li>{% make_query_link 'diff(f(x)*g(x)*h(x))' %}
-                            <span>Derive the product rule</span></li>
-                        <li>{% make_query_link 'diff(f(x)/g(x))' %}
-                            <span>…as well as the quotient rule</span></li>
+                        <li>
+                            <span>Derive the product rule</span>
+                            {% make_query_link 'diff(f(x)*g(x)*h(x))' %}
+                        </li>
+                        <li>
+                            <span>…as well as the quotient rule</span>
+                            {% make_query_link 'diff(f(x)/g(x))' %}
+                        </li>
                     </ul>
                 </div>
                 
@@ -157,18 +175,23 @@ SymPy Gamma
                     <ul>
                         <li>{% make_query_link '1006!' %}</li>
                         <li>{% make_query_link 'factorint(12321)' %}</li>
-                        <li>{% make_query_link 'prime(42)' %}
-                            <span>Calculate the 42<sup>nd</sup>
-                            prime</span></li>
-                        <li>{% make_query_link 'primepi(42)' %}
+                        <li>
+                            <span>
+                                Calculate the 42<sup>nd</sup> prime
+                            </span>
+                            {% make_query_link 'prime(42)' %}</li>
+                        <li>
                             <span>
                                 Calculate \( \varphi(x) \), the Euler
                                 totient function
                             </span>
+                            {% make_query_link 'primepi(42)' %}
                         </li>
                         <li>{% make_query_link 'isprime(42)' %}</li>
-                        <li>{% make_query_link 'nextprime(42)' %}
-                            <span>First prime after 42</span></li>
+                        <li>
+                            <span>First prime after 42</span>
+                            {% make_query_link 'nextprime(42)' %}
+                        </li>
                     </ul>
                 </div>
             </div>

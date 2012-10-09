@@ -242,7 +242,7 @@ div.example-group h3 {
 div.example-group h4 {
   font-size: 1em;
   font-weight: normal;
-  margin-top: 0.25em;
+  margin-top: 0.5em;
 }
 
 div.example-group h3:before {
@@ -300,6 +300,11 @@ p {
   div.col.example div.example-group li > span {
     display: block;
     float: none;
+    padding-top: 0.25em;
+  }
+
+  div.col.example div.example-group li > span:after {
+    content: ":";
   }
   
   div.input form {
