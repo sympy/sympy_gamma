@@ -189,9 +189,6 @@ div.foot {
 
 /* Main page columns (saved and example queries) */
 
-div.col {
-}
-
 div.col h2 {
   text-align: center;
   font-size: 1.25em;
@@ -287,7 +284,9 @@ p {
   padding: 0px 8px;
 }
 
-@media screen and (max-device-width: 960px) {
+@media screen and (max-device-width: 480px),
+       screen and (min-resolution: 132dpi) and (max-device-width: 1280px),
+       screen and (-webkit-min-device-pixel-ratio: 132dpi) and (max-device-width: 1280px) {
   div.col {
     width: auto;
     margin: 10px 10px;
@@ -334,7 +333,9 @@ p {
   }
 }
 
-@media screen and (min-device-width: 768px) and (-webkit-max-device-pixel-ratio: 1.0) {
+@media screen and (min-device-width: 768px) and (max-resolution: 132dpi),
+       screen and (min-device-width: 768px) and
+       (-webkit-max-device-pixel-ratio: 1.1) {
   div.result {
     width: 600px;
     margin: 10px auto;
@@ -378,7 +379,9 @@ p {
   }
 }
 
-@media screen and (min-device-width: 1024px) {
+@media screen and (min-device-width: 1024px) and (max-resolution: 132dpi),
+       screen and (min-device-width: 1024px) and
+       (-webkit-max-device-pixel-ratio: 1.1) {
   div.main {
     width: 800px;
     margin: 10px auto;
