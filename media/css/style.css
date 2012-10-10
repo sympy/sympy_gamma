@@ -204,15 +204,14 @@ div.col ul {
 div.col.recent li {
   border-bottom: 0.15em solid #a8a8a8;
   margin: 0.5em 0;
-  height: 1.25em;
-  line-height: 1.25em;
+  line-height: 1.15em;
 }
 
 div.col.recent a:link, div.col.recent a:visited,
 div.col.recent a:hover, div.col.recent a:active {
   text-decoration: none;
   color: #3B5526;
-  height: 100%;
+  width: 70%;
   display: inline-block;
   font-family: monospace;
 }
@@ -238,7 +237,6 @@ div.example-group h3 {
   padding: 0;
   border-bottom: 0.15em solid #a8a8a8;
   cursor: pointer;
-  height: 1.25em;
 }
 
 div.example-group h4 {
@@ -286,13 +284,15 @@ p {
   padding: 0px 8px;
 }
 
-@media screen and (max-device-width: 480px),
-       screen and (min-resolution: 132dpi) and (max-device-width: 1280px),
-       screen and (-webkit-min-device-pixel-ratio: 132dpi) and (max-device-width: 1280px) {
+@media screen and (max-device-width: 640px) {
   div.col {
     width: auto;
     margin: 10px 10px;
     font-size: 125%;
+  }
+
+  div.col.recent a.remove {
+    display: inline-block;
   }
 
   div.col.example div.example-group li {
@@ -340,10 +340,8 @@ p {
   }
 }
 
-@media screen and (min-device-width: 768px) and (max-resolution: 132dpi),
-       screen and (min-device-width: 768px) and (-webkit-max-device-pixel-ratio: 1.1),
-       screen and (min-device-width: 768px) and (max-device-width: 1024px) and
-              (-webkit-min-device-pixel-ratio: 2), {
+/* Tablets and base for desktops */
+@media screen and (min-device-width: 768px) {
   div.result {
     width: 600px;
     margin: 10px auto;
@@ -361,6 +359,10 @@ p {
   div.col.recent {
     float: left;
     height: 100%;
+  }
+
+  div.col.recent a.remove {
+    display: inline-block;
   }
 
   div.col.example {
@@ -381,16 +383,17 @@ p {
     float: none;
   }
 
+  div.col.example div.example-group li > span:after {
+    content: ":";
+  }
+
   div.menu_right {
     float: right;
     display: block;
   }
 }
 
-@media screen and (min-device-width: 1024px) and (max-resolution: 132dpi),
-       screen and (min-device-width: 1024px) and (-webkit-max-device-pixel-ratio: 1.1),
-       screen and (min-device-width: 1366px) and (min-resolution: 150dpi),
-       screen and (min-device-width: 1366px) and (min-device-pixel-ratio: 1.2) {
+@media screen and (min-device-width: 1280px) {
   div.main {
     width: 800px;
     margin: 10px auto;
