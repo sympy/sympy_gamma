@@ -152,9 +152,11 @@ div.input input[type="text"] {
   padding: 0 0.25em;
   border: 0;
   vertical-align: top;
+  border-radius: 0;
 }
 
 div.input input[type="submit"] {
+  border-radius: 0;
   vertical-align: top;
   font-family: monospace;
   width: 15%;
@@ -340,8 +342,8 @@ p {
 
 @media screen and (min-device-width: 768px) and (max-resolution: 132dpi),
        screen and (min-device-width: 768px) and (-webkit-max-device-pixel-ratio: 1.1),
-       screen and (min-width: 1536px) and (min-resolution: 264dpi),
-       screen and (min-width: 1536px) and (-webkit-min-device-pixel-ratio: 2), {
+       screen and (min-device-width: 768px) and (max-device-width: 1024px) and
+              (-webkit-min-device-pixel-ratio: 2), {
   div.result {
     width: 600px;
     margin: 10px auto;
