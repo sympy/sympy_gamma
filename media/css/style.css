@@ -385,8 +385,9 @@ p {
 }
 
 @media screen and (min-device-width: 1024px) and (max-resolution: 132dpi),
-       screen and (min-device-width: 1024px) and
-       (-webkit-max-device-pixel-ratio: 1.1) {
+       screen and (min-device-width: 1024px) and (-webkit-max-device-pixel-ratio: 1.1),
+       screen and (min-device-width: 1366px) and (min-resolution: 150dpi),
+       screen and (min-device-width: 1366px) and (min-device-pixel-ratio: 1.2) {
   div.main {
     width: 800px;
     margin: 10px auto;
