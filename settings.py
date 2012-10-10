@@ -62,6 +62,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'google.appengine.ext.ndb.django_middleware.NdbDjangoMiddleware',
     'django.middleware.common.CommonMiddleware',
     #'django.contrib.sessions.middleware.SessionMiddleware',
     #'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -76,6 +77,7 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = (
         #'django.contrib.auth',
     'django.contrib.contenttypes',
+    'app'
     #'django.contrib.sessions',
     #'django.contrib.sites',
 )

@@ -3,13 +3,17 @@ from django.shortcuts import render_to_response
 from django.utils import simplejson
 from django import forms
 
+from google.appengine.api import users
+
 from logic import Eval, SymPyGamma
 
 import settings
+import models
 
 import logging
 import cgi
 import random
+import json
 
 LIVE_URL = '<a href="http://live.sympy.org">SymPy Live</a>'
 LIVE_PROMOTION_MESSAGES = [
@@ -31,17 +35,38 @@ class MobileTextInput(forms.widgets.TextInput):
 class SearchForm(forms.Form):
     i = forms.CharField(required=False, widget=MobileTextInput())
 
-e = Eval()
+def authenticate(view):
+    def _wrapper(request, **kwargs):
+        user = users.get_current_user()
+        template, params = view(request, user, **kwargs)
+        if user:
+            params['auth_url'] = users.create_logout_url("/")
+            params['auth_message'] = "Logout"
+        else:
+            params['auth_url'] = users.create_login_url("/")
+            params['auth_message'] = "Login"
+        return render_to_response(template, params)
+    return _wrapper
 
-def index(request):
+@authenticate
+def index(request, user):
     form = SearchForm()
-    return render_to_response("index.html", {
+
+    if user:
+        history = models.Query.query(models.Query.user_id==user.user_id())
+        history = history.order(-models.Query.date).fetch(10)
+    else:
+        history = None
+
+    return ("index.html", {
         "form": form,
         "MEDIA_URL": settings.MEDIA_URL,
         "main_active": "selected",
+        "history": history
         })
 
-def input(request):
+@authenticate
+def input(request, user):
     if request.method == "GET":
         form = SearchForm(request.GET)
         if form.is_valid():
@@ -49,8 +74,19 @@ def input(request):
             g = SymPyGamma()
             r = g.eval(input)
 
+            if not r:
+                r =  [{
+                    "title": "Input",
+                    "input": input,
+                    "output": "Can't handle the input."
+                }]
+            elif user:
+                if not models.Query.query(models.Query.text==input).get():
+                    query = models.Query(text=input, user_id=user.user_id())
+                    query.put()
+
             # For some reason the |random tag always returns the same result
-            return render_to_response("result.html", {
+            return ("result.html", {
                 "input": input,
                 "result": r,
                 "form": form,
@@ -58,8 +94,25 @@ def input(request):
                 "promote_live": random.choice(LIVE_PROMOTION_MESSAGES)
                 })
 
-def about(request):
-    return render_to_response("about.html", {
+@authenticate
+def about(request, user):
+    return ("about.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "about_active": "selected",
         })
+
+def remove_query(request, qid):
+    user = users.get_current_user()
+
+    if user:
+        models.ndb.Key(urlsafe=qid).delete()
+        response = {
+            'result': 'success',
+        }
+    else:
+        response = {
+            'result': 'error',
+            'message': 'Not logged in or invalid user.'
+        }
+
+    return HttpResponse(json.dumps(response), mimetype='application/json')

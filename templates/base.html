@@ -8,7 +8,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0, maximum-scale=1" />
 
         {% block head_additional %}{% endblock %}
-        
+
+        <link rel="search" type="application/opensearchdescription+xml"
+              href="{{ MEDIA_URL }}/opensearch.xml" title="SymPy Gamma" />
         <link rel="stylesheet" href="{{ MEDIA_URL }}css/style.css" type="text/css" />
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"
@@ -22,6 +24,9 @@
                 TeX: {
                     extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
                 },
+                "HTML-CSS": {
+                    minScaleAdjust: 100
+                },
                 menuSettings: {
                     context: "MathJax",
                     zoom: "Hover",
@@ -30,7 +35,7 @@
                 MathZoom: {
                     delay: 100
                 },
-                extensions: []
+                extensions: ["tex2jax.js"]
             });
         </script>
         <script type="text/javascript"
@@ -42,6 +47,10 @@
             <a class="{{ main_active }}" href="/">Main</a>
             <a class="{{ about_active }}" href="/about/">About</a>
             <a href="http://live.sympy.org">SymPy Live</a>
+
+            <div class="menu_right">
+                <a href="{{ auth_url }}">{{ auth_message }}</a>
+            </div>
         </div>
         <div class="gbh" style="left: 0px; opacity: 1; "></div>
     {% block content %}
