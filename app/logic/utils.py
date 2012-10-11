@@ -8,6 +8,9 @@ class Eval(object):
     def __init__(self, namespace={}):
         self._namespace = namespace
 
+    def get(self, name):
+        return self._namespace.get(name)
+
     def eval(self, x, use_none_for_exceptions=False):
         globals = self._namespace
         try:

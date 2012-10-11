@@ -27,6 +27,10 @@ h1 a:hover {
   color: #96C56F;
 }
 
+h1 a img {
+  vertical-align: bottom;
+}
+
 div.menu {
   padding: 0 0.5em;
   font-family: sans-serif;
@@ -148,9 +152,11 @@ div.input input[type="text"] {
   padding: 0 0.25em;
   border: 0;
   vertical-align: top;
+  border-radius: 0;
 }
 
 div.input input[type="submit"] {
+  border-radius: 0;
   vertical-align: top;
   font-family: monospace;
   width: 15%;
@@ -183,6 +189,89 @@ div.foot {
   font-size: 10pt;
 }
 
+/* Main page columns (saved and example queries) */
+
+div.col h2 {
+  text-align: center;
+  font-size: 1.25em;
+  font-weight: normal;
+}
+
+div.col ul {
+  list-style-type: none;
+}
+
+div.col.recent li {
+  border-bottom: 0.15em solid #a8a8a8;
+  margin: 0.5em 0;
+  line-height: 1.15em;
+}
+
+div.col.recent a:link, div.col.recent a:visited,
+div.col.recent a:hover, div.col.recent a:active {
+  text-decoration: none;
+  color: #3B5526;
+  width: 70%;
+  display: inline-block;
+  font-family: monospace;
+}
+
+div.col.recent a.remove {
+  width: auto;
+  float: right;
+  line-height: 200%;
+  display: none;
+}
+
+div.col.recent li:hover a.remove {
+  display: block;
+}
+
+div.example-group {
+  margin: 0.5em 0;
+}
+
+div.example-group h3 {
+  font-size: 1em;
+  font-weight: normal;
+  padding: 0;
+  border-bottom: 0.15em solid #a8a8a8;
+  cursor: pointer;
+}
+
+div.example-group h4 {
+  font-size: 1em;
+  font-weight: normal;
+  margin-top: 0.5em;
+}
+
+div.example-group h3:before {
+  content: "▸ ";
+}
+
+div.example-group h3.shown:before {
+  content: "▾ ";
+}
+
+div.example-group li {
+  margin: 0 1em;
+}
+
+div.example-group a:link, div.example-group a:visited,
+div.example-group a:hover, div.example-group a:active, a#random-example {
+  text-decoration: none;
+  color: #3B5526;
+  font-family: monospace;
+}
+
+div.example-group li > span {
+  display: inline-block;
+  float: right;
+  font-style: italic;
+}
+
+/* General styling */
+
 h2 {
   padding: 10px 8px;
 }
@@ -195,9 +284,29 @@ p {
   padding: 0px 8px;
 }
 
-@media screen and (max-device-width: 960px) {
-  .menu {
-    font-size: 1.25em;
+@media screen and (max-device-width: 640px) {
+  div.col {
+    width: auto;
+    margin: 10px 10px;
+    font-size: 125%;
+  }
+
+  div.col.recent a.remove {
+    display: inline-block;
+  }
+
+  div.col.example div.example-group li {
+    margin: 0.25em 0;
+  }
+
+  div.col.example div.example-group li > span {
+    display: block;
+    float: none;
+    padding-top: 0.25em;
+  }
+
+  div.col.example div.example-group li > span:after {
+    content: ":";
   }
   
   div.input form {
@@ -225,11 +334,81 @@ p {
     width: 100%;
     margin: 10px auto;
   }
+
+  div.menu_right {
+    display: inline;
+  }
 }
 
-@media screen and (min-device-width: 1280px) {
+/* Tablets and base for desktops */
+@media screen and (min-device-width: 768px) {
   div.result {
     width: 600px;
     margin: 10px auto;
+  }
+
+  div.main {
+    width: 740px;
+    margin: 10px auto;
+  }
+  
+  div.col {
+    width: 360px;
+  }
+
+  div.col.recent {
+    float: left;
+    height: 100%;
+  }
+
+  div.col.recent a.remove {
+    display: inline-block;
+  }
+
+  div.col.example {
+    margin: auto;
+  }
+
+  div.col.recent~div.col.example {
+    float: right;
+    height: 100%;
+  }
+
+  div.col.example div.example-group li {
+    margin: 0.25em 0;
+  }
+
+  div.col.example div.example-group li > span {
+    display: block;
+    float: none;
+  }
+
+  div.col.example div.example-group li > span:after {
+    content: ":";
+  }
+
+  div.menu_right {
+    float: right;
+    display: block;
+  }
+}
+
+@media screen and (min-device-width: 1280px) {
+  div.main {
+    width: 800px;
+    margin: 10px auto;
+  }
+
+  div.col {
+    width: 390px;
+  }
+
+  div.col.example div.example-group li {
+    margin: 0;
+  }
+
+  div.col.example div.example-group li > span {
+    display: block;
+    float: right;
   }
 }

@@ -1,6 +1,6 @@
 import sys
 from utils import Eval
-from resultsets import find_result_set
+from resultsets import find_result_set, fake_sympy_function
 from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
 import sympy
 import sympy.parsing.sympy_parser as sympy_parser
@@ -14,7 +14,11 @@ f, g, h = map(Function, 'fgh')"""
 
 
 def mathjax_latex(obj):
-    return ''.join(['<script type="math/tex; mode=display">', latex(obj),
+    if hasattr(obj, 'as_latex'):
+        tex_code = obj.as_latex()
+    else:
+        tex_code = latex(obj)
+    return ''.join(['<script type="math/tex; mode=display">', tex_code,
                     '</script>'])
 
 
@@ -24,10 +28,6 @@ class SymPyGamma(object):
         r = self.try_sympy(s)
         if r:
             return r
-        return [
-                {"title": "Input", "input": s,
-                    "output": "Can't handle the input."},
-                ]
 
     def handle_error(self, s, e):
         if isinstance(e, SyntaxError):
@@ -57,7 +57,11 @@ class SymPyGamma(object):
         try:
             evaluated = sympify(s, convert_xor=True, locals={
                 'integrate': sympy.Integral,
-                'plot': lambda func: func
+                'plot': lambda func: func,
+                'diff': sympy.Derivative,
+                'series': fake_sympy_function('series'),
+                'solve': fake_sympy_function('solve'),
+                'solve_poly_system': fake_sympy_function('solve_poly_system')
             })
             input_repr = repr(evaluated)
             namespace['input_evaluated'] = evaluated
@@ -71,8 +75,9 @@ class SymPyGamma(object):
 
         if input_repr is not None:
             result = [
-                {"title": "Input", "input": s},
-                {"title": "SymPy", "input": s, "output": input_repr},
+                {"title": "SymPy",
+                 "input": input_repr,
+                 "output": mathjax_latex(evaluated)},
             ]
 
             if isinstance(evaluated, sympy.Basic):
@@ -103,17 +108,17 @@ class SymPyGamma(object):
                 for card in cards:
                     try:
                         r = card.eval(a, var)
-                        if r != "None":
+                        if r != "None" and r is not None:
                             formatted_input = card.format_input(input_repr, var)
                             result.append(dict(
-                                title=card.title,
+                                title=card.format_title(evaluated),
                                 input=formatted_input,
                                 pre_output=latex(
                                     card.pre_output_function(input_repr, var)),
                                 output=card.format_output(r, mathjax_latex)
                             ))
-                    except SyntaxError:
-                        pass
+                    except (SyntaxError, ValueError) as e:
+                        print e
             return result
         else:
             return None

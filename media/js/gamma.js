@@ -24,6 +24,33 @@
         };
 }());
 
+// http://www.quirksmode.org/js/cookies.html
+// Used under terms at http://www.quirksmode.org/about/copyright.html
+function createCookie(name,value,days) {
+	if (days) {
+		var date = new Date();
+		date.setTime(date.getTime()+(days*24*60*60*1000));
+		var expires = "; expires="+date.toGMTString();
+	}
+	else var expires = "";
+	document.cookie = name+"="+value+expires+"; path=/";
+}
+
+function readCookie(name) {
+	var nameEQ = name + "=";
+	var ca = document.cookie.split(';');
+	for(var i=0;i < ca.length;i++) {
+		var c = ca[i];
+		while (c.charAt(0)==' ') c = c.substring(1,c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+	}
+	return null;
+}
+
+function eraseCookie(name) {
+	createCookie(name,"",-1);
+}
+
 function drawAxis(scale, g, x, y, orientation) {
     var color = d3.rgb(50,50,50);
     var strokeWidth = 0.5;
@@ -103,6 +130,7 @@ function traceMouse(svg, xscale, yscale, xmin, xmax, width, func,
         }
         var xval = ((offsetX - (width / 2)) / width) * (xmax - xmin);
         var yval = func(xval);
+
         if ($.isNumeric(yval)) {
             circle.attr('cx', xscale(xval));
             circle.attr('cy', yscale(yval));
@@ -148,11 +176,25 @@ function setupGraphs() {
         var ymin = d3.min(yvalues);
         var ymax = d3.max(yvalues);
 
-        if (Math.abs(ymin) >= Math.abs(ymax)) {
-            ymax = -ymin;
+        var ypos = [];
+        var yneg = [];
+        for (var i = 0; i < yvalues.length; i++) {
+            if (yvalues[i] >= 0) {
+                ypos.push(yvalues[i]);
+            }
+            if (yvalues[i] <= 0) {
+                yneg.push(yvalues[i]);
+            }
         }
-        else {
-            ymin = -ymax;
+        var yposmean = Math.abs(d3.mean(ypos));
+        var ynegmean = Math.abs(d3.mean(yneg));
+
+        // Prevent asymptotes from dominating the graph
+        if (Math.abs(ymax) >= 10 * yposmean) {
+            ymax = yposmean;
+        }
+        if (Math.abs(ymin) >= 10 * ynegmean) {
+            ymin = -ynegmean;
         }
 
         var x = d3.scale.linear()
@@ -170,9 +212,7 @@ function setupGraphs() {
 
         // TODO refactor this into a 'Plot' object akin to SymPy's plot
         // object
-        drawAxis(x, svg.append('g'), 0,
-                 MARGIN_TOP + ((HEIGHT - OFFSET_Y) / 2),
-                 'bottom');
+        drawAxis(x, svg.append('g'), 0, y(0), 'bottom');
         drawAxis(y, svg.append('g'), WIDTH / 2, 0, 'right');
         plotFunction(svg, x, y, xvalues, yvalues);
 
@@ -184,8 +224,6 @@ function setupGraphs() {
             xmlns: "http://www.w3.org/2000/svg"
         });
 
-        // https://developer.mozilla.org/en-US/docs/DOM/window.btoa
-        // supported in everything except IE < 10
         var serializer = new XMLSerializer();
         var svgData = window.btoa(serializer.serializeToString(svg[0][0]));
 
@@ -209,6 +247,62 @@ function setupGraphs() {
     });
 }
 
+function setupExamples() {
+    var delay = 0;
+    $('.example-group div.contents').each(function() {
+        var contents = $(this);
+        var header = $(this).siblings('h3');
+        var wasOpen = readCookie(header.html());
+        var visitedBefore = readCookie('visitedBefore');
+
+        if (!visitedBefore) {
+            createCookie('visitedBefore', true, 365);
+        }
+
+        if (!wasOpen || wasOpen === 'false') {
+            if (!visitedBefore) {
+                contents.delay(500 + delay).slideUp(500);
+                delay += 100;
+            }
+            else {
+                contents.hide();
+            }
+        }
+        else {
+            header.addClass('shown');
+        }
+    });
+
+    $('.example-group h3').click(function(e) {
+        var header = $(e.target);
+        var contents = header.siblings('div.contents');
+
+        contents.stop(false, true).slideToggle(500, function() {
+            createCookie(header.html(), contents.is(':visible'), 365);
+        });
+        header.toggleClass('shown');
+    });
+
+    $('#random-example').click(function(e) {
+        var examples = $('.example-group a');
+        var index = Math.floor(Math.random() * examples.length);
+        window.location = $(examples[index]).attr('href');
+    });
+}
+
+function setupSavedQueries() {
+    $('div.col.recent a.remove').click(function(e) {
+        var link = $(e.target);
+        e.preventDefault();
+        link.parent().slideUp(300);
+        $.get(link.attr('href'));
+    });
+
+    $('#clear-all-recent').click(function() {
+        $('div.col.recent a.remove').click();
+    })
+}
+
 $(document).ready(function() {
     $('.cell_output:not(:has(script))').css('opacity', 1);
     MathJax.Hub.Register.MessageHook("New Math", function (message) {
@@ -219,4 +313,7 @@ $(document).ready(function() {
     });
 
     setupGraphs();
+
+    setupExamples();
+    setupSavedQueries();
 });

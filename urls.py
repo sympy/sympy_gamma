@@ -18,6 +18,8 @@ urlpatterns = patterns('',
     (r'^media_files/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': p}),
 
+    (r'user/remove/(?P<qid>.*)$', 'app.views.remove_query')
+
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
     # to INSTALLED_APPS to enable admin documentation:
