@@ -130,6 +130,10 @@ div.result_card div.card_options h2 {
   padding: 0;
 }
 
+div.result_card div.card_options label {
+  margin-left: 0.25em;
+}
+
 div.input {
   text-align: center;
   padding: 20px 0;

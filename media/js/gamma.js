@@ -51,106 +51,252 @@ function eraseCookie(name) {
 	createCookie(name,"",-1);
 }
 
-function drawAxis(scale, g, x, y, orientation) {
-    var color = d3.rgb(50,50,50);
-    var strokeWidth = 0.5;
-    var axis = d3.svg.axis()
-        .scale(scale)
-        .orient(orientation)
-        .ticks(10)
-        .tickSize(2);
-    g.call(axis);
-    g.attr("transform", "translate(" + x + "," + y + ")");
-    g.selectAll("text")
-        .attr("stroke", color)
-        .attr("stroke-width", strokeWidth)
-        .attr("font-size", 10);
-    g.selectAll("path")
-        .attr('fill', color)
-        .attr('stroke-width', strokeWidth)
-        .attr('stroke', 'none');
-    return axis;
-}
+var Plot2D = (function() {
+    function Plot2D(func, svg, width, height) {
+        this._svg = svg;
+        this._func = func;
+        this._width = width;
+        this._height = height;
 
-function drawCircles(g, xscale, yscale, xvalues, yvalues) {
-    var pts = g.selectAll('circle').data(xvalues).enter();
-    pts.append('circle')
-        .attr('cx', function(value) {
-            return xscale(value);
-        })
-        .attr('cy', function(value, index) {
-            var value = yvalues[index];
-            if (!$.isNumeric(value)) return -100;
-            return yscale(value);
-        })
-        .attr('r', 1.5)
-        .attr('fill', d3.rgb(0,100,200));
-}
+        this._axesGroup = svg.append('g');
+        this._plotGroup = svg.append('g');
 
-function drawPath(g, xscale, yscale, xvalues, yvalues) {
-    var line = d3.svg.line()
-        .x(function(value) {
-            return xscale(value);
-        })
-        .y(function(value, index) {
-            var value = yvalues[index];
-            if (!$.isNumeric(value)) return -100;
-            return yscale(value);
-        });
+        this._xScale = null;
+        this._xTicks = 10;
+        this._xTickSize = 2;
+        this._xGroup = this._axesGroup.append('g');
 
-    g.append('svg:path')
-        .attr('d', line(xvalues))
-        .attr('fill', 'none')
-        .attr('stroke', d3.rgb(0, 100, 200));
-}
+        this._yScale = null;
+        this._yTicks = 10;
+        this._yTickSize = 2;
+        this._yGroup = this._axesGroup.append('g');
 
-function plotFunction(svg, xscale, yscale, xvalues, yvalues) {
-    drawCircles(svg.append('g'), xscale, yscale, xvalues, yvalues);
-    drawPath(svg.append('g'), xscale, yscale, xvalues, yvalues);
-}
+        this._pointGroup = this._plotGroup.append('g');
+        this._pathGroup = this._plotGroup.append('g');
+        this._xValues = [0.0];
+        this._yValues = [0.0];
 
-function traceMouse(svg, xscale, yscale, xmin, xmax, width, func,
-                    variable, output_variable) {
-    var g = svg.append('g');
-    var circle = g.append('svg:circle')
-        .attr('r', 5)
-        .attr('fill', d3.rgb(200, 50, 50))
-        .attr('cx', -1000);
+        this._plotOptions = {
+            'grid': true,
+            'axes': true
+        };
+    }
 
-    var text = svg.append('g').append('text');
-    text.attr('fill', d3.rgb(0, 100, 200));
-    text.attr('stroke', 'none');
+    var makeAxis = function(scale, orientation, ticks, tickSize) {
+        return d3.svg.axis()
+            .scale(scale)
+            .orient(orientation)
+            .ticks(ticks)
+            .tickSize(tickSize);
+    };
 
-    var format = d3.format(".4r");
-
-    $(svg[0][0]).mousemove(function(e) {
-        var offsetX = e.offsetX;
-        if (typeof e.offsetX == "undefined") {
-            offsetX = e.pageX - $(e.target).offset().left;
+    Plot2D.prototype.drawOption = function(options) {
+        for (var option in options) {
+            if (options.hasOwnProperty(option)) {
+                this._plotOptions[option] = options[option]
+            }
         }
-        var xval = ((offsetX - (width / 2)) / width) * (xmax - xmin);
-        var yval = func(xval);
+    };
 
-        if ($.isNumeric(yval)) {
-            circle.attr('cx', xscale(xval));
-            circle.attr('cy', yscale(yval));
+    Plot2D.prototype.isOptionEnabled = function(option) {
+        var opt = this._plotOptions[option];
+        return (!(typeof opt === 'undefined')) && opt;
+    };
 
-            text.text(variable + ": " + format(xval) + ", " +
-                      output_variable + ": " + format(yval));
-            var bbox = text[0][0].getBBox();
-            text.attr('x', width / 2 - (bbox.width / 2));
-            text.attr('y', bbox.height);
+    Plot2D.prototype.xScale = function(xScale) {
+        if (xScale == null) {
+            return this._xScale;
         }
-        else {
-            circle.attr('cy', -1000);
 
-            text.text("x: " + format(xval));
-            var bbox = text[0][0].getBBox();
-            text.attr('x', width / 2 - (bbox.width / 2));
-            text.attr('y', bbox.height);
+        this._xScale = xScale;
+        this._xAxis = makeAxis(xScale, 'bottom', this._xTicks, this._xTickSize);
+    };
+
+    Plot2D.prototype.yScale = function(yScale) {
+        if (yScale == null) {
+            return this._yScale;
         }
-    });
-}
+
+        this._yScale = yScale;
+        this._yAxis = makeAxis(yScale, 'right', this._yTicks, this._yTickSize);
+    };
+
+    Plot2D.prototype.xValues = function(xValues) {
+        this._xValues = xValues;
+        this._xMin = d3.min(xValues);
+        this._xMax = d3.max(xValues);
+    };
+
+    Plot2D.prototype.yValues = function(yValues) {
+        this._yValues = yValues;
+        this._yMin = d3.min(yValues);
+        this._yMax = d3.max(yValues);
+    };
+
+    Plot2D.prototype.drawAxes = function() {
+        this._axesGroup.selectAll('line').remove();
+        this._xGroup.selectAll('*').remove();
+        this._yGroup.selectAll('*').remove();
+
+        if (this.isOptionEnabled('axes')) {
+            this._xGroup.call(this._xAxis);
+            this._xGroup.attr('transform',
+                              'translate(' + 0 + ',' + this._yScale(0) + ')');
+            this._yGroup.call(this._yAxis);
+            this._yGroup.attr('transform',
+                              'translate(' + this._width / 2 + ',' + 0 + ')');
+
+
+            var color = d3.rgb(50,50,50);
+            var strokeWidth = 0.5;
+            this._axesGroup.selectAll("text")
+                .attr("stroke", color)
+                .attr("stroke-width", strokeWidth)
+                .attr("font-size", 10);
+            this._axesGroup.selectAll("path")
+                .attr('fill', color)
+                .attr('stroke-width', strokeWidth)
+                .attr('stroke', 'none');
+        }
+
+        if (this.isOptionEnabled('grid')) {
+            $.map(this._xScale.ticks(10), $.proxy(function(x) {
+                var x = this._xScale(x);
+                this._axesGroup.append('svg:line')
+                    .attr('x1', x)
+                    .attr('y1', this._yScale(this._yMax))
+                    .attr('x2', x)
+                    .attr('y2', this._yScale(this._yMin))
+                    .attr('fill', 'none')
+                    .attr('stroke-dasharray', '1, 3')
+                    .attr('stroke', d3.rgb(175, 175, 175));
+            }, this));
+
+            $.map(this._yScale.ticks(10), $.proxy(function(y) {
+                var y = this._yScale(y);
+                this._axesGroup.append('svg:line')
+                    .attr('x1', this._xScale(this._xMin))
+                    .attr('y1', y)
+                    .attr('x2', this._xScale(this._xMax))
+                    .attr('y2', y)
+                    .attr('fill', 'none')
+                    .attr('stroke-dasharray', '1, 3')
+                    .attr('stroke', d3.rgb(175, 175, 175));
+            }, this));
+        }
+    };
+
+    Plot2D.prototype.drawPoints = function() {
+        var points = this._pointGroup.selectAll('circle')
+            .data(this._xValues)
+            .enter();
+
+        points.append('circle')
+            .attr('cx', $.proxy(function(value) {
+                return this._xScale(value);
+            }, this))
+            .attr('cy', $.proxy(function(value, index) {
+                return this._yScale(this._yValues[index]);
+            }, this))
+            .attr('r', 1.5)
+            .attr('fill', d3.rgb(0, 100, 200));
+    };
+
+    Plot2D.prototype.drawPath = function() {
+        var line = d3.svg.line()
+            .x($.proxy(function(value) {
+                return this._xScale(value);
+            }, this))
+            .y($.proxy(function(value, index) {
+                var value = this._yValues[index];
+                return this._yScale(value);
+            }, this));
+
+        this._pathGroup.append('svg:path')
+            .attr('d', line(this._xValues))
+            .attr('fill', 'none')
+            .attr('stroke', d3.rgb(0, 100, 200));
+    };
+
+    Plot2D.prototype.initTracing = function(variable, output_variable) {
+        var traceGroup = this._svg.append('g');
+        var tracePoint = traceGroup.append('svg:circle')
+            .attr('r', 5)
+            .attr('fill', d3.rgb(200, 50, 50))
+            .attr('cx', -1000);
+
+        var traceText = traceGroup.append('g').append('text')
+            .attr('fill', d3.rgb(0, 100, 200))
+            .attr('stroke', 'none');
+
+        var traceXPath = traceGroup.append('svg:line')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', 0)
+            .attr('y2', this._height)
+            .attr('fill', 'none')
+            .attr('stroke-dasharray', '2, 3')
+            .attr('stroke', d3.rgb(50, 50, 50));
+
+        var traceYPath = traceGroup.append('svg:line')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', this._width)
+            .attr('y2', 0)
+            .attr('fill', 'none')
+            .attr('stroke-dasharray', '2, 3')
+            .attr('stroke', d3.rgb(50, 50, 50));
+
+        var format = d3.format(".4r");
+
+        $(this._svg[0][0]).mousemove($.proxy(function(e) {
+            var offsetX = e.offsetX;
+            if (typeof e.offsetX == "undefined") {
+                offsetX = e.pageX - $(e.target).offset().left;
+            }
+            var offsetY = e.offsetY;
+            if (typeof e.offsetX == "undefined") {
+                offsetY = e.pageY - $(e.target).offset().top;
+            }
+            var xval = (((offsetX - (this._width / 2)) / this._width) *
+                        (this._xMax - this._xMin));
+            var yval = this._func(xval);
+
+            if ($.isNumeric(yval)) {
+                tracePoint.attr('cx', this._xScale(xval));
+                tracePoint.attr('cy', this._yScale(yval));
+
+                traceText.text(variable + ": " + format(xval) + ", " +
+                          output_variable + ": " + format(yval));
+            }
+            else {
+                tracePoint.attr('cy', -1000);
+
+                traceText.text("x: " + format(xval));
+            }
+
+            traceXPath.attr('transform', 'translate(' + this._xScale(xval) + ', 0)');
+            traceYPath.attr('transform', 'translate(0, ' + (offsetY) + ')');
+
+            var bbox = traceText[0][0].getBBox();
+            traceText.attr('x', this._width / 2 - (bbox.width / 2));
+            traceText.attr('y', bbox.height);
+        }, this));
+    }
+
+    Plot2D.prototype.asSVGDataURI = function() {
+        // http://stackoverflow.com/questions/2483919
+        var serializer = new XMLSerializer();
+        var svgData = window.btoa(serializer.serializeToString(this._svg[0][0]));
+
+        return 'data:image/svg+xml;base64,\n' + svgData;
+    }
+
+    // TODO: get PNG data URI (currently not directly possible in Chrome due
+    // to security issues)
+
+    return Plot2D;
+})();
 
 function setupGraphs() {
     $('.graph').each(function(){
@@ -210,22 +356,22 @@ function setupGraphs() {
             attr('width', WIDTH + 'px').
             attr('height', HEIGHT + 'px');
 
-        // TODO refactor this into a 'Plot' object akin to SymPy's plot
-        // object
-        drawAxis(x, svg.append('g'), 0, y(0), 'bottom');
-        drawAxis(y, svg.append('g'), WIDTH / 2, 0, 'right');
-        plotFunction(svg, x, y, xvalues, yvalues);
-
-        traceMouse(svg, x, y, xmin, xmax, WIDTH, f, variable, output_variable);
-
-        // http://stackoverflow.com/questions/2483919
         $(svg[0][0]).attr({
             version: '1.1',
             xmlns: "http://www.w3.org/2000/svg"
         });
 
-        var serializer = new XMLSerializer();
-        var svgData = window.btoa(serializer.serializeToString(svg[0][0]));
+        var plot = new Plot2D(f, svg, 400, 275);
+        plot.xScale(x);
+        plot.yScale(y);
+        plot.xValues(xvalues);
+        plot.yValues(yvalues);
+
+        plot.drawAxes();
+        plot.drawPoints();
+        plot.drawPath();
+
+        plot.initTracing(variable, output_variable);
 
         var moreButton = $('<button>More...</button>')
             .addClass('card_options_toggle');
@@ -233,10 +379,38 @@ function setupGraphs() {
         moreContent.append([
             $('<div/>').append([
                 $('<h2>Export</h2>'),
-                $('<a href-lang="image/svg+xml">SVG</a>').attr(
+                $('<a href-lang="image/svg+xml">SVG</a>').click(function() {
+                    $(this).attr(
+                        'href',
+                        plot.asSVGDataURI()
+                    )
+                }).attr(
                     'href',
-                    'data:image/svg+xml;base64,\n' + svgData
+                    plot.asSVGDataURI()
                 )
+            ]),
+            $('<div/>').append([
+                $('<h2>Plot Options</h2>'),
+                $('<div/>').append([
+                    $('<input type="checkbox" checked id="plot-grid" />')
+                        .click(function() {
+                            plot.drawOption({
+                                'grid': $(this).prop('checked')
+                            });
+                            plot.drawAxes();
+                        }),
+                    $('<label for="plot-grid">Show Grid</label>'),
+                ]),
+                $('<div/>').append([
+                    $('<input type="checkbox" checked id="plot-axes" />')
+                        .click(function() {
+                            plot.drawOption({
+                                'axes': $(this).prop('checked')
+                            });
+                            plot.drawAxes();
+                        }),
+                    $('<label for="plot-axes">Show Axes</label>')
+                ])
             ])
         ]);
         moreContent.hide();
