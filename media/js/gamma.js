@@ -583,6 +583,57 @@ function setupSavedQueries() {
     })
 }
 
+function setupMobileKeyboard() {
+    var keyboard = $('<div id="mobile-keyboard"/>');
+
+    keyboard.append([
+        $('<button data-key="+">+</button>'),
+        $('<button data-key="-">-</button>'),
+        $('<button data-key="*">*</button>'),
+        $('<button data-key="/">/</button>'),
+        $('<button data-key="()">()</button>'),
+        $('<button data-offset="-1">&lt;</button>'),
+        $('<button data-offset="1">&gt;</button>')
+    ]);
+
+    var h1height = $('.input h1').height();
+
+    $('.input').prepend(keyboard);
+    $('form input[type=text]').focus(function() {
+        keyboard.find('button').height(h1height);
+        keyboard.slideDown();
+        $('.input h1').slideUp();
+    });
+    $('form input[type=text]').blur(function() {
+        setTimeout(function() {
+            if (!(document.activeElement.tagName.toLowerCase() == 'input' &&
+                  document.activeElement.getAttribute('type') == 'text')) {
+                keyboard.slideUp();
+                $('.input h1').slideDown();
+            }
+        }, 100);
+    });
+
+    $('#mobile-keyboard button').click(function(e) {
+        $('#mobile-keyboard').stop().show().height(h1height);
+        $('.input h1').stop().hide();
+
+        var input = $('.input input[type=text]')[0];
+        var start = input.selectionStart;
+        if ($(this).data('key')) {
+            var text = input.value;
+
+            input.value = (text.substring(0, start) +
+                           $(this).data('key') + text.substring(start));
+            input.setSelectionRange(start + 1, start + 1);
+        }
+        else if ($(this).data('offset')) {
+            var offset = parseInt($(this).data('offset'), 10);
+            input.setSelectionRange(start + offset, start + offset);
+        }
+    });
+}
+
 $(document).ready(function() {
     $('.cell_output:not(:has(script))').css('opacity', 1);
     MathJax.Hub.Register.MessageHook("New Math", function (message) {
@@ -596,4 +647,8 @@ $(document).ready(function() {
 
     setupExamples();
     setupSavedQueries();
+
+    if (screen.width <= 640) {
+        setupMobileKeyboard();
+    }
 });

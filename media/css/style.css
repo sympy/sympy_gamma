@@ -188,6 +188,37 @@ div.input input[type="submit"]:hover {
   background-image: linear-gradient(top, #7bb64b, #689a3f);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7bb64b, endColorstr=#689a3f);
 }
 
+div#mobile-keyboard {
+  display: none;
+}
+
+div#mobile-keyboard button {
+  color: #FFF;
+  border: 0;
+  border-left: 1px solid #3B5526;
+  font-size: 1.25em;
+  background-color: #96C56F;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #96C56F), color-stop(100%, #81B953));
+  background-image: -webkit-linear-gradient(top, #96C56F, #81B953);
+  background-image: -moz-linear-gradient(top, #96C56F, #81B953);
+  background-image: -ms-linear-gradient(top, #96C56F, #81B953);
+  background-image: -o-linear-gradient(top, #96C56F, #81B953);
+  background-image: linear-gradient(top, #96C56F,
+  #81B953);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#96C56F, endColorstr=#81B953);
+  width: 2em;
+}
+
+div#mobile-keyboard button:hover {
+  background-color: #7bb64b;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#7bb64b), color-stop(100%, #689a3f));
+  background-image: -webkit-linear-gradient(top, #7bb64b, #689a3f);
+  background-image: -moz-linear-gradient(top, #7bb64b, #689a3f);
+  background-image: -ms-linear-gradient(top, #7bb64b, #689a3f);
+  background-image: -o-linear-gradient(top, #7bb64b, #689a3f);
+  background-image: linear-gradient(top, #7bb64b, #689a3f);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7bb64b, endColorstr=#689a3f);
+}
+
+
 div.foot {
   text-align: center;
   font-size: 10pt;
