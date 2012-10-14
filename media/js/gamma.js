@@ -321,7 +321,7 @@ var Plot2D = (function() {
             'grid': true,
             'axes': true,
             'points': true,
-            'line': true
+            'path': true
         };
     }
 
@@ -384,7 +384,7 @@ var Plot2D = (function() {
         if (this.isOptionEnabled('points')) {
             this.backend().drawPoints();
         }
-        if (this.isOptionEnabled('line')) {
+        if (this.isOptionEnabled('path')) {
             this.backend().drawPath();
         }
     };
