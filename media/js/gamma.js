@@ -51,7 +51,48 @@ function eraseCookie(name) {
 	createCookie(name,"",-1);
 }
 
+var __extend = function(parent, child) {
+    for (var key in parent) {
+        if (Object.hasOwnProperty.call(parent, key)) {
+            child[key] = parent[key];
+        }
+    }
+
+    function ctor() {
+        this.constructor = child;
+    }
+
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor();
+    child.__super__ = parent.prototype;
+
+    return child;
+}
+
 var PlotBackend = (function() {
+    function PlotBackend(plot, container) {
+        this.plot = plot;
+        this._container = container;
+    }
+
+    PlotBackend.prototype.drawAxes = function() {
+    };
+
+    PlotBackend.prototype.drawPoints = function() {
+    };
+
+    PlotBackend.prototype.drawPath = function() {
+    };
+
+    PlotBackend.prototype.initTracing = function(variable, output_variable) {
+    };
+
+    return PlotBackend;
+})();
+
+var SVGBackend = (function(_parent) {
+    __extend(_parent, SVGBackend);
+
     var makeAxis = function(scale, orientation, ticks, tickSize) {
         return d3.svg.axis()
             .scale(scale)
@@ -60,9 +101,8 @@ var PlotBackend = (function() {
             .tickSize(tickSize);
     };
 
-    function PlotBackend(plot, container) {
-        this.plot = plot;
-        this._container = container;
+    function SVGBackend(plot, container) {
+        SVGBackend.__super__.constructor.call(this, plot, container);
 
         var graph = d3.select(container);
         this._svg = graph.append('svg')
@@ -91,7 +131,7 @@ var PlotBackend = (function() {
         this._pathGroup = this._plotGroup.append('g');
     }
 
-    PlotBackend.prototype.drawAxes = function() {
+    SVGBackend.prototype.drawAxes = function() {
         this._axesGroup.selectAll('line').remove();
         this._xGroup.selectAll('*').remove();
         this._yGroup.selectAll('*').remove();
@@ -147,7 +187,7 @@ var PlotBackend = (function() {
         }
     };
 
-    PlotBackend.prototype.drawPoints = function() {
+    SVGBackend.prototype.drawPoints = function() {
         var points = this._pointGroup.selectAll('circle')
             .data(this.plot.xValues())
             .enter();
@@ -163,7 +203,7 @@ var PlotBackend = (function() {
             .attr('fill', d3.rgb(0, 100, 200));
     };
 
-    PlotBackend.prototype.drawPath = function() {
+    SVGBackend.prototype.drawPath = function() {
         var line = d3.svg.line()
             .x($.proxy(function(value) {
                 return this.plot.xScale(value);
@@ -179,7 +219,7 @@ var PlotBackend = (function() {
             .attr('stroke', d3.rgb(0, 100, 200));
     };
 
-    PlotBackend.prototype.initTracing = function(variable, output_variable) {
+    SVGBackend.prototype.initTracing = function(variable, output_variable) {
         var traceGroup = this._svg.append('g');
         var tracePoint = traceGroup.append('svg:circle')
             .attr('r', 5)
@@ -245,7 +285,7 @@ var PlotBackend = (function() {
         }, this));
     };
 
-    PlotBackend.prototype.asSVGDataURI = function() {
+    SVGBackend.prototype.asDataURI = function() {
         // http://stackoverflow.com/questions/2483919
         var serializer = new XMLSerializer();
         var svgData = window.btoa(serializer.serializeToString(this._svg[0][0]));
@@ -253,11 +293,8 @@ var PlotBackend = (function() {
         return 'data:image/svg+xml;base64,\n' + svgData;
     };
 
-    // TODO: get PNG data URI (currently not directly possible in Chrome due
-    // to security issues)
-
-    return PlotBackend;
-})();
+    return SVGBackend;
+})(PlotBackend);
 
 var Plot2D = (function() {
     function Plot2D(func, xScale, yScale, width, height) {
@@ -399,7 +436,7 @@ function setupGraphs() {
         plot.xValues(xvalues);
         plot.yValues(yvalues);
 
-        var backend = new PlotBackend(plot, $(this).parent()[0]);
+        var backend = new SVGBackend(plot, $(this).parent()[0]);
         plot.backend(backend);
 
         plot.draw();
@@ -414,11 +451,11 @@ function setupGraphs() {
                 $('<a href-lang="image/svg+xml">SVG</a>').click(function() {
                     $(this).attr(
                         'href',
-                        plot.backend().asSVGDataURI()
+                        plot.backend().asDataURI()
                     )
                 }).attr(
                     'href',
-                    plot.backend().asSVGDataURI()
+                    plot.backend().asDataURI()
                 )
             ]),
             $('<div/>').append([
