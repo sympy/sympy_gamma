@@ -75,6 +75,9 @@ var PlotBackend = (function() {
         this._container = container;
     }
 
+    PlotBackend.prototype.clear = function() {
+    };
+
     PlotBackend.prototype.drawAxes = function() {
     };
 
@@ -131,11 +134,17 @@ var SVGBackend = (function(_parent) {
         this._pathGroup = this._plotGroup.append('g');
     }
 
-    SVGBackend.prototype.drawAxes = function() {
+    SVGBackend.prototype.clear = function() {
         this._axesGroup.selectAll('line').remove();
         this._xGroup.selectAll('*').remove();
         this._yGroup.selectAll('*').remove();
 
+        this._pointGroup.selectAll('circle').remove();
+
+        this._pathGroup.selectAll('path').remove();
+    };
+
+    SVGBackend.prototype.drawAxes = function() {
         if (this.plot.isOptionEnabled('axes')) {
             this._xGroup.call(this._xAxis);
             this._xGroup.attr('transform',
@@ -310,7 +319,9 @@ var Plot2D = (function() {
 
         this._plotOptions = {
             'grid': true,
-            'axes': true
+            'axes': true,
+            'points': true,
+            'line': true
         };
     }
 
@@ -322,6 +333,14 @@ var Plot2D = (function() {
             this['_' + prop] = val;
         };
     }
+
+    addGetterSetter(Plot2D, 'width');
+    addGetterSetter(Plot2D, 'height');
+    addGetterSetter(Plot2D, 'backend');
+    addGetterSetter(Plot2D, 'xMin');
+    addGetterSetter(Plot2D, 'xMax');
+    addGetterSetter(Plot2D, 'yMin');
+    addGetterSetter(Plot2D, 'yMax');
 
     Plot2D.prototype.drawOption = function(options) {
         for (var option in options) {
@@ -335,14 +354,6 @@ var Plot2D = (function() {
         var opt = this._plotOptions[option];
         return (!(typeof opt === 'undefined')) && opt;
     };
-
-    addGetterSetter(Plot2D, 'width');
-    addGetterSetter(Plot2D, 'height');
-    addGetterSetter(Plot2D, 'backend');
-    addGetterSetter(Plot2D, 'xMin');
-    addGetterSetter(Plot2D, 'xMax');
-    addGetterSetter(Plot2D, 'yMin');
-    addGetterSetter(Plot2D, 'yMax');
 
     Plot2D.prototype.funcValue = function(x) {
         return this._func(x);
@@ -367,9 +378,15 @@ var Plot2D = (function() {
     };
 
     Plot2D.prototype.draw = function() {
+        this.backend().clear();
+
         this.backend().drawAxes();
-        this.backend().drawPoints();
-        this.backend().drawPath();
+        if (this.isOptionEnabled('points')) {
+            this.backend().drawPoints();
+        }
+        if (this.isOptionEnabled('path')) {
+            this.backend().drawPath();
+        }
     };
 
     Plot2D.prototype.initTracing = function(variable, output_variable) {
@@ -479,6 +496,26 @@ function setupGraphs() {
                             plot.draw();
                         }),
                     $('<label for="plot-axes">Show Axes</label>')
+                ]),
+                $('<div/>').append([
+                    $('<input type="checkbox" checked id="plot-points" />')
+                        .click(function() {
+                            plot.drawOption({
+                                'points': $(this).prop('checked')
+                            });
+                            plot.draw();
+                        }),
+                    $('<label for="plot-axes">Show Points</label>')
+                ]),
+                $('<div/>').append([
+                    $('<input type="checkbox" checked id="plot-line" />')
+                        .click(function() {
+                            plot.drawOption({
+                                'path': $(this).prop('checked')
+                            });
+                            plot.draw();
+                        }),
+                    $('<label for="plot-line">Show Line</label>')
                 ])
             ])
         ]);
