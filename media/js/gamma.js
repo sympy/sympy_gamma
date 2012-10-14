@@ -323,6 +323,17 @@ var Plot2D = (function() {
             'points': true,
             'path': true
         };
+
+        for (var opt in this._plotOptions) {
+            var cookie = readCookie(opt);
+
+            if (cookie === 'true') {
+                this._plotOptions[opt] = true;
+            }
+            else if (cookie === 'false') {
+                this._plotOptions[opt] = false;
+            }
+        }
     }
 
     var addGetterSetter = function(func, prop) {
@@ -345,7 +356,9 @@ var Plot2D = (function() {
     Plot2D.prototype.drawOption = function(options) {
         for (var option in options) {
             if (options.hasOwnProperty(option)) {
-                this._plotOptions[option] = options[option]
+                this._plotOptions[option] = options[option];
+
+                createCookie(option, options[option], 365);
             }
         }
     };
@@ -478,13 +491,14 @@ function setupGraphs() {
             $('<div/>').append([
                 $('<h2>Plot Options</h2>'),
                 $('<div/>').append([
-                    $('<input type="checkbox" checked id="plot-grid" />')
+                    $('<input type="checkbox" id="plot-grid" />')
                         .click(function() {
                             plot.drawOption({
                                 'grid': $(this).prop('checked')
                             });
                             plot.draw();
-                        }),
+                        })
+                        .prop('checked', plot.isOptionEnabled('grid')),
                     $('<label for="plot-grid">Show Grid</label>'),
                 ]),
                 $('<div/>').append([
@@ -494,7 +508,8 @@ function setupGraphs() {
                                 'axes': $(this).prop('checked')
                             });
                             plot.draw();
-                        }),
+                        })
+                        .prop('checked', plot.isOptionEnabled('axes')),
                     $('<label for="plot-axes">Show Axes</label>')
                 ]),
                 $('<div/>').append([
@@ -504,7 +519,8 @@ function setupGraphs() {
                                 'points': $(this).prop('checked')
                             });
                             plot.draw();
-                        }),
+                        })
+                        .prop('checked', plot.isOptionEnabled('points')),
                     $('<label for="plot-axes">Show Points</label>')
                 ]),
                 $('<div/>').append([
@@ -514,7 +530,8 @@ function setupGraphs() {
                                 'path': $(this).prop('checked')
                             });
                             plot.draw();
-                        }),
+                        })
+                        .prop('checked', plot.isOptionEnabled('path')),
                     $('<label for="plot-line">Show Line</label>')
                 ])
             ])
