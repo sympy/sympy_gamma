@@ -384,7 +384,7 @@ var Plot2D = (function() {
         if (this.isOptionEnabled('points')) {
             this.backend().drawPoints();
         }
-        if (this.isOptionEnabled('path')) {
+        if (this.isOptionEnabled('line')) {
             this.backend().drawPath();
         }
     };
