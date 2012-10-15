@@ -306,16 +306,49 @@ var SVGBackend = (function(_parent) {
 })(PlotBackend);
 
 var Plot2D = (function() {
-    function Plot2D(func, xScale, yScale, width, height) {
+    function Plot2D(func, xValues, yValues, width, height) {
         this._func = func;
         this._width = width;
         this._height = height;
 
-        this.xScale = xScale;
-        this.yScale = yScale;
+        this._xValues = xValues;
+        this._xMin = d3.min(xValues);
+        this._xMax = d3.max(xValues);
+        this._yValues = yValues;
+        this._yMin = d3.min(yValues);
+        this._yMax = d3.max(yValues);
 
-        this._xValues = [0.0];
-        this._yValues = [0.0];
+        var OFFSET_Y = 25;
+        var MARGIN_TOP = 25;
+        this.xScale = d3.scale.linear()
+            .domain([this._xMin, this._xMax])
+            .range([10, width - 10]);
+
+        var ymin = this._yMin, ymax = this._yMax;
+        var ypos = [];
+        var yneg = [];
+        for (var i = 0; i < yValues.length; i++) {
+            if (yValues[i] >= 0) {
+                ypos.push(yValues[i]);
+            }
+            if (yValues[i] <= 0) {
+                yneg.push(yValues[i]);
+            }
+        }
+        var yposmean = Math.abs(d3.mean(ypos));
+        var ynegmean = Math.abs(d3.mean(yneg));
+
+        // Prevent asymptotes from dominating the graph
+        if (Math.abs(ymax) >= 10 * yposmean) {
+            ymax = yposmean;
+        }
+        if (Math.abs(ymin) >= 10 * ynegmean) {
+            ymin = -ynegmean;
+        }
+
+        this.yScale = d3.scale.linear()
+            .domain([Math.ceil(ymax), Math.floor(ymin)])
+            .range([OFFSET_Y + MARGIN_TOP, height - OFFSET_Y]);
 
         this._plotOptions = {
             'grid': true,
@@ -348,6 +381,8 @@ var Plot2D = (function() {
     addGetterSetter(Plot2D, 'width');
     addGetterSetter(Plot2D, 'height');
     addGetterSetter(Plot2D, 'backend');
+    addGetterSetter(Plot2D, 'xValues');
+    addGetterSetter(Plot2D, 'yValues');
     addGetterSetter(Plot2D, 'xMin');
     addGetterSetter(Plot2D, 'xMax');
     addGetterSetter(Plot2D, 'yMin');
@@ -370,24 +405,6 @@ var Plot2D = (function() {
 
     Plot2D.prototype.funcValue = function(x) {
         return this._func(x);
-    }
-
-    Plot2D.prototype.xValues = function(xValues) {
-        if (xValues == null) {
-            return this._xValues;
-        }
-        this._xValues = xValues;
-        this._xMin = d3.min(xValues);
-        this._xMax = d3.max(xValues);
-    };
-
-    Plot2D.prototype.yValues = function(yValues) {
-        if (yValues == null) {
-            return this._yValues;
-        }
-        this._yValues = yValues;
-        this._yMin = d3.min(yValues);
-        this._yMax = d3.max(yValues);
     };
 
     Plot2D.prototype.draw = function() {
@@ -413,8 +430,6 @@ function setupGraphs() {
     $('.graph').each(function(){
         var WIDTH = 400;
         var HEIGHT = 275;
-        var OFFSET_Y = 25;
-        var MARGIN_TOP = 25;
 
         var equation = $(this).data('function').trim();
         var variable = $(this).data('variable');
@@ -425,46 +440,9 @@ function setupGraphs() {
         var f = new Function(variable, 'return ' + equation + ';');
 
         var xvalues = $(this).data('xvalues');
-        var xmin = d3.min(xvalues);
-        var xmax = d3.max(xvalues);
-        var dx = Math.PI / 16;
-
         var yvalues = $(this).data('yvalues');
-        var ymin = d3.min(yvalues);
-        var ymax = d3.max(yvalues);
 
-        var ypos = [];
-        var yneg = [];
-        for (var i = 0; i < yvalues.length; i++) {
-            if (yvalues[i] >= 0) {
-                ypos.push(yvalues[i]);
-            }
-            if (yvalues[i] <= 0) {
-                yneg.push(yvalues[i]);
-            }
-        }
-        var yposmean = Math.abs(d3.mean(ypos));
-        var ynegmean = Math.abs(d3.mean(yneg));
-
-        // Prevent asymptotes from dominating the graph
-        if (Math.abs(ymax) >= 10 * yposmean) {
-            ymax = yposmean;
-        }
-        if (Math.abs(ymin) >= 10 * ynegmean) {
-            ymin = -ynegmean;
-        }
-
-        var x = d3.scale.linear()
-            .domain([xmin, xmax])
-            .range([10, WIDTH - 10]);
-
-        var y = d3.scale.linear()
-            .domain([Math.ceil(ymax), Math.floor(ymin)])
-            .range([OFFSET_Y + MARGIN_TOP, HEIGHT - OFFSET_Y]);
-
-        var plot = new Plot2D(f, x, y, 400, 275);
-        plot.xValues(xvalues);
-        plot.yValues(yvalues);
+        var plot = new Plot2D(f, xvalues, yvalues, WIDTH, HEIGHT);
 
         var backend = new SVGBackend(plot, $(this)[0]);
         plot.backend(backend);
