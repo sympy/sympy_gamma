@@ -122,17 +122,30 @@ var SVGBackend = (function(_parent) {
 
         this._xTicks = 10;
         this._xTickSize = 2;
-        this._xAxis = makeAxis(plot.xScale, 'bottom', this._xTicks, this._xTickSize);
         this._xGroup = this._axesGroup.append('g');
 
         this._yTicks = 10;
         this._yTickSize = 2;
-        this._yAxis = makeAxis(plot.yScale, 'right', this._yTicks, this._yTickSize);
         this._yGroup = this._axesGroup.append('g');
+
+        this.generateAxes();
 
         this._pointGroup = this._plotGroup.append('g');
         this._pathGroup = this._plotGroup.append('g');
     }
+
+    SVGBackend.prototype.generateAxes = function() {
+        this._xAxis = makeAxis(this.plot.xScale, 'bottom',
+                               this._xTicks, this._xTickSize);
+        this._yAxis = makeAxis(this.plot.yScale, 'right',
+                               this._yTicks, this._yTickSize);
+    };
+
+    SVGBackend.prototype.resize = function() {
+        this._svg
+            .attr('width', this.plot.width())
+            .attr('height', this.plot.height());
+    };
 
     SVGBackend.prototype.clear = function() {
         this._axesGroup.selectAll('line').remove();
@@ -318,37 +331,7 @@ var Plot2D = (function() {
         this._yMin = d3.min(yValues);
         this._yMax = d3.max(yValues);
 
-        var OFFSET_Y = 25;
-        var MARGIN_TOP = 25;
-        this.xScale = d3.scale.linear()
-            .domain([this._xMin, this._xMax])
-            .range([10, width - 10]);
-
-        var ymin = this._yMin, ymax = this._yMax;
-        var ypos = [];
-        var yneg = [];
-        for (var i = 0; i < yValues.length; i++) {
-            if (yValues[i] >= 0) {
-                ypos.push(yValues[i]);
-            }
-            if (yValues[i] <= 0) {
-                yneg.push(yValues[i]);
-            }
-        }
-        var yposmean = Math.abs(d3.mean(ypos));
-        var ynegmean = Math.abs(d3.mean(yneg));
-
-        // Prevent asymptotes from dominating the graph
-        if (Math.abs(ymax) >= 10 * yposmean) {
-            ymax = yposmean;
-        }
-        if (Math.abs(ymin) >= 10 * ynegmean) {
-            ymin = -ynegmean;
-        }
-
-        this.yScale = d3.scale.linear()
-            .domain([Math.ceil(ymax), Math.floor(ymin)])
-            .range([OFFSET_Y + MARGIN_TOP, height - OFFSET_Y]);
+        this.generateScales();
 
         this._plotOptions = {
             'grid': true,
@@ -376,7 +359,7 @@ var Plot2D = (function() {
             }
             this['_' + prop] = val;
         };
-    }
+    };
 
     addGetterSetter(Plot2D, 'width');
     addGetterSetter(Plot2D, 'height');
@@ -387,6 +370,48 @@ var Plot2D = (function() {
     addGetterSetter(Plot2D, 'xMax');
     addGetterSetter(Plot2D, 'yMin');
     addGetterSetter(Plot2D, 'yMax');
+
+    Plot2D.prototype.resize = function(width, height) {
+        this.width(width);
+        this.height(height);
+        this.backend().resize();
+    };
+
+    Plot2D.prototype.generateScales = function() {
+        var OFFSET_Y = 25;
+        var MARGIN_TOP = 25;
+        this.xScale = d3.scale.linear()
+            .domain([this._xMin, this._xMax])
+            .range([10, this.width() - 10]);
+
+        var ymin = this.yMin(), ymax = this.yMax();
+        var yValues = this.yValues();
+        var ypos = [];
+        var yneg = [];
+
+        for (var i = 0; i < yValues.length; i++) {
+            if (yValues[i] >= 0) {
+                ypos.push(yValues[i]);
+            }
+            if (yValues[i] <= 0) {
+                yneg.push(yValues[i]);
+            }
+        }
+        var yposmean = Math.abs(d3.mean(ypos));
+        var ynegmean = Math.abs(d3.mean(yneg));
+
+        // Prevent asymptotes from dominating the graph
+        if (Math.abs(ymax) >= 10 * yposmean) {
+            ymax = yposmean;
+        }
+        if (Math.abs(ymin) >= 10 * ynegmean) {
+            ymin = -ynegmean;
+        }
+
+        this.yScale = d3.scale.linear()
+            .domain([Math.ceil(ymax), Math.floor(ymin)])
+            .range([OFFSET_Y + MARGIN_TOP, this.height() - OFFSET_Y]);
+    };
 
     Plot2D.prototype.drawOption = function(options) {
         for (var option in options) {
@@ -501,10 +526,14 @@ function setupGraphs() {
                     newH = originalHeight;
                 }
                 container.height(newH);
+
+                plot.resize(newW, newH);
+                plot.generateScales();
+                backend.generateAxes();
+                plot.draw();
             }
         });
         $(document.body).mouseup(function() {
-            console.log('stop')
             resizing = false;
         });
 
