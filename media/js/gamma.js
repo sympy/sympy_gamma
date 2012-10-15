@@ -75,6 +75,12 @@ var PlotBackend = (function() {
         this._container = container;
     }
 
+    PlotBackend.prototype.generateAxes = function() {
+    };
+
+    PlotBackend.prototype.resize = function() {
+    };
+
     PlotBackend.prototype.clear = function() {
     };
 
@@ -371,9 +377,7 @@ var Plot2D = (function() {
     addGetterSetter(Plot2D, 'yMin');
     addGetterSetter(Plot2D, 'yMax');
 
-    Plot2D.prototype.resize = function(width, height) {
-        this.width(width);
-        this.height(height);
+    Plot2D.prototype.resize = function() {
         this.backend().resize();
     };
 
@@ -527,7 +531,9 @@ function setupGraphs() {
                 }
                 container.height(newH);
 
-                plot.resize(newW, newH);
+                plot.width(newW);
+                plot.height(newH);
+                plot.resize();
                 plot.generateScales();
                 backend.generateAxes();
                 plot.draw();
