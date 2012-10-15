@@ -607,6 +607,22 @@ function setupGraphs() {
                         })
                         .prop('checked', plot.isOptionEnabled('path')),
                     $('<label for="plot-line">Show Line</label>')
+                ]),
+                $('<div/>').append([
+                    $('<button>Square Viewport</button>')
+                        .click(function() {
+                            var width = plot.width();
+                            var height = plot.height();
+
+                            container.width(d3.max([width, height]));
+                            container.height(d3.max([width, height]) + 50);
+                            plot.width(d3.max([width, height]));
+                            plot.height(d3.max([width, height]) + 50);
+                            plot.resize();
+                            plot.generateScales();
+                            backend.generateAxes();
+                            plot.draw();
+                        })
                 ])
             ])
         ]);
