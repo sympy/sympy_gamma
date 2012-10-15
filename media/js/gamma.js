@@ -115,7 +115,7 @@ var SVGBackend = (function(_parent) {
         $(container).find('svg').attr({
             version: '1.1',
             xmlns: "http://www.w3.org/2000/svg"
-        });
+        }).css('resize', 'both');
 
         this._axesGroup = this._svg.append('g');
         this._plotGroup = this._svg.append('g');
@@ -466,8 +466,69 @@ function setupGraphs() {
         plot.xValues(xvalues);
         plot.yValues(yvalues);
 
-        var backend = new SVGBackend(plot, $(this).parent()[0]);
+        var backend = new SVGBackend(plot, $(this)[0]);
         plot.backend(backend);
+
+        var resizing = false;
+        var container = $(this);
+        var originalWidth = $(this).width();
+        var originalHeight = $(this).height();
+        $(this).mousedown(function(e) {
+            var offsetX = e.offsetX;
+            if (typeof e.offsetX == "undefined") {
+                offsetX = e.pageX - $(e.target).offset().left;
+            }
+            var offsetY = e.offsetY;
+            if (typeof e.offsetX == "undefined") {
+                offsetY = e.pageY - $(e.target).offset().top;
+            }
+            if (offsetX < 10 ||
+                offsetX > container.width() - 10 ||
+                offsetY < 10 ||
+                offsetY > container.height() - 10) {
+                e.preventDefault();
+                resizing = true;
+            }
+        });
+        $(document.body).mousemove(function(e) {
+            if (resizing) {
+                var offset = container.offset();
+                var width = container.width();
+                var height = container.height();
+                var newW = originalWidth;
+                var newH = originalHeight;
+
+                // 30 is a fuzz factor to stop the width from "shaking" when
+                // the mouse is near the border
+                if (e.pageX < offset.left + 30) {
+                    newW = width + offset.left - e.pageX;
+                }
+                else if (e.pageX > (offset.left + width - 30)) {
+                    newW = e.pageX - offset.left;
+                }
+
+                if (newW < originalWidth) {
+                    newW = originalWidth;
+                }
+                container.width(newW);
+
+                if (e.pageY < offset.top + 30) {
+                    newH = originalHeight + offset.top - e.pageY;
+                }
+                else if (e.pageY > (offset.top + height - 30)) {
+                    newH = e.pageY - offset.top;
+                }
+
+                if (newH < originalHeight) {
+                    newH = originalHeight;
+                }
+                container.height(newH);
+            }
+        });
+        $(document.body).mouseup(function() {
+            console.log('stop')
+            resizing = false;
+        });
 
         plot.draw();
         plot.initTracing(variable, output_variable);

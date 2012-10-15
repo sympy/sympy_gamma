@@ -85,7 +85,8 @@ div.cell_output {
   border-top: 1px solid  #a8a8a8;
   padding: 10px 0 0 0;
   opacity: 0.1;
-  overflow-y: auto;
+  overflow-x: auto;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   font-family: monospace;
   text-align: center;
@@ -317,6 +318,15 @@ h3 {
 
 p {
   padding: 0px 8px;
+}
+
+/* Graphs */
+
+.graph {
+  border: 1px solid #000;
+  width: 400px;
+  height: 275px;
+  margin: 1em auto;
 }
 
 @media screen and (max-device-width: 640px) {
