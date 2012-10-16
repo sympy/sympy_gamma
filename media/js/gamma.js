@@ -126,6 +126,13 @@ var SVGBackend = (function(_parent) {
         this._axesGroup = this._svg.append('g');
         this._plotGroup = this._svg.append('g');
 
+        this.gridX = this._axesGroup.selectAll('.x-grid')
+            .data(this.plot.xScale.ticks(10));
+        this.gridY = this._axesGroup.selectAll('.y-grid')
+            .data(this.plot.yScale.ticks(10));
+        this.gridX.enter().append('line');
+        this.gridY.enter().append('line');
+
         this._xTicks = 10;
         this._xTickSize = 2;
         this._xGroup = this._axesGroup.append('g');
@@ -137,7 +144,20 @@ var SVGBackend = (function(_parent) {
         this.generateAxes();
 
         this._pointGroup = this._plotGroup.append('g');
+        this._points = this._pointGroup.selectAll('circle')
+            .data(this.plot.xValues());
+        this._points.enter().append('circle');
+
         this._pathGroup = this._plotGroup.append('g');
+        this._line = d3.svg.line()
+            .x($.proxy(function(value) {
+                return this.plot.xScale(value);
+            }, this))
+            .y($.proxy(function(value, index) {
+                var value = this.plot.yValues()[index];
+                return this.plot.yScale(value);
+            }, this));
+        this._path = this._pathGroup.append('svg:path');
     }
 
     SVGBackend.prototype.generateAxes = function() {
@@ -153,18 +173,11 @@ var SVGBackend = (function(_parent) {
             .attr('height', this.plot.height());
     };
 
-    SVGBackend.prototype.clear = function() {
-        this._axesGroup.selectAll('line').remove();
-        this._xGroup.selectAll('*').remove();
-        this._yGroup.selectAll('*').remove();
-
-        this._pointGroup.selectAll('circle').remove();
-
-        this._pathGroup.selectAll('path').remove();
-    };
-
     SVGBackend.prototype.drawAxes = function() {
         if (this.plot.isOptionEnabled('axes')) {
+            this._xGroup.attr('opacity', 1);
+            this._yGroup.attr('opacity', 1);
+
             this._xGroup.call(this._xAxis);
             this._xGroup.attr('transform',
                               'translate(' + 0 + ',' + this.plot.yScale(0) + ')');
@@ -184,67 +197,71 @@ var SVGBackend = (function(_parent) {
                 .attr('stroke-width', strokeWidth)
                 .attr('stroke', 'none');
         }
+        else {
+            this._xGroup.attr('opacity', 0);
+            this._yGroup.attr('opacity', 0);
+        }
 
         if (this.plot.isOptionEnabled('grid')) {
+            this.gridX.attr('opacity', 1);
+            this.gridY.attr('opacity', 1);
+
             var xScale = this.plot.xScale;
             var yScale = this.plot.yScale;
 
-            $.map(xScale.ticks(10), $.proxy(function(x) {
-                var x = xScale(x);
-                this._axesGroup.append('svg:line')
-                    .attr('x1', x)
-                    .attr('y1', yScale(this.plot.yMax()))
-                    .attr('x2', x)
-                    .attr('y2', yScale(this.plot.yMin()))
-                    .attr('fill', 'none')
-                    .attr('stroke-dasharray', '1, 3')
-                    .attr('stroke', d3.rgb(175, 175, 175));
-            }, this));
+            this.gridX
+                .attr('x1', xScale)
+                .attr('y1', yScale(this.plot.yMax()))
+                .attr('x2', xScale)
+                .attr('y2', yScale(this.plot.yMin()))
+                .attr('fill', 'none')
+                .attr('stroke-dasharray', '1, 3')
+                .attr('stroke', d3.rgb(175, 175, 175));
 
-            $.map(yScale.ticks(10), $.proxy(function(y) {
-                var y = yScale(y);
-                this._axesGroup.append('svg:line')
-                    .attr('x1',xScale(this.plot.xMin()))
-                    .attr('y1', y)
-                    .attr('x2', xScale(this.plot.xMax()))
-                    .attr('y2', y)
-                    .attr('fill', 'none')
-                    .attr('stroke-dasharray', '1, 3')
-                    .attr('stroke', d3.rgb(175, 175, 175));
-            }, this));
+            this.gridY
+                .attr('x1', xScale(this.plot.xMin()))
+                .attr('y1', yScale)
+                .attr('x2', xScale(this.plot.xMax()))
+                .attr('y2', yScale)
+                .attr('fill', 'none')
+                .attr('stroke-dasharray', '1, 3')
+                .attr('stroke', d3.rgb(175, 175, 175));
+        }
+        else {
+            this.gridX.attr('opacity', 0);
+            this.gridY.attr('opacity', 0);
         }
     };
 
     SVGBackend.prototype.drawPoints = function() {
-        var points = this._pointGroup.selectAll('circle')
-            .data(this.plot.xValues())
-            .enter();
-
-        points.append('circle')
-            .attr('cx', $.proxy(function(value) {
-                return this.plot.xScale(value);
-            }, this))
-            .attr('cy', $.proxy(function(value, index) {
-                return this.plot.yScale(this.plot.yValues()[index]);
-            }, this))
-            .attr('r', 1.5)
-            .attr('fill', d3.rgb(0, 100, 200));
+        if (this.plot.isOptionEnabled('points')) {
+            this._points
+                .attr('opacity', 1)
+                .attr('cx', $.proxy(function(value) {
+                    return this.plot.xScale(value);
+                }, this))
+                .attr('cy', $.proxy(function(value, index) {
+                    return this.plot.yScale(this.plot.yValues()[index]);
+                }, this))
+                .attr('r', 1.5)
+                .attr('fill', d3.rgb(0, 100, 200));
+        }
+        else {
+            this._points.attr('opacity', 0);
+        }
     };
 
     SVGBackend.prototype.drawPath = function() {
-        var line = d3.svg.line()
-            .x($.proxy(function(value) {
-                return this.plot.xScale(value);
-            }, this))
-            .y($.proxy(function(value, index) {
-                var value = this.plot.yValues()[index];
-                return this.plot.yScale(value);
-            }, this));
-
-        this._pathGroup.append('svg:path')
-            .attr('d', line(this.plot.xValues()))
-            .attr('fill', 'none')
-            .attr('stroke', d3.rgb(0, 100, 200));
+        if (this.plot.isOptionEnabled('path')) {
+            this._path
+                .attr('opacity', 1)
+                .attr('d', this._line(this.plot.xValues()))
+                .attr('fill', 'none')
+                .attr('stroke', d3.rgb(0, 100, 200));
+        }
+        else {
+            this._path.attr('opacity', 0);
+        }
     };
 
     SVGBackend.prototype.initTracing = function(variable, output_variable) {
@@ -437,15 +454,9 @@ var Plot2D = (function() {
     };
 
     Plot2D.prototype.draw = function() {
-        this.backend().clear();
-
         this.backend().drawAxes();
-        if (this.isOptionEnabled('points')) {
-            this.backend().drawPoints();
-        }
-        if (this.isOptionEnabled('path')) {
-            this.backend().drawPath();
-        }
+        this.backend().drawPoints();
+        this.backend().drawPath();
     };
 
     Plot2D.prototype.initTracing = function(variable, output_variable) {
