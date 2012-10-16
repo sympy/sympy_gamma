@@ -81,9 +81,6 @@ var PlotBackend = (function() {
     PlotBackend.prototype.resize = function() {
     };
 
-    PlotBackend.prototype.clear = function() {
-    };
-
     PlotBackend.prototype.drawAxes = function() {
     };
 
@@ -91,6 +88,9 @@ var PlotBackend = (function() {
     };
 
     PlotBackend.prototype.drawPath = function() {
+    };
+
+    PlotBackend.prototype.draw = function() {
     };
 
     PlotBackend.prototype.initTracing = function(variable, output_variable) {
@@ -330,6 +330,12 @@ var SVGBackend = (function(_parent) {
         }, this));
     };
 
+    SVGBackend.prototype.draw = function() {
+        this.drawAxes();
+        this.drawPoints();
+        this.drawPath();
+    };
+
     SVGBackend.prototype.asDataURI = function() {
         // http://stackoverflow.com/questions/2483919
         var serializer = new XMLSerializer();
@@ -386,17 +392,12 @@ var Plot2D = (function() {
 
     addGetterSetter(Plot2D, 'width');
     addGetterSetter(Plot2D, 'height');
-    addGetterSetter(Plot2D, 'backend');
     addGetterSetter(Plot2D, 'xValues');
     addGetterSetter(Plot2D, 'yValues');
     addGetterSetter(Plot2D, 'xMin');
     addGetterSetter(Plot2D, 'xMax');
     addGetterSetter(Plot2D, 'yMin');
     addGetterSetter(Plot2D, 'yMax');
-
-    Plot2D.prototype.resize = function() {
-        this.backend().resize();
-    };
 
     Plot2D.prototype.generateScales = function() {
         var OFFSET_Y = 25;
@@ -453,16 +454,6 @@ var Plot2D = (function() {
         return this._func(x);
     };
 
-    Plot2D.prototype.draw = function() {
-        this.backend().drawAxes();
-        this.backend().drawPoints();
-        this.backend().drawPath();
-    };
-
-    Plot2D.prototype.initTracing = function(variable, output_variable) {
-        this.backend().initTracing(variable, output_variable)
-    };
-
     return Plot2D;
 })();
 
@@ -483,9 +474,7 @@ function setupGraphs() {
         var yvalues = $(this).data('yvalues');
 
         var plot = new Plot2D(f, xvalues, yvalues, WIDTH, HEIGHT);
-
         var backend = new SVGBackend(plot, $(this)[0]);
-        plot.backend(backend);
 
         var resizing = false;
         var container = $(this);
@@ -544,18 +533,18 @@ function setupGraphs() {
 
                 plot.width(newW);
                 plot.height(newH);
-                plot.resize();
                 plot.generateScales();
+                backend.resize();
                 backend.generateAxes();
-                plot.draw();
+                backend.draw();
             }
         });
         $(document.body).mouseup(function() {
             resizing = false;
         });
 
-        plot.draw();
-        plot.initTracing(variable, output_variable);
+        backend.draw();
+        backend.initTracing(variable, output_variable);
 
         var moreButton = $('<button>More...</button>')
             .addClass('card_options_toggle');
@@ -566,11 +555,11 @@ function setupGraphs() {
                 $('<a href-lang="image/svg+xml">SVG</a>').click(function() {
                     $(this).attr(
                         'href',
-                        plot.backend().asDataURI()
+                        backend.asDataURI()
                     )
                 }).attr(
                     'href',
-                    plot.backend().asDataURI()
+                    backend.asDataURI()
                 )
             ]),
             $('<div/>').append([
@@ -581,7 +570,7 @@ function setupGraphs() {
                             plot.drawOption({
                                 'grid': $(this).prop('checked')
                             });
-                            plot.draw();
+                            backend.draw();
                         })
                         .prop('checked', plot.isOptionEnabled('grid')),
                     $('<label for="plot-grid">Show Grid</label>'),
@@ -592,7 +581,7 @@ function setupGraphs() {
                             plot.drawOption({
                                 'axes': $(this).prop('checked')
                             });
-                            plot.draw();
+                            backend.draw();
                         })
                         .prop('checked', plot.isOptionEnabled('axes')),
                     $('<label for="plot-axes">Show Axes</label>')
@@ -603,7 +592,7 @@ function setupGraphs() {
                             plot.drawOption({
                                 'points': $(this).prop('checked')
                             });
-                            plot.draw();
+                            backend.draw();
                         })
                         .prop('checked', plot.isOptionEnabled('points')),
                     $('<label for="plot-axes">Show Points</label>')
@@ -614,7 +603,7 @@ function setupGraphs() {
                             plot.drawOption({
                                 'path': $(this).prop('checked')
                             });
-                            plot.draw();
+                            backend.draw();
                         })
                         .prop('checked', plot.isOptionEnabled('path')),
                     $('<label for="plot-line">Show Line</label>')
@@ -629,10 +618,10 @@ function setupGraphs() {
                             container.height(d3.max([width, height]) + 50);
                             plot.width(d3.max([width, height]));
                             plot.height(d3.max([width, height]) + 50);
-                            plot.resize();
                             plot.generateScales();
+                            backend.resize();
                             backend.generateAxes();
-                            plot.draw();
+                            backend.draw();
                         })
                 ])
             ])
