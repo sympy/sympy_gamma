@@ -320,6 +320,10 @@ p {
   padding: 0px 8px;
 }
 
+button {
+  display: block;
+}
+
 /* Graphs */
 
 .graph {

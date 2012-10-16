@@ -376,7 +376,7 @@ var Plot2D = (function() {
         this._plotOptions = {
             'grid': true,
             'axes': true,
-            'points': true,
+            'points': false,
             'path': true
         };
 
@@ -634,10 +634,21 @@ function setupGraphs() {
                         var width = plot.width();
                         var height = plot.height();
 
-                        container.width(d3.max([width, height]));
-                        container.height(d3.max([width, height]) + 50);
-                        plot.width(d3.max([width, height]));
-                        plot.height(d3.max([width, height]) + 50);
+                        container.width(d3.max([width, height - 50]));
+                        container.height(d3.max([width, height - 50]) + 50);
+                        plot.width(d3.max([width, height - 50]));
+                        plot.height(d3.max([width, height - 50]) + 50);
+                        plot.generateScales();
+                        backend.resize();
+                        backend.generateAxes();
+                        backend.draw();
+                    }),
+                $('<button>Reset Viewport</button>')
+                    .click(function() {
+                        container.width(originalWidth);
+                        container.height(originalHeight);
+                        plot.width(originalWidth);
+                        plot.height(originalHeight);
                         plot.generateScales();
                         backend.resize();
                         backend.generateAxes();
