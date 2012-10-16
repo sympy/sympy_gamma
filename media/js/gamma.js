@@ -793,7 +793,7 @@ $(document).ready(function() {
     setupExamples();
     setupSavedQueries();
 
-    if (screen.width <= 640) {
+    if (screen.width <= 1024) {
         setupMobileKeyboard();
     }
 });
