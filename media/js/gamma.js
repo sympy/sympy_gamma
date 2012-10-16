@@ -446,14 +446,9 @@ var Plot2D = (function() {
             .range([OFFSET_Y + MARGIN_TOP, this.height() - OFFSET_Y]);
     };
 
-    Plot2D.prototype.drawOption = function(options) {
-        for (var option in options) {
-            if (options.hasOwnProperty(option)) {
-                this._plotOptions[option] = options[option];
-
-                createCookie(option, options[option], 365);
-            }
-        }
+    Plot2D.prototype.drawOption = function(option, value) {
+        this._plotOptions[option] = value;
+        createCookie(option, value, 365);
     };
 
     Plot2D.prototype.isOptionEnabled = function(option) {
@@ -560,6 +555,20 @@ function setupGraphs() {
         var moreButton = $('<button>More...</button>')
             .addClass('card_options_toggle');
         var moreContent = $('<div/>').addClass('card_options');
+
+        var options = $.map(['grid', 'axes', 'points', 'path'], function(opt) {
+            var opt = opt;
+            return $('<div/>').append([
+                $('<input type="checkbox" id="plot-' + opt + '" />')
+                    .click(function(e) {
+                        plot.drawOption(opt,  $(e.target).prop('checked'));
+                        backend.draw();
+                    })
+                    .prop('checked', plot.isOptionEnabled(opt)),
+                $('<label for="plot-'+ opt + '">Show ' + opt + '</label>'),
+            ]);
+        });
+
         moreContent.append([
             $('<div/>').append([
                 $('<h2>Export</h2>'),
@@ -573,70 +582,25 @@ function setupGraphs() {
                     backend.asDataURI()
                 )
             ]),
+            $('<div/>').append($('<h2>Plot Options</h2>')).append(options),
             $('<div/>').append([
-                $('<h2>Plot Options</h2>'),
-                $('<div/>').append([
-                    $('<input type="checkbox" id="plot-grid" />')
-                        .click(function() {
-                            plot.drawOption({
-                                'grid': $(this).prop('checked')
-                            });
-                            backend.draw();
-                        })
-                        .prop('checked', plot.isOptionEnabled('grid')),
-                    $('<label for="plot-grid">Show Grid</label>'),
-                ]),
-                $('<div/>').append([
-                    $('<input type="checkbox" checked id="plot-axes" />')
-                        .click(function() {
-                            plot.drawOption({
-                                'axes': $(this).prop('checked')
-                            });
-                            backend.draw();
-                        })
-                        .prop('checked', plot.isOptionEnabled('axes')),
-                    $('<label for="plot-axes">Show Axes</label>')
-                ]),
-                $('<div/>').append([
-                    $('<input type="checkbox" checked id="plot-points" />')
-                        .click(function() {
-                            plot.drawOption({
-                                'points': $(this).prop('checked')
-                            });
-                            backend.draw();
-                        })
-                        .prop('checked', plot.isOptionEnabled('points')),
-                    $('<label for="plot-axes">Show Points</label>')
-                ]),
-                $('<div/>').append([
-                    $('<input type="checkbox" checked id="plot-line" />')
-                        .click(function() {
-                            plot.drawOption({
-                                'path': $(this).prop('checked')
-                            });
-                            backend.draw();
-                        })
-                        .prop('checked', plot.isOptionEnabled('path')),
-                    $('<label for="plot-line">Show Line</label>')
-                ]),
-                $('<div/>').append([
-                    $('<button>Square Viewport</button>')
-                        .click(function() {
-                            var width = plot.width();
-                            var height = plot.height();
+                $('<button>Square Viewport</button>')
+                    .click(function() {
+                        var width = plot.width();
+                        var height = plot.height();
 
-                            container.width(d3.max([width, height]));
-                            container.height(d3.max([width, height]) + 50);
-                            plot.width(d3.max([width, height]));
-                            plot.height(d3.max([width, height]) + 50);
-                            plot.generateScales();
-                            backend.resize();
-                            backend.generateAxes();
-                            backend.draw();
-                        })
-                ])
+                        container.width(d3.max([width, height]));
+                        container.height(d3.max([width, height]) + 50);
+                        plot.width(d3.max([width, height]));
+                        plot.height(d3.max([width, height]) + 50);
+                        plot.generateScales();
+                        backend.resize();
+                        backend.generateAxes();
+                        backend.draw();
+                    })
             ])
         ]);
+
         moreContent.hide();
         moreButton.click(function() {
             moreContent.slideToggle();
