@@ -196,6 +196,7 @@ div#mobile-keyboard {
 div#mobile-keyboard button {
   color: #FFF;
   border: 0;
+  display: inline-block;
   border-left: 1px solid #3B5526;
   font-size: 1.25em;
   background-color: #96C56F;
