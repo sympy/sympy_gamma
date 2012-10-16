@@ -371,8 +371,6 @@ var Plot2D = (function() {
         this._yMin = d3.min(yValues);
         this._yMax = d3.max(yValues);
 
-        this.generateScales();
-
         this._plotOptions = {
             'grid': true,
             'axes': true,
@@ -390,6 +388,8 @@ var Plot2D = (function() {
                 this._plotOptions[opt] = false;
             }
         }
+
+        this.generateScales();
     }
 
     var addGetterSetter = function(func, prop) {
@@ -439,6 +439,11 @@ var Plot2D = (function() {
         }
         if (Math.abs(ymin) >= 10 * ynegmean) {
             ymin = -ynegmean;
+        }
+
+        if (this.isOptionEnabled('square')) {
+            ymax = d3.max([Math.abs(ymax), Math.abs(ymin)]);
+            ymin = -ymax;
         }
 
         this.yScale = d3.scale.linear()
@@ -638,6 +643,7 @@ function setupGraphs() {
                         container.height(d3.max([width, height - 50]) + 50);
                         plot.width(d3.max([width, height - 50]));
                         plot.height(d3.max([width, height - 50]) + 50);
+                        plot.drawOption('square', true);
                         plot.generateScales();
                         backend.resize();
                         backend.generateAxes();
@@ -647,6 +653,7 @@ function setupGraphs() {
                     .click(function() {
                         container.width(originalWidth);
                         container.height(originalHeight);
+                        plot.drawOption('square', false);
                         plot.width(originalWidth);
                         plot.height(originalHeight);
                         plot.generateScales();
