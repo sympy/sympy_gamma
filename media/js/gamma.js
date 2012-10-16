@@ -160,17 +160,17 @@ var SVGBackend = (function(_parent) {
         this._path = this._pathGroup.append('svg:path');
 
 
-        this.traceGroup = this._svg.append('g');
-        this.tracePoint = this.traceGroup.append('svg:circle')
+        this._traceGroup = this._svg.append('g');
+        this._tracePoint = this._traceGroup.append('svg:circle')
             .attr('r', 5)
             .attr('fill', d3.rgb(200, 50, 50))
             .attr('cx', -1000);
 
-        this.traceText = this.traceGroup.append('g').append('text')
+        this._traceText = this._traceGroup.append('g').append('text')
             .attr('fill', d3.rgb(0, 100, 200))
             .attr('stroke', 'none');
 
-        this.traceXPath = this.traceGroup.append('svg:line')
+        this._traceXPath = this._traceGroup.append('svg:line')
             .attr('x1', 0)
             .attr('y1', 0)
             .attr('x2', 0)
@@ -179,7 +179,7 @@ var SVGBackend = (function(_parent) {
             .attr('stroke-dasharray', '2, 3')
             .attr('stroke', d3.rgb(50, 50, 50));
 
-        this.traceYPath = this.traceGroup.append('svg:line')
+        this._traceYPath = this._traceGroup.append('svg:line')
             .attr('x1', 0)
             .attr('y1', 0)
             .attr('x2', this.plot.width())
@@ -200,8 +200,8 @@ var SVGBackend = (function(_parent) {
         this._svg
             .attr('width', this.plot.width())
             .attr('height', this.plot.height());
-        this.traceXPath.attr('y2', this.plot.height());
-        this.traceYPath.attr('x2', this.plot.width());
+        this._traceXPath.attr('y2', this.plot.height());
+        this._traceYPath.attr('x2', this.plot.width());
     };
 
     SVGBackend.prototype.drawAxes = function() {
@@ -312,30 +312,30 @@ var SVGBackend = (function(_parent) {
             var yval = this.plot.funcValue(xval);
 
             if ($.isNumeric(yval)) {
-                this.tracePoint.attr('cx', this.plot.xScale(xval));
-                this.tracePoint.attr('cy', this.plot.yScale(yval));
+                this._tracePoint.attr('cx', this.plot.xScale(xval));
+                this._tracePoint.attr('cy', this.plot.yScale(yval));
 
-                this.traceText.text(variable + ": " + format(xval) + ", " +
+                this._traceText.text(variable + ": " + format(xval) + ", " +
                                     output_variable + ": " + format(yval));
             }
             else {
-                this.tracePoint.attr('cy', -1000);
+                this._tracePoint.attr('cy', -1000);
 
-                this.traceText.text("x: " + format(xval));
+                this._traceText.text("x: " + format(xval));
             }
 
-            this.traceXPath.attr(
+            this._traceXPath.attr(
                 'transform',
                 'translate(' + this.plot.xScale(xval) + ', 0)'
             );
-            this.traceYPath.attr(
+            this._traceYPath.attr(
                 'transform',
                 'translate(0, ' + (offsetY) + ')'
             );
 
-            var bbox = this.traceText[0][0].getBBox();
-            this.traceText.attr('x', this.plot.width() / 2 - (bbox.width / 2));
-            this.traceText.attr('y', bbox.height);
+            var bbox = this._traceText[0][0].getBBox();
+            this._traceText.attr('x', this.plot.width() / 2 - (bbox.width / 2));
+            this._traceText.attr('y', bbox.height);
         }, this));
     };
 
@@ -348,9 +348,9 @@ var SVGBackend = (function(_parent) {
     SVGBackend.prototype.asDataURI = function() {
         // http://stackoverflow.com/questions/2483919
         var serializer = new XMLSerializer();
-        this.traceGroup.attr('opacity', 0);
+        this._traceGroup.attr('opacity', 0);
         var svgData = window.btoa(serializer.serializeToString(this._svg[0][0]));
-        this.traceGroup.attr('opacity', 1);
+        this._traceGroup.attr('opacity', 1);
 
         return 'data:image/svg+xml;base64,\n' + svgData;
     };
