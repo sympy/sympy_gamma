@@ -508,6 +508,46 @@ function setupGraphs() {
                 resizing = true;
             }
         });
+        $(this).mousemove(function(e) {
+            var offsetX = e.offsetX;
+            if (typeof e.offsetX == "undefined") {
+                offsetX = e.pageX - $(e.target).offset().left;
+            }
+            var offsetY = e.offsetY;
+            if (typeof e.offsetX == "undefined") {
+                offsetY = e.pageY - $(e.target).offset().top;
+            }
+            var width = container.width();
+            var height = container.height();
+            if (offsetX < 10) {
+                if (offsetY < 10) {
+                    container.css('cursor', 'nw-resize');
+                }
+                else if (height - offsetY < 10) {
+                    container.css('cursor', 'sw-resize');
+                }
+                else {
+                    container.css('cursor', 'w-resize');
+                }
+            }
+            else if (width - offsetX < 10) {
+                if (offsetY < 10) {
+                    container.css('cursor', 'ne-resize');
+                }
+                else if (height - offsetY < 10) {
+                    container.css('cursor', 'se-resize');
+                }
+                else {
+                    container.css('cursor', 'e-resize');
+                }
+            }
+            else if (offsetY < 10) {
+                container.css('cursor', 'n-resize');
+            }
+            else if (height - offsetY < 10) {
+                container.css('cursor', 's-resize');
+            }
+        });
         $(document.body).mousemove(function(e) {
             if (resizing) {
                 var offset = container.offset();
