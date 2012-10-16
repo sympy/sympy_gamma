@@ -468,6 +468,11 @@ function setupGraphs() {
         var WIDTH = 400;
         var HEIGHT = 275;
 
+        // Make things fit on mobile
+        if (screen.width <= 640) {
+            WIDTH = screen.width - 20;
+        }
+
         var equation = $(this).data('function').trim();
         var variable = $(this).data('variable');
         var output_variable = 'y';
