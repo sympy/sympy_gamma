@@ -126,12 +126,12 @@ var SVGBackend = (function(_parent) {
         this._axesGroup = this._svg.append('g');
         this._plotGroup = this._svg.append('g');
 
-        this.gridX = this._axesGroup.selectAll('.x-grid')
+        this._gridX = this._axesGroup.selectAll('.x-grid')
             .data(this.plot.xScale.ticks(10));
-        this.gridY = this._axesGroup.selectAll('.y-grid')
+        this._gridY = this._axesGroup.selectAll('.y-grid')
             .data(this.plot.yScale.ticks(10));
-        this.gridX.enter().append('line');
-        this.gridY.enter().append('line');
+        this._gridX.enter().append('line');
+        this._gridY.enter().append('line');
 
         this._xTicks = 10;
         this._xTickSize = 2;
@@ -158,6 +158,35 @@ var SVGBackend = (function(_parent) {
                 return this.plot.yScale(value);
             }, this));
         this._path = this._pathGroup.append('svg:path');
+
+
+        this.traceGroup = this._svg.append('g');
+        this.tracePoint = this.traceGroup.append('svg:circle')
+            .attr('r', 5)
+            .attr('fill', d3.rgb(200, 50, 50))
+            .attr('cx', -1000);
+
+        this.traceText = this.traceGroup.append('g').append('text')
+            .attr('fill', d3.rgb(0, 100, 200))
+            .attr('stroke', 'none');
+
+        this.traceXPath = this.traceGroup.append('svg:line')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', 0)
+            .attr('y2', this.plot.height())
+            .attr('fill', 'none')
+            .attr('stroke-dasharray', '2, 3')
+            .attr('stroke', d3.rgb(50, 50, 50));
+
+        this.traceYPath = this.traceGroup.append('svg:line')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', this.plot.width())
+            .attr('y2', 0)
+            .attr('fill', 'none')
+            .attr('stroke-dasharray', '2, 3')
+            .attr('stroke', d3.rgb(50, 50, 50));
     }
 
     SVGBackend.prototype.generateAxes = function() {
@@ -171,6 +200,8 @@ var SVGBackend = (function(_parent) {
         this._svg
             .attr('width', this.plot.width())
             .attr('height', this.plot.height());
+        this.traceXPath.attr('y2', this.plot.height());
+        this.traceYPath.attr('x2', this.plot.width());
     };
 
     SVGBackend.prototype.drawAxes = function() {
@@ -203,13 +234,13 @@ var SVGBackend = (function(_parent) {
         }
 
         if (this.plot.isOptionEnabled('grid')) {
-            this.gridX.attr('opacity', 1);
-            this.gridY.attr('opacity', 1);
+            this._gridX.attr('opacity', 1);
+            this._gridY.attr('opacity', 1);
 
             var xScale = this.plot.xScale;
             var yScale = this.plot.yScale;
 
-            this.gridX
+            this._gridX
                 .attr('x1', xScale)
                 .attr('y1', yScale(this.plot.yMax()))
                 .attr('x2', xScale)
@@ -218,7 +249,7 @@ var SVGBackend = (function(_parent) {
                 .attr('stroke-dasharray', '1, 3')
                 .attr('stroke', d3.rgb(175, 175, 175));
 
-            this.gridY
+            this._gridY
                 .attr('x1', xScale(this.plot.xMin()))
                 .attr('y1', yScale)
                 .attr('x2', xScale(this.plot.xMax()))
@@ -228,8 +259,8 @@ var SVGBackend = (function(_parent) {
                 .attr('stroke', d3.rgb(175, 175, 175));
         }
         else {
-            this.gridX.attr('opacity', 0);
-            this.gridY.attr('opacity', 0);
+            this._gridX.attr('opacity', 0);
+            this._gridY.attr('opacity', 0);
         }
     };
 
@@ -265,34 +296,6 @@ var SVGBackend = (function(_parent) {
     };
 
     SVGBackend.prototype.initTracing = function(variable, output_variable) {
-        var traceGroup = this._svg.append('g');
-        var tracePoint = traceGroup.append('svg:circle')
-            .attr('r', 5)
-            .attr('fill', d3.rgb(200, 50, 50))
-            .attr('cx', -1000);
-
-        var traceText = traceGroup.append('g').append('text')
-            .attr('fill', d3.rgb(0, 100, 200))
-            .attr('stroke', 'none');
-
-        var traceXPath = traceGroup.append('svg:line')
-            .attr('x1', 0)
-            .attr('y1', 0)
-            .attr('x2', 0)
-            .attr('y2', this.plot.height())
-            .attr('fill', 'none')
-            .attr('stroke-dasharray', '2, 3')
-            .attr('stroke', d3.rgb(50, 50, 50));
-
-        var traceYPath = traceGroup.append('svg:line')
-            .attr('x1', 0)
-            .attr('y1', 0)
-            .attr('x2', this.plot.width())
-            .attr('y2', 0)
-            .attr('fill', 'none')
-            .attr('stroke-dasharray', '2, 3')
-            .attr('stroke', d3.rgb(50, 50, 50));
-
         var format = d3.format(".4r");
 
         $(this._svg[0][0]).mousemove($.proxy(function(e) {
@@ -309,24 +312,30 @@ var SVGBackend = (function(_parent) {
             var yval = this.plot.funcValue(xval);
 
             if ($.isNumeric(yval)) {
-                tracePoint.attr('cx', this.plot.xScale(xval));
-                tracePoint.attr('cy', this.plot.yScale(yval));
+                this.tracePoint.attr('cx', this.plot.xScale(xval));
+                this.tracePoint.attr('cy', this.plot.yScale(yval));
 
-                traceText.text(variable + ": " + format(xval) + ", " +
-                          output_variable + ": " + format(yval));
+                this.traceText.text(variable + ": " + format(xval) + ", " +
+                                    output_variable + ": " + format(yval));
             }
             else {
-                tracePoint.attr('cy', -1000);
+                this.tracePoint.attr('cy', -1000);
 
-                traceText.text("x: " + format(xval));
+                this.traceText.text("x: " + format(xval));
             }
 
-            traceXPath.attr('transform', 'translate(' + this.plot.xScale(xval) + ', 0)');
-            traceYPath.attr('transform', 'translate(0, ' + (offsetY) + ')');
+            this.traceXPath.attr(
+                'transform',
+                'translate(' + this.plot.xScale(xval) + ', 0)'
+            );
+            this.traceYPath.attr(
+                'transform',
+                'translate(0, ' + (offsetY) + ')'
+            );
 
-            var bbox = traceText[0][0].getBBox();
-            traceText.attr('x', this.plot.width() / 2 - (bbox.width / 2));
-            traceText.attr('y', bbox.height);
+            var bbox = this.traceText[0][0].getBBox();
+            this.traceText.attr('x', this.plot.width() / 2 - (bbox.width / 2));
+            this.traceText.attr('y', bbox.height);
         }, this));
     };
 
