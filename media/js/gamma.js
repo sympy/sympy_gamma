@@ -348,7 +348,9 @@ var SVGBackend = (function(_parent) {
     SVGBackend.prototype.asDataURI = function() {
         // http://stackoverflow.com/questions/2483919
         var serializer = new XMLSerializer();
+        this.traceGroup.attr('opacity', 0);
         var svgData = window.btoa(serializer.serializeToString(this._svg[0][0]));
+        this.traceGroup.attr('opacity', 1);
 
         return 'data:image/svg+xml;base64,\n' + svgData;
     };
