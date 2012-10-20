@@ -118,7 +118,7 @@ class SymPyGamma(object):
                                 output=card.format_output(r, mathjax_latex)
                             ))
                     except (SyntaxError, ValueError) as e:
-                        print e
+                        pass
             return result
         else:
             return None
