@@ -198,7 +198,6 @@ div#mobile-keyboard button {
   border: 0;
   display: inline-block;
   border-left: 1px solid #3B5526;
-  font-size: 1.25em;
   background-color: #96C56F;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #96C56F), color-stop(100%, #81B953));
   background-image: -webkit-linear-gradient(top, #96C56F, #81B953);
@@ -207,7 +206,6 @@ div#mobile-keyboard button {
   background-image: -o-linear-gradient(top, #96C56F, #81B953);
   background-image: linear-gradient(top, #96C56F,
   #81B953);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#96C56F, endColorstr=#81B953);
-  width: 2em;
 }
 
 div#mobile-keyboard button:hover {
@@ -398,6 +396,11 @@ svg {
   div.menu_right {
     display: inline;
   }
+
+  div#mobile-keyboard button {
+    width: 2em;
+    font-size: 1.25em;
+  }
 }
 
 /* Tablets and base for desktops */
@@ -450,6 +453,11 @@ svg {
   div.menu_right {
     float: right;
     display: block;
+  }
+
+  #mobile-keyboard button {
+    width: 3em;
+    font-size: 1.5em;
   }
 }
 
