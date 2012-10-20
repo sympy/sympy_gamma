@@ -634,21 +634,6 @@ function setupGraphs() {
             ]),
             $('<div/>').append($('<h2>Plot Options</h2>')).append(options),
             $('<div/>').append([
-                $('<button>Square Viewport</button>')
-                    .click(function() {
-                        var width = plot.width();
-                        var height = plot.height();
-
-                        container.width(d3.max([width, height - 50]));
-                        container.height(d3.max([width, height - 50]) + 50);
-                        plot.width(d3.max([width, height - 50]));
-                        plot.height(d3.max([width, height - 50]) + 50);
-                        plot.drawOption('square', true);
-                        plot.generateScales();
-                        backend.resize();
-                        backend.generateAxes();
-                        backend.draw();
-                    }),
                 $('<button>Reset Viewport</button>')
                     .click(function() {
                         container.width(originalWidth);
