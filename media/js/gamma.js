@@ -764,6 +764,14 @@ function setupMobileKeyboard() {
     });
 }
 
+function setupFactorization() {
+    $('div.factorization-diagram').each(function() {
+        var primes = $(this).data('primes');
+        var f = new FactorDiagram(d3.select($(this).children('div')[0]), primes);
+        f.draw();
+    });
+}
+
 $(document).ready(function() {
     $('.cell_output:not(:has(script))').css('opacity', 1);
     MathJax.Hub.Register.MessageHook("New Math", function (message) {
@@ -777,6 +785,8 @@ $(document).ready(function() {
 
     setupExamples();
     setupSavedQueries();
+
+    setupFactorization();
 
     if (screen.width <= 1024) {
         setupMobileKeyboard();

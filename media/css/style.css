@@ -342,6 +342,14 @@ svg {
   cursor: default;
 }
 
+/* Factorization diagrams */
+
+.factorization-diagram p {
+  text-align: left;
+  font-family: 'Gentium Book Basic', serif;
+  font-size: smaller;
+}
+
 @media screen and (max-device-width: 640px) {
   div.col {
     width: auto;

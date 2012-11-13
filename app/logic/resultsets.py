@@ -313,6 +313,20 @@ def format_series_fake_title(title, evaluated):
         up_to = 6
     return title.format(about, up_to)
 
+DIAGRAM_CODE = """
+<div class="factorization-diagram" data-primes="{primes}">
+    <div></div>
+    <p><a href="http://mathlesstraveled.com/2012/10/05/factorization-diagrams/">About this diagram</a></p>
+</div>
+"""
+
+def format_factorization_diagram(factors, formatter):
+    primes = []
+    for prime in reversed(sorted(factors)):
+        times = factors[prime]
+        primes.extend([prime] * times)
+    return DIAGRAM_CODE.format(primes=primes)
+
 GRAPHING_CODE = """
 <div class="graph"
      data-function="{function}"
@@ -363,6 +377,21 @@ def eval_factorization(evaluator, variable):
             smallfactors[factor] = factors[factor]
     return smallfactors
 
+def eval_factorization_diagram(evaluator, variable):
+    # Raises ValueError (stops card from appearing) if the factors are too
+    # large so that the diagram will look nice
+    number = int(evaluator.eval("input_evaluated"))
+    if number > 256:
+        raise ValueError
+    factors = sympy.ntheory.factorint(number, limit=101)
+    smallfactors = {}
+    for factor in factors:
+        if factor <= 101:
+            smallfactors[factor] = factors[factor]
+        else:
+            raise ValueError
+    return smallfactors
+
 def eval_integral(evaluator, variable):
     return sympy.integrate(evaluator.eval("input_evaluated"), *variable)
 
@@ -410,6 +439,13 @@ factorization = FakeResultCard(
     format_input_function=format_long_integer,
     format_output_function=format_dict_title("Factor", "Times"),
     eval_method=eval_factorization)
+
+factorizationDiagram = FakeResultCard(
+    "Factorization Diagram",
+    "factorint(%s, limit=101)",
+    no_pre_output,
+    format_output_function=format_factorization_diagram,
+    eval_method=eval_factorization_diagram)
 
 float_approximation = ResultCard(
     "Floating-point approximation",
@@ -497,7 +533,7 @@ result_sets = [
     (is_fake_function('solve_poly_system'), extract_solve_poly_system,
      [solve_poly_system_fake]),
     (is_integer, default_variable,
-     [digits, float_approximation, factorization]),
+     [digits, float_approximation, factorization, factorizationDiagram]),
     (is_rational, default_variable, [float_approximation]),
     (is_float, default_variable, [fractional_approximation]),
     (is_numbersymbol, default_variable, [float_approximation]),
