@@ -42,6 +42,15 @@ class FakeSymPyFunction(object):
                 kwargs=kwargs
             )
 
+    def xreplace(self, kwargs):
+        def _replacer(expr):
+            try:
+                return expr.xreplace(kwargs)
+            except (TypeError, AttributeError):
+                return expr
+        self.args = list(map(_replacer, self.args))
+        return self
+
     @staticmethod
     def make_result_card(func, title, **kwargs):
         def eval_fake(evaluator, variable):
