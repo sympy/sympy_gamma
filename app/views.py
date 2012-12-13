@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 from django.utils import simplejson
 from django import forms
@@ -6,6 +6,7 @@ from django import forms
 from google.appengine.api import users
 
 from logic import Eval, SymPyGamma
+from logic.resultsets import get_card
 
 import settings
 import models
@@ -100,6 +101,30 @@ def about(request, user):
         "MEDIA_URL": settings.MEDIA_URL,
         "about_active": "selected",
         })
+
+def eval_card(request, card_name, variable, expression):
+    card = get_card(card_name)
+    if card:
+        from logic.logic import PREEXEC, mathjax_latex
+        from sympy import sympify, Symbol, latex
+        namespace = {}
+        exec PREEXEC in {}, namespace
+        evaluator = Eval(namespace)
+        namespace['input_evaluated'] = sympify(expression)
+        var = Symbol(variable.encode('utf-8'))
+
+        r = card.eval(evaluator, var)
+        result = {
+            'value': repr(r),
+            'title': card.format_title(namespace['input_evaluated']),
+            'input': card.format_input(expression, var),
+            'pre_output': latex(
+                card.pre_output_function(expression, var)),
+            'output': card.format_output(r, mathjax_latex)
+        }
+        return HttpResponse(json.dumps(result), mimetype="application/json")
+    else:
+        raise Http404
 
 def remove_query(request, qid):
     user = users.get_current_user()

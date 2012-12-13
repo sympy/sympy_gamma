@@ -408,149 +408,162 @@ def eval_integral(evaluator, variable):
 
 no_pre_output = lambda *args: ""
 
-roots = ResultCard(
-    "Roots",
-    "solve(%s, {_var})",
-    lambda statement, var, *args: var)
+all_cards = {
+    'roots': ResultCard(
+        "Roots",
+        "solve(%s, {_var})",
+        lambda statement, var, *args: var),
 
-integral = ResultCard(
-    "Integral",
-    "integrate(%s, {_var})",
-    sympy.Integral)
+    'integral': ResultCard(
+        "Integral",
+        "integrate(%s, {_var})",
+        sympy.Integral),
 
-integral_fake = FakeResultCard(
-    "Integral",
-    "integrate(%s, {_var})",
-    lambda i, var: sympy.Integral(i, *var),
-    eval_method=eval_integral,
-    format_input_function=format_integral
+    'integral_fake': FakeResultCard(
+        "Integral",
+        "integrate(%s, {_var})",
+        lambda i, var: sympy.Integral(i, *var),
+        eval_method=eval_integral,
+        format_input_function=format_integral
+    ),
+
+    'diff': ResultCard("Derivative",
+                       "diff(%s, {_var})",
+                       sympy.Derivative),
+
+    'series': ResultCard(
+        "Series expansion around 0",
+        "series(%s, {_var}, 0, 10)",
+        no_pre_output),
+
+    'digits': ResultCard(
+        "Digits in base-10 expansion of number",
+        "len(str(%s))",
+        no_pre_output,
+        format_input_function=format_long_integer),
+
+    'factorization': FakeResultCard(
+        "Factors less than 100",
+        "factorint(%s, limit=100)",
+        no_pre_output,
+        format_input_function=format_long_integer,
+        format_output_function=format_dict_title("Factor", "Times"),
+        eval_method=eval_factorization),
+
+    'factorizationDiagram': FakeResultCard(
+        "Factorization Diagram",
+        "factorint(%s, limit=101)",
+        no_pre_output,
+        format_output_function=format_factorization_diagram,
+        eval_method=eval_factorization_diagram),
+
+    'float_approximation': ResultCard(
+        "Floating-point approximation",
+        "(%s).evalf()",
+        no_pre_output),
+
+    'fractional_approximation': ResultCard(
+        "Fractional approximation",
+        "nsimplify(%s)",
+        no_pre_output),
+
+    'absolute_value': ResultCard(
+        "Absolute value",
+        "Abs(%s)",
+        lambda s, *args: "|{}|".format(s)),
+
+    'polar_angle': ResultCard(
+        "Angle in the complex plane",
+        "atan2(*(%s).as_real_imag()).evalf()",
+        lambda s, *args: sympy.atan2(*sympy.sympify(s).as_real_imag())),
+
+    'conjugate': ResultCard(
+        "Complex conjugate",
+        "conjugate(%s)",
+        lambda s, *args: sympy.conjugate(s)),
+
+    'trigexpand': ResultCard(
+        "Alternate form",
+        "(%s).expand(trig=True)",
+        lambda statement, var, *args: statement),
+
+    'trigsimp': ResultCard(
+        "Alternate form",
+        "trigsimp(%s)",
+        lambda statement, var, *args: statement),
+
+    'trigsincos': ResultCard(
+        "Alternate form",
+        "(%s).rewrite(csc, sin, sec, cos, cot, tan)",
+        lambda statement, var, *args: statement
+    ),
+
+    'trigexp': ResultCard(
+        "Alternate form",
+        "(%s).rewrite(sin, exp, cos, exp, tan, exp)",
+        lambda statement, var, *args: statement
+    ),
+
+    'graph': FakeResultCard(
+        "Graph",
+        "plot(%s)",
+        no_pre_output,
+        format_output_function=format_graph,
+        eval_method=eval_graph),
+
+    'series_fake': FakeSymPyFunction.make_result_card(
+        sympy.series,
+        "Series expansion about {0} up to {1}",
+        format_title_function=format_series_fake_title),
+
+    'solve_fake': FakeSymPyFunction.make_result_card(
+        sympy.solve,
+        "Solutions",
+        format_output_function=format_list),
+
+    'solve_poly_system_fake': FakeSymPyFunction.make_result_card(
+        sympy.solve_poly_system,
+        "Solutions",
+        format_output_function=format_list)
+}
+
+def get_card(name):
+    return all_cards.get(name, None)
+
+def _find_cards(*names):
+    result = []
+    for name in names:
+        result.append(all_cards[name])
+        return result
+
+all_cards['trig_alternate'] = MultiResultCard(
+    "Alternate form",
+    *_find_cards(
+        'trigexpand',
+        'trigsimp',
+        'trigsincos',
+        'trigexp')
 )
-
-diff = ResultCard("Derivative",
-    "diff(%s, {_var})",
-    sympy.Derivative)
-
-series = ResultCard(
-    "Series expansion around 0",
-    "series(%s, {_var}, 0, 10)",
-    no_pre_output)
-
-digits = ResultCard(
-    "Digits in base-10 expansion of number",
-    "len(str(%s))",
-    no_pre_output,
-    format_input_function=format_long_integer)
-
-factorization = FakeResultCard(
-    "Factors less than 100",
-    "factorint(%s, limit=100)",
-    no_pre_output,
-    format_input_function=format_long_integer,
-    format_output_function=format_dict_title("Factor", "Times"),
-    eval_method=eval_factorization)
-
-factorizationDiagram = FakeResultCard(
-    "Factorization Diagram",
-    "factorint(%s, limit=101)",
-    no_pre_output,
-    format_output_function=format_factorization_diagram,
-    eval_method=eval_factorization_diagram)
-
-float_approximation = ResultCard(
-    "Floating-point approximation",
-    "(%s).evalf()",
-    no_pre_output)
-
-fractional_approximation = ResultCard(
-    "Fractional approximation",
-    "nsimplify(%s)",
-    no_pre_output)
-
-absolute_value = ResultCard(
-    "Absolute value",
-    "Abs(%s)",
-    lambda s, *args: "|{}|".format(s))
-
-polar_angle = ResultCard(
-    "Angle in the complex plane",
-    "atan2(*(%s).as_real_imag()).evalf()",
-    lambda s, *args: sympy.atan2(*sympy.sympify(s).as_real_imag()))
-
-conjugate = ResultCard(
-    "Complex conjugate",
-    "conjugate(%s)",
-    lambda s, *args: sympy.conjugate(s))
-
-trigexpand = ResultCard(
-    "Alternate form",
-    "(%s).expand(trig=True)",
-    lambda statement, var, *args: statement)
-
-trigsimp = ResultCard(
-    "Alternate form",
-    "trigsimp(%s)",
-    lambda statement, var, *args: statement)
-
-trigsincos = ResultCard(
-    "Alternate form",
-    "(%s).rewrite(csc, sin, sec, cos, cot, tan)",
-    lambda statement, var, *args: statement
-)
-
-trigexp = ResultCard(
-    "Alternate form",
-    "(%s).rewrite(sin, exp, cos, exp, tan, exp)",
-    lambda statement, var, *args: statement
-)
-
-trig_alternate = MultiResultCard(
-    "Alternate form",
-    trigexpand,
-    trigsimp,
-    trigsincos,
-    trigexp
-)
-
-graph = FakeResultCard(
-    "Graph",
-    "plot(%s)",
-    no_pre_output,
-    format_output_function=format_graph,
-    eval_method=eval_graph)
-
-series_fake = FakeSymPyFunction.make_result_card(
-    sympy.series,
-    "Series expansion about {0} up to {1}",
-    format_title_function=format_series_fake_title)
-
-solve_fake = FakeSymPyFunction.make_result_card(
-    sympy.solve,
-    "Solutions",
-    format_output_function=format_list)
-
-solve_poly_system_fake = FakeSymPyFunction.make_result_card(
-    sympy.solve_poly_system,
-    "Solutions",
-    format_output_function=format_list)
 
 
 result_sets = [
-    (is_integral, extract_integrand, [integral_fake]),
-    (is_derivative, extract_derivative, [diff, graph]),
-    (is_fake_function('series'), extract_series, [series_fake]),
-    (is_fake_function('solve'), extract_solve, [solve_fake]),
+    (is_integral, extract_integrand, _find_cards('integral_fake')),
+    (is_derivative, extract_derivative, _find_cards('diff', 'graph')),
+    (is_fake_function('series'), extract_series, _find_cards('series_fake')),
+    (is_fake_function('solve'), extract_solve, _find_cards('solve_fake')),
     (is_fake_function('solve_poly_system'), extract_solve_poly_system,
-     [solve_poly_system_fake]),
+     _find_cards('solve_poly_system_fake')),
     (is_integer, default_variable,
-     [digits, float_approximation, factorization, factorizationDiagram]),
-    (is_rational, default_variable, [float_approximation]),
-    (is_float, default_variable, [fractional_approximation]),
-    (is_numbersymbol, default_variable, [float_approximation]),
-    (is_constant, default_variable, [float_approximation]),
-    (is_complex, default_variable, [absolute_value, polar_angle,
-                                    conjugate]),
-    (is_trig, do_nothing, [trig_alternate]),
-    (lambda x: True, do_nothing, [graph, roots, diff, integral, series])
+     _find_cards('digits', 'float_approximation',
+                 'factorization', 'factorizationDiagram')),
+    (is_rational, default_variable, _find_cards('float_approximation')),
+    (is_float, default_variable, _find_cards('fractional_approximation')),
+    (is_numbersymbol, default_variable, _find_cards('float_approximation')),
+    (is_constant, default_variable, _find_cards('float_approximation')),
+    (is_complex, default_variable,
+     _find_cards('absolute_value', 'polar_angle', 'conjugate')),
+    (is_trig, do_nothing, _find_cards('trig_alternate')),
+    (lambda x: True, do_nothing, _find_cards('graph', 'roots', 'diff', 'integral', 'series'))
 ]
 
 def find_result_set(input_evaluated):
