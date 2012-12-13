@@ -530,40 +530,33 @@ all_cards = {
 def get_card(name):
     return all_cards.get(name, None)
 
-def _find_cards(*names):
-    result = []
-    for name in names:
-        result.append(all_cards[name])
-        return result
-
 all_cards['trig_alternate'] = MultiResultCard(
     "Alternate form",
-    *_find_cards(
-        'trigexpand',
-        'trigsimp',
-        'trigsincos',
-        'trigexp')
+    get_card('trigexpand'),
+    get_card('trigsimp'),
+    get_card('trigsincos'),
+    get_card('trigexp')
 )
 
 
 result_sets = [
-    (is_integral, extract_integrand, _find_cards('integral_fake')),
-    (is_derivative, extract_derivative, _find_cards('diff', 'graph')),
-    (is_fake_function('series'), extract_series, _find_cards('series_fake')),
-    (is_fake_function('solve'), extract_solve, _find_cards('solve_fake')),
+    (is_integral, extract_integrand, ['integral_fake']),
+    (is_derivative, extract_derivative, ['diff', 'graph']),
+    (is_fake_function('series'), extract_series, ['series_fake']),
+    (is_fake_function('solve'), extract_solve, ['solve_fake']),
     (is_fake_function('solve_poly_system'), extract_solve_poly_system,
-     _find_cards('solve_poly_system_fake')),
+     ['solve_poly_system_fake']),
     (is_integer, default_variable,
-     _find_cards('digits', 'float_approximation',
-                 'factorization', 'factorizationDiagram')),
-    (is_rational, default_variable, _find_cards('float_approximation')),
-    (is_float, default_variable, _find_cards('fractional_approximation')),
-    (is_numbersymbol, default_variable, _find_cards('float_approximation')),
-    (is_constant, default_variable, _find_cards('float_approximation')),
+     ['digits', 'float_approximation',
+                 'factorization', 'factorizationDiagram']),
+    (is_rational, default_variable, ['float_approximation']),
+    (is_float, default_variable, ['fractional_approximation']),
+    (is_numbersymbol, default_variable, ['float_approximation']),
+    (is_constant, default_variable, ['float_approximation']),
     (is_complex, default_variable,
-     _find_cards('absolute_value', 'polar_angle', 'conjugate')),
-    (is_trig, do_nothing, _find_cards('trig_alternate')),
-    (lambda x: True, do_nothing, _find_cards('graph', 'roots', 'diff', 'integral', 'series'))
+     ['absolute_value', 'polar_angle', 'conjugate']),
+    (is_trig, do_nothing, ['trig_alternate']),
+    (lambda x: True, do_nothing, ['graph', 'roots', 'diff', 'integral', 'series'])
 ]
 
 def find_result_set(input_evaluated):

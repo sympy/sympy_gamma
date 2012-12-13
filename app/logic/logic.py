@@ -1,6 +1,6 @@
 import sys
 from utils import Eval
-from resultsets import find_result_set, fake_sympy_function
+from resultsets import find_result_set, fake_sympy_function, get_card
 from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
 import sympy
 import sympy.parsing.sympy_parser as sympy_parser
@@ -105,18 +105,20 @@ class SymPyGamma(object):
                         {"title": "Simplification", "input": simplified,
                          "output": mathjax_latex(r)})
 
-                for card in cards:
+                for card_name in cards:
+                    card = get_card(card_name)
+                    if not card:
+                        continue
+
                     try:
-                        r = card.eval(a, var)
-                        if r != "None" and r is not None:
-                            formatted_input = card.format_input(input_repr, var)
-                            result.append(dict(
-                                title=card.format_title(evaluated),
-                                input=formatted_input,
-                                pre_output=latex(
-                                    card.pre_output_function(input_repr, var)),
-                                output=card.format_output(r, mathjax_latex)
-                            ))
+                        result.append({
+                            'card': card_name,
+                            'var': repr(var),
+                            'title': card.format_title(input_repr),
+                            'input': card.format_input(input_repr, var),
+                            'pre_output': latex(
+                                card.pre_output_function(input_repr, var))
+                        })
                     except (SyntaxError, ValueError) as e:
                         pass
             return result

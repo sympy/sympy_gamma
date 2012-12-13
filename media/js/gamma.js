@@ -51,6 +51,11 @@ function eraseCookie(name) {
 	createCookie(name,"",-1);
 }
 
+// http://stackoverflow.com/a/8764051/262727
+function getURLParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+}
+
 var __extend = function(parent, child) {
     for (var key in parent) {
         if (Object.hasOwnProperty.call(parent, key)) {
@@ -772,21 +777,42 @@ function setupFactorization() {
     });
 }
 
-$(document).ready(function() {
-    $('.cell_output:not(:has(script))').css('opacity', 1);
-    MathJax.Hub.Register.MessageHook("New Math", function (message) {
-        var script = MathJax.Hub.getJaxFor(message[1]).SourceElement();
-        $(script).parents('.cell_output').animate({
-            opacity: 1
-        }, 700);
+function evaluateCards() {
+    var deferred = new $.Deferred();
+    var requests = [];
+    var expr = getURLParameter('i');
+
+    $('.cell_output').each(function() {
+        var output = $(this);
+        var card_name = output.data('card-name');
+        var variable = output.data('variable');
+
+        if (typeof card_name !== "undefined") {
+            var url = '/card/' + card_name + '/' + variable + '/' + expr;
+            requests.push($.getJSON(url, function(data) {
+                output.html(data.output);
+            }));
+        }
     });
 
-    setupGraphs();
+    $.when.apply($, requests).then(function() {
+        deferred.resolve();
+    });
 
-    setupExamples();
-    setupSavedQueries();
+    return deferred;
+}
 
-    setupFactorization();
+$(document).ready(function() {
+    evaluateCards().done(function() {
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+
+        setupGraphs();
+
+        setupExamples();
+        setupSavedQueries();
+
+        setupFactorization();
+    });
 
     if (screen.width <= 1024) {
         setupMobileKeyboard();

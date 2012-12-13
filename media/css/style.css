@@ -84,7 +84,6 @@ div.cell_output {
   font-size: 12pt;
   border-top: 1px solid  #a8a8a8;
   padding: 10px 0 0 0;
-  opacity: 0.1;
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
