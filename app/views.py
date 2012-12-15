@@ -113,10 +113,6 @@ def eval_card(request, card_name, variable, expression):
         r = card.eval(evaluator, var)
         result = {
             'value': repr(r),
-            'title': card.format_title(repr(evaluated)),
-            'input': card.format_input(expression, var),
-            'pre_output': sympy.latex(
-                card.pre_output_function(expression, var)),
             'output': card.format_output(r, mathjax_latex)
         }
         return HttpResponse(json.dumps(result), mimetype="application/json")
