@@ -5,8 +5,10 @@ from django import forms
 
 from google.appengine.api import users
 
+import sympy
 from logic import Eval, SymPyGamma
-from logic.resultsets import get_card
+from logic.logic import mathjax_latex
+from logic.resultsets import get_card, fake_sympy_function
 
 import settings
 import models
@@ -76,13 +78,12 @@ def input(request, user):
             r = g.eval(input)
 
             if not r:
-                r =  [{
+                r = [{
                     "title": "Input",
                     "input": input,
                     "output": "Can't handle the input."
                 }]
-            elif user:
-                if not models.Query.query(models.Query.text==input).get():
+            elif user and not models.Query.query(models.Query.text==input).get():
                     query = models.Query(text=input, user_id=user.user_id())
                     query.put()
 
@@ -105,20 +106,16 @@ def about(request, user):
 def eval_card(request, card_name, variable, expression):
     card = get_card(card_name)
     if card:
-        from logic.logic import PREEXEC, mathjax_latex
-        from sympy import sympify, Symbol, latex
-        namespace = {}
-        exec PREEXEC in {}, namespace
-        evaluator = Eval(namespace)
-        namespace['input_evaluated'] = sympify(expression)
-        var = Symbol(variable.encode('utf-8'))
+        g = SymPyGamma()
+        evaluator, evaluated, _ = g.eval_input(expression)
+        var = sympy.sympify(variable.encode('utf-8'))
 
         r = card.eval(evaluator, var)
         result = {
             'value': repr(r),
-            'title': card.format_title(namespace['input_evaluated']),
+            'title': card.format_title(repr(evaluated)),
             'input': card.format_input(expression, var),
-            'pre_output': latex(
+            'pre_output': sympy.latex(
                 card.pre_output_function(expression, var)),
             'output': card.format_output(r, mathjax_latex)
         }

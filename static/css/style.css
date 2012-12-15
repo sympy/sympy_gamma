@@ -1,21 +1,23 @@
 @import url(http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic);
 @import url(http://fonts.googleapis.com/css?family=Gentium+Basic&text=Sympy%20Live);
 
-
-* {
-  padding: 0px;
-  margin: 0px;
-}
-
 body {
   font-family: 'Gentium Book Basic', serif;
   font-size: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+pre, ul, button, h2, h3, h4, input, label {
+  margin: 0;
+  padding: 0;
 }
 
 h1 {
   font-family: 'Gentium Basic', serif;
   font-weight: normal;
   color: #FFF;
+  margin: 0;
 }
 
 h1 a:link, h1 a:visited, h1 a:active {
@@ -410,6 +412,45 @@ svg {
   }
 }
 
+.loader {
+  width: 32px;
+  height: 32px;
+  background-size: 256px 32px;
+  background-image: url(/static/images/loader.png);
+  margin: auto;
+
+  -webkit-animation: loader .8s steps(8) infinite;
+  -moz-animation: loader .8s steps(8) infinite;
+  -ms-animation: loader .8s steps(8) infinite;
+  -o-animation: loader .8s steps(8) infinite;
+  animation: loader .8s steps(8) infinite;
+}
+
+@-webkit-keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
+@-moz-keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
+@-ms-keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
+@-o-keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
+@keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
 /* Tablets and base for desktops */
 @media screen and (min-device-width: 768px) {
   div.result {
@@ -485,5 +526,9 @@ svg {
   div.col.example div.example-group li > span {
     display: block;
     float: right;
+  }
+
+  div.col.example div.example-group li > span:after {
+    content: "";
   }
 }

@@ -780,17 +780,18 @@ function setupFactorization() {
 function evaluateCards() {
     var deferred = new $.Deferred();
     var requests = [];
-    var expr = getURLParameter('i');
 
     $('.cell_output').each(function() {
         var output = $(this);
         var card_name = output.data('card-name');
         var variable = output.data('variable');
+        var expr = output.data('expr');
 
         if (typeof card_name !== "undefined") {
             var url = '/card/' + card_name + '/' + variable + '/' + expr;
             requests.push($.getJSON(url, function(data) {
-                output.html(data.output);
+                output.append($("<div/>").html(data.output));
+                output.children('.loader').fadeOut(500);
             }));
         }
     });

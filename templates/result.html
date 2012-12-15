@@ -36,12 +36,14 @@
                     {% if cell.card %}
                         <div class="cell_output"
                              data-card-name="{{ cell.card|safe }}"
-                             data-variable="{{ cell.var|safe }}">
+                             data-variable="{{ cell.var|safe }}"
+                             data-expr="{{ cell.expr|safe }}">
                             {% if cell.pre_output %}
                             <div class="cell_pre_output">
                                 <script type="math/tex"> {{cell.pre_output|safe }} = </script>
                             </div>
                             {% endif %}
+                            <div class="loader"></div>
                         </div>
                     {% else %}
                         {% comment %}Ugly hack since Django 1.3 (latest

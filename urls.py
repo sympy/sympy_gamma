@@ -16,12 +16,9 @@ urlpatterns = patterns(
     (r'^input/', 'app.views.input'),
     (r'^about/$', 'app.views.about'),
 
-    (r'^media_files/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': p}),
-
     (r'user/remove/(?P<qid>.*)$', 'app.views.remove_query'),
 
-    (r'card/(?P<card_name>\w*)/(?P<variable>\w[a-zA-Z0-9_]*)/(?P<expression>.*)$', 'app.views.eval_card')
+    (r'card/(?P<card_name>\w*)/(?P<variable>(\w|\()[a-zA-Z0-9_\(\),% ]*)/(?P<expression>.*)$', 'app.views.eval_card')
 
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs'

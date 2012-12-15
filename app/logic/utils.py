@@ -11,6 +11,9 @@ class Eval(object):
     def get(self, name):
         return self._namespace.get(name)
 
+    def set(self, name, value):
+        self._namespace[name] = value
+
     def eval(self, x, use_none_for_exceptions=False):
         globals = self._namespace
         try:
