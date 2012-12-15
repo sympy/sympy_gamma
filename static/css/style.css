@@ -33,13 +33,13 @@ h1 a img {
   vertical-align: bottom;
 }
 
-div.menu {
+.menu {
   padding: 0 0.5em;
   font-family: sans-serif;
   border-bottom: 2px solid #81B953;
 }
 
-div.menu a {
+.menu a {
   color: #00F !important;
   text-decoration: none;
   font-size: 1em;
@@ -47,33 +47,33 @@ div.menu a {
   margin-right: 0.5em;
 }
 
-div.menu a.selected {
+.menu a.selected {
   color: black !important;
   text-decoration: none;
   font-weight: bold;
 }
 
-div.result_card {
+.result_card {
   border: 2px solid #a8a8a8;
   margin: 10px;
   padding: 10px;
   background: #FFF;
 }
 
-div.result_card.result_card_error {
+.result_card.result_card_error {
   border: 2px solid #F00;
 }
 
 /* Highlight position of a syntax error */
-div.result_card_error .cell_output_plain span:first-child {
+.result_card_error .cell_output_plain span:first-child {
   border-right: 1px solid #F00;
 }
 
-div.card_title {
+.card_title {
   font-size: 12pt;
 }
 
-div.cell_input {
+.cell_input {
   color: black;
   font-size:12pt;
   margin-top: 10px;
@@ -81,7 +81,7 @@ div.cell_input {
   -webkit-overflow-scrolling: touch;
 }
 
-div.cell_output {
+.cell_output {
   color: black;
   font-size: 12pt;
   border-top: 1px solid  #a8a8a8;
@@ -93,26 +93,26 @@ div.cell_output {
   text-align: center;
 }
 
-div.cell_output div.cell_pre_output {
+.cell_output .cell_pre_output {
   text-align: left;
 }
 
-div.cell_output table {
+.cell_output table {
   border-collapse: collapse;
   border: 1px solid #000;
   margin: auto;
 }
 
-div.cell_output td, div.cell_output th {
+.cell_output td, .cell_output th {
   border: 1px solid #000;
   padding: 0.25em 0.5em;
 }
 
-div.cell_output ul {
+.cell_output ul {
   list-style-type: none;
 }
 
-div.result_card button.card_options_toggle {
+.result_card button.card_options_toggle {
   background: none;
   border: none;
   color: blue;
@@ -121,35 +121,35 @@ div.result_card button.card_options_toggle {
   font-family: inherit;
 }
 
-div.result_card div.card_options {
+.result_card .card_options {
   border-top: 1px solid #a8a8a8;
   font-size: 1em;
 }
 
-div.result_card div.card_options h2 {
+.result_card .card_options h2 {
   font-size: 1em;
   margin: 0.5em 0;
   padding: 0;
 }
 
-div.result_card div.card_options label {
+.result_card .card_options label {
   margin-left: 0.25em;
 }
 
-div.input {
+.input {
   text-align: center;
   padding: 20px 0;
   width: 100%;
   background: #3B5526;
 }
 
-div.input form {
+.input form {
   margin: 0 auto;
   margin-top: 20px;
   width: 580px;
 }
 
-div.input input[type="text"] {
+.input input[type="text"] {
   font-family: monospace;
   width: 83%;
   height: 1.5em;
@@ -161,7 +161,7 @@ div.input input[type="text"] {
   border-radius: 0;
 }
 
-div.input input[type="submit"] {
+.input input[type="submit"] {
   border-radius: 0;
   vertical-align: top;
   font-family: monospace;
@@ -180,7 +180,7 @@ div.input input[type="submit"] {
   background-image: linear-gradient(top, #96C56F, #81B953);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#96C56F, endColorstr=#81B953);
 }
 
-div.input input[type="submit"]:hover {
+.input input[type="submit"]:hover {
   background-color: #7bb64b;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#7bb64b), color-stop(100%, #689a3f));
   background-image: -webkit-linear-gradient(top, #7bb64b, #689a3f);
@@ -190,11 +190,11 @@ div.input input[type="submit"]:hover {
   background-image: linear-gradient(top, #7bb64b, #689a3f);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7bb64b, endColorstr=#689a3f);
 }
 
-div#mobile-keyboard {
+#mobile-keyboard {
   display: none;
 }
 
-div#mobile-keyboard button {
+#mobile-keyboard button {
   color: #FFF;
   border: 0;
   display: inline-block;
@@ -209,7 +209,7 @@ div#mobile-keyboard button {
   #81B953);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#96C56F, endColorstr=#81B953);
 }
 
-div#mobile-keyboard button:hover {
+#mobile-keyboard button:hover {
   background-color: #7bb64b;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#7bb64b), color-stop(100%, #689a3f));
   background-image: -webkit-linear-gradient(top, #7bb64b, #689a3f);
@@ -220,31 +220,31 @@ div#mobile-keyboard button:hover {
 }
 
 
-div.foot {
+.foot {
   text-align: center;
   font-size: 10pt;
 }
 
 /* Main page columns (saved and example queries) */
 
-div.col h2 {
+.col h2 {
   text-align: center;
   font-size: 1.25em;
   font-weight: normal;
 }
 
-div.col ul {
+.col ul {
   list-style-type: none;
 }
 
-div.col.recent li {
+.col.recent li {
   border-bottom: 0.15em solid #a8a8a8;
   margin: 0.5em 0;
   line-height: 1.15em;
 }
 
-div.col.recent a:link, div.col.recent a:visited,
-div.col.recent a:hover, div.col.recent a:active {
+.col.recent a:link, .col.recent a:visited,
+.col.recent a:hover, .col.recent a:active {
   text-decoration: none;
   color: #3B5526;
   width: 70%;
@@ -252,22 +252,22 @@ div.col.recent a:hover, div.col.recent a:active {
   font-family: monospace;
 }
 
-div.col.recent a.remove {
+.col.recent a.remove {
   width: auto;
   float: right;
   line-height: 200%;
   display: none;
 }
 
-div.col.recent li:hover a.remove {
+.col.recent li:hover a.remove {
   display: block;
 }
 
-div.example-group {
+.example-group {
   margin: 0.5em 0;
 }
 
-div.example-group h3 {
+.example-group h3 {
   font-size: 1em;
   font-weight: normal;
   padding: 0;
@@ -275,32 +275,32 @@ div.example-group h3 {
   cursor: pointer;
 }
 
-div.example-group h4 {
+.example-group h4 {
   font-size: 1em;
   font-weight: normal;
   margin-top: 0.5em;
 }
 
-div.example-group h3:before {
+.example-group h3:before {
   content: "▸ ";
 }
 
-div.example-group h3.shown:before {
+.example-group h3.shown:before {
   content: "▾ ";
 }
 
-div.example-group li {
+.example-group li {
   margin: 0 1em;
 }
 
-div.example-group a:link, div.example-group a:visited,
-div.example-group a:hover, div.example-group a:active, a#random-example {
+.example-group a:link, .example-group a:visited,
+.example-group a:hover, .example-group a:active, a#random-example {
   text-decoration: none;
   color: #3B5526;
   font-family: monospace;
 }
 
-div.example-group li > span {
+.example-group li > span {
   display: inline-block;
   float: right;
   font-style: italic;
@@ -351,66 +351,7 @@ svg {
   font-size: smaller;
 }
 
-@media screen and (max-device-width: 640px) {
-  div.col {
-    width: auto;
-    margin: 10px 10px;
-    font-size: 125%;
-  }
-
-  div.col.recent a.remove {
-    display: inline-block;
-  }
-
-  div.col.example div.example-group li {
-    margin: 0.25em 0;
-  }
-
-  div.col.example div.example-group li > span {
-    display: block;
-    float: none;
-    padding-top: 0.25em;
-  }
-
-  div.col.example div.example-group li > span:after {
-    content: ":";
-  }
-  
-  div.input form {
-    margin: 0 auto;
-    margin-top: 10px;
-    width: auto;
-  }
-
-  div.input input[type="text"] {
-    margin: 0 auto;
-    width: 90%;
-  }
-
-  div.input input[type="submit"] {
-    width: 50%;
-    height: 150%;
-    line-height: 150%;
-  }
-
-  input {
-    border-radius: 0;
-  }
-
-  div.result {
-    width: 100%;
-    margin: 10px auto;
-  }
-
-  div.menu_right {
-    display: inline;
-  }
-
-  div#mobile-keyboard button {
-    width: 2em;
-    font-size: 1.25em;
-  }
-}
+/* Loading PNG */
 
 .loader {
   width: 32px;
@@ -451,54 +392,115 @@ svg {
      to { background-position: -256px; }
 }
 
+@media screen and (max-device-width: 640px) {
+  .col {
+    width: auto;
+    margin: 10px 10px;
+    font-size: 125%;
+  }
+
+  .col.recent a.remove {
+    display: inline-block;
+  }
+
+  .col.example .example-group li {
+    margin: 0.25em 0;
+  }
+
+  .col.example .example-group li > span {
+    display: block;
+    float: none;
+    padding-top: 0.25em;
+  }
+
+  .col.example .example-group li > span:after {
+    content: ":";
+  }
+  
+  .input form {
+    margin: 0 auto;
+    margin-top: 10px;
+    width: auto;
+  }
+
+  .input input[type="text"] {
+    margin: 0 auto;
+    width: 90%;
+  }
+
+  .input input[type="submit"] {
+    width: 50%;
+    height: 150%;
+    line-height: 150%;
+  }
+
+  input {
+    border-radius: 0;
+  }
+
+  .result {
+    width: 100%;
+    margin: 10px auto;
+  }
+
+  .menu_right {
+    display: inline;
+  }
+
+  #mobile-keyboard button {
+    width: 2em;
+    font-size: 1.25em;
+  }
+}
+
 /* Tablets and base for desktops */
 @media screen and (min-device-width: 768px) {
-  div.result {
+  .result {
     width: 600px;
     margin: 10px auto;
   }
 
-  div.main {
+  .main {
     width: 740px;
     margin: 10px auto;
   }
   
-  div.col {
+  .col {
     width: 360px;
   }
 
-  div.col.recent {
+  .col.recent {
     float: left;
     height: 100%;
   }
 
-  div.col.recent a.remove {
+  .col.recent a.remove {
     display: inline-block;
   }
 
-  div.col.example {
+  .col.example {
     margin: auto;
   }
 
-  div.col.recent~div.col.example {
+  .col.recent~.col.example {
     float: right;
     height: 100%;
   }
 
-  div.col.example div.example-group li {
+  .col.example div.example-group li {
     margin: 0.25em 0;
   }
 
-  div.col.example div.example-group li > span {
+  .col.example .example-group li > span {
     display: block;
     float: none;
   }
 
-  div.col.example div.example-group li > span:after {
+  .col.example .example-group li > span:after {
     content: ":";
   }
 
-  div.menu_right {
+  .menu_right {
     float: right;
     display: block;
   }
@@ -510,25 +512,25 @@ svg {
 }
 
 @media screen and (min-device-width: 1280px) {
-  div.main {
+  .main {
     width: 800px;
     margin: 10px auto;
   }
 
-  div.col {
+  .col {
     width: 390px;
   }
 
-  div.col.example div.example-group li {
+  .col.example .example-group li {
     margin: 0;
   }
 
-  div.col.example div.example-group li > span {
+  .col.example .example-group li > span {
     display: block;
     float: right;
   }
 
-  div.col.example div.example-group li > span:after {
+  .col.example .example-group li > span:after {
     content: "";
   }
 }
