@@ -789,10 +789,23 @@ function evaluateCards() {
 
         if (typeof card_name !== "undefined") {
             var url = '/card/' + card_name + '/' + variable + '/' + expr;
-            requests.push($.getJSON(url, function(data) {
-                output.append($("<div/>").html(data.output));
+            var d = $.getJSON(url, function(data) {
+                if (typeof data.output !== "undefined") {
+                    output.append($("<div/>").html(data.output));
+                }
+                else {
+                    var error = $("<div/>")
+                        .addClass('cell_output_plain')
+                        .html(data.error);
+                    output.append(error);
+                    output.parent().addClass('result_card_error');
+                }
                 output.children('.loader').fadeOut(500);
-            }));
+            }).error(function() {
+                output.append($("<div/>").html("Error occurred"));
+                output.children('.loader').fadeOut(500);
+            });
+            requests.push(d);
         }
     });
 

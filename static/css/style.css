@@ -61,12 +61,13 @@ h1 a img {
 }
 
 .result_card.result_card_error {
-  border: 2px solid #F00;
+  border: 2px solid #F33;
+  opacity: 0.7;
 }
 
 /* Highlight position of a syntax error */
 .result_card_error .cell_output_plain span:first-child {
-  border-right: 1px solid #F00;
+  border-right: 1px solid #F33;
 }
 
 .card_title {
