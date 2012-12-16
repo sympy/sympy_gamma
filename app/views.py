@@ -111,11 +111,15 @@ def eval_card(request, card_name, variable, expression):
         var = sympy.sympify(variable.encode('utf-8'))
 
         try:
-            r = card.eval(evaluator, var)
+            parameters = {}
+            for key, val in request.GET.items():
+                parameters[key] = ''.join(val)
+            r = card.eval(evaluator, var, parameters)
         except ValueError as e:
             return HttpResponse(json.dumps({
                 'error': e.message
             }), mimetype="application/json")
+
         result = {
             'value': repr(r),
             'output': card.format_output(r, mathjax_latex)

@@ -90,15 +90,26 @@ class ResultCard(object):
         self.result_statement = result_statement
         self.pre_output_function = pre_output_function
 
-    def eval(self, evaluator, variable):
-        line = self.result_statement.format(_var=variable) % 'input_evaluated'
-        return sympy.sympify(evaluator.eval(line, use_none_for_exceptions=True))
+    def eval(self, evaluator, variable, parameters=None):
+        if parameters is None:
+            parameters = {}
+        parameters = self.default_parameters(parameters)
+        line = self.result_statement.format(_var=variable, **parameters)
+        line = line % 'input_evaluated'
+        result = evaluator.eval(line, use_none_for_exceptions=True)
 
-    def format_input(self, input_repr, variable):
+        if self.card_info.get('sympify') or 'sympify' not in self.card_info:
+            return sympy.sympify(result)
+        return result
+
+    def format_input(self, input_repr, variable, **parameters):
+        if parameters is None:
+            parameters = {}
+        parameters = self.default_parameters(parameters)
         if 'format_input_function' in self.card_info:
             return self.card_info['format_input_function'](
                 self.result_statement, input_repr, variable)
-        return self.result_statement.format(_var=variable) % input_repr
+        return self.result_statement.format(_var=variable, **parameters) % input_repr
 
     def format_output(self, output, formatter):
         if 'format_output_function' in self.card_info:
@@ -110,6 +121,12 @@ class ResultCard(object):
             return self.card_info['format_title_function'](self.title,
                                                            input_evaluated)
         return self.title
+
+    def default_parameters(self, kwargs):
+        if 'parameters' in self.card_info:
+            for arg in self.card_info['parameters']:
+                kwargs.setdefault(arg, '')
+        return kwargs
 
 
 class FakeResultCard(ResultCard):
@@ -123,8 +140,10 @@ class FakeResultCard(ResultCard):
         super(FakeResultCard, self).__init__(*args, **kwargs)
         assert 'eval_method' in kwargs
 
-    def eval(self, evaluator, variable):
-        return self.card_info['eval_method'](evaluator, variable)
+    def eval(self, evaluator, variable, parameters=None):
+        if parameters is None:
+            parameters = {}
+        return self.card_info['eval_method'](evaluator, variable, parameters)
 
 
 class MultiResultCard(ResultCard):
@@ -135,12 +154,12 @@ class MultiResultCard(ResultCard):
         self.cards = cards
         self.cards_used = []
 
-    def eval(self, evaluator, variable):
+    def eval(self, evaluator, variable, parameters):
         self.cards_used = []
         original = sympy.sympify(evaluator.eval("input_evaluated"))
         results = []
         for card in self.cards:
-            result = card.eval(evaluator, variable)
+            result = card.eval(evaluator, variable, parameters)
             if result != None and result != original and result not in results:
                 # TODO Implicit state is bad, come up with better API
                 self.cards_used.append(card)
@@ -348,7 +367,7 @@ GRAPHING_CODE = """
 def format_graph(graph_data, formatter):
     return GRAPHING_CODE.format(**graph_data)
 
-def eval_graph(evaluator, variable):
+def eval_graph(evaluator, variable, parameters=None):
     from sympy.plotting.plot import LineOver1DRangeSeries
     func = evaluator.eval("input_evaluated")
 
@@ -377,7 +396,7 @@ def eval_graph(evaluator, variable):
         'yvalues': json.dumps(yvalues)
     }
 
-def eval_factorization(evaluator, variable):
+def eval_factorization(evaluator, variable, parameters=None):
     number = evaluator.eval("input_evaluated")
     factors = sympy.ntheory.factorint(number, limit=100)
     smallfactors = {}
@@ -386,7 +405,7 @@ def eval_factorization(evaluator, variable):
             smallfactors[factor] = factors[factor]
     return smallfactors
 
-def eval_factorization_diagram(evaluator, variable):
+def eval_factorization_diagram(evaluator, variable, parameters=None):
     # Raises ValueError (stops card from appearing) if the factors are too
     # large so that the diagram will look nice
     number = int(evaluator.eval("input_evaluated"))
@@ -401,7 +420,7 @@ def eval_factorization_diagram(evaluator, variable):
             raise ValueError
     return smallfactors
 
-def eval_integral(evaluator, variable):
+def eval_integral(evaluator, variable, parameters=None):
     return sympy.integrate(evaluator.eval("input_evaluated"), *variable)
 
 # Result cards
@@ -459,8 +478,10 @@ all_cards = {
 
     'float_approximation': ResultCard(
         "Floating-point approximation",
-        "(%s).evalf()",
-        no_pre_output),
+        "(%s).evalf({digits})",
+        no_pre_output,
+        parameters=['digits'],
+        sympify=False),
 
     'fractional_approximation': ResultCard(
         "Fractional approximation",
