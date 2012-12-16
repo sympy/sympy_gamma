@@ -126,11 +126,11 @@ class SymPyGamma(object):
                     result.append({
                         'card': card_name,
                         'var': repr(var),
-                        'expr': evaluator.get('input_evaluated'),
                         'title': card.format_title(input_repr),
                         'input': card.format_input(input_repr, var),
                         'pre_output': latex(
-                            card.pre_output_function(input_repr, var))
+                            card.pre_output_function(input_repr, var)),
+                        'parameters': card.card_info.get('parameters', [])
                     })
                 except (SyntaxError, ValueError) as e:
                     pass

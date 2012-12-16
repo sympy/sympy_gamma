@@ -786,12 +786,40 @@ function evaluateCards() {
         var card_name = output.data('card-name');
         var variable = output.data('variable');
         var expr = output.data('expr');
+        var parameters = output.data('parameters');
 
         if (typeof card_name !== "undefined") {
             var url = '/card/' + card_name + '/' + variable + '/' + expr;
             var d = $.getJSON(url, function(data) {
                 if (typeof data.output !== "undefined") {
-                    output.append($("<div/>").html(data.output));
+                    var result = $("<div/>").html(data.output);
+                    output.append(result);
+
+                    // TODO: clean this up - remove repetition and make sure
+                    // errors are handled at all steps
+                    if (parameters.indexOf('digits') !== -1) {
+                        var moreDigits = $('<a href="#">More digits…</a>');
+                        var digits = 25;
+                        output.parent().append(
+                            $("<div/>").addClass('card_options').append(
+                                $('<div/>').append(moreDigits)
+                            )
+                        );
+                        moreDigits.click(function() {
+                            digits += 10;
+                            $.ajax({
+                                url: url,
+                                dataType: 'json',
+                                data: {
+                                    digits: digits
+                                },
+                                success: function(data) {
+                                    result.html(data.output);
+                                    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+                                }
+                            });
+                        });
+                    }
                 }
                 else {
                     var error = $("<div/>")

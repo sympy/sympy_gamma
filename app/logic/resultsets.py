@@ -410,14 +410,14 @@ def eval_factorization_diagram(evaluator, variable, parameters=None):
     # large so that the diagram will look nice
     number = int(evaluator.eval("input_evaluated"))
     if number > 256:
-        raise ValueError
+        raise ValueError("Number too large")
     factors = sympy.ntheory.factorint(number, limit=101)
     smallfactors = {}
     for factor in factors:
-        if factor <= 101:
+        if factor <= 256:
             smallfactors[factor] = factors[factor]
         else:
-            raise ValueError
+            raise ValueError("Number too large")
     return smallfactors
 
 def eval_integral(evaluator, variable, parameters=None):
@@ -471,7 +471,7 @@ all_cards = {
 
     'factorizationDiagram': FakeResultCard(
         "Factorization Diagram",
-        "factorint(%s, limit=101)",
+        "factorint(%s, limit=256)",
         no_pre_output,
         format_output_function=format_factorization_diagram,
         eval_method=eval_factorization_diagram),

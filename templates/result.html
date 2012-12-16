@@ -36,8 +36,9 @@
                     {% if cell.card %}
                         <div class="cell_output"
                              data-card-name="{{ cell.card|safe }}"
-                             data-variable="{{ cell.var|safe }}"
-                             data-expr="{{ cell.expr|safe }}">
+                             data-variable="{{ cell.var|escape }}"
+                             data-expr="{{ input|escape }}"
+                             data-parameters="{{ cell.parameters|safe }}">
                             {% if cell.pre_output %}
                             <div class="cell_pre_output">
                                 <script type="math/tex"> {{cell.pre_output|safe }} = </script>
