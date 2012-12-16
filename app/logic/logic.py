@@ -126,7 +126,7 @@ class SymPyGamma(object):
                     result.append({
                         'card': card_name,
                         'var': repr(var),
-                        'title': card.format_title(input_repr),
+                        'title': card.format_title(input_evaluated),
                         'input': card.format_input(input_repr, var),
                         'pre_output': latex(
                             card.pre_output_function(input_repr, var)),
