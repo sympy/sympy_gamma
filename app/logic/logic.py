@@ -1,7 +1,9 @@
 import sys
 from utils import Eval
-from resultsets import find_result_set, fake_sympy_function, get_card
-from sympy import latex, series, sympify, solve, Derivative, Integral, Symbol, diff, integrate
+from resultsets import find_result_set, fake_sympy_function, \
+    get_card, FakeSymPyFunction
+from sympy import latex, series, sympify, solve, Derivative, \
+    Integral, Symbol, diff, integrate
 import sympy
 import sympy.parsing.sympy_parser as sympy_parser
 
@@ -110,12 +112,13 @@ class SymPyGamma(object):
             input_repr = repr(input_evaluated)
             line = "simplify(input_evaluated)"
             simplified = evaluator.eval(line, use_none_for_exceptions=True)
-            r = sympify(evaluator.eval(line, use_none_for_exceptions=True))
 
-            if simplified != "None" and simplified != input_repr:
+            if (simplified != "None" and
+                simplified != input_repr and
+                not isinstance(input_evaluated, FakeSymPyFunction)):
                 result.append(
                     {"title": "Simplification", "input": simplified,
-                     "output": mathjax_latex(r)})
+                     "output": mathjax_latex(simplified)})
 
             for card_name in cards:
                 card = get_card(card_name)
