@@ -8,7 +8,7 @@ from google.appengine.api import users
 import sympy
 from logic import Eval, SymPyGamma
 from logic.logic import mathjax_latex
-from logic.resultsets import get_card, fake_sympy_function
+from logic.resultsets import get_card, fake_sympy_function, find_result_set
 
 import settings
 import models
@@ -108,7 +108,10 @@ def eval_card(request, card_name, variable, expression):
     if card:
         g = SymPyGamma()
         evaluator, evaluated, _ = g.eval_input(expression)
+        convert_input, _ = find_result_set(evaluated)
         var = sympy.sympify(variable.encode('utf-8'))
+        evaluated, var = convert_input(evaluated, var)
+        evaluator.set('input_evaluated', evaluated)
 
         try:
             parameters = {}

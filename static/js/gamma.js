@@ -787,7 +787,6 @@ function evaluateCards() {
         var variable = output.data('variable');
         var expr = output.data('expr');
         var parameters = output.data('parameters');
-
         if (typeof card_name !== "undefined") {
             var url = '/card/' + card_name + '/' + variable + '/' + expr;
             var d = $.getJSON(url, function(data) {

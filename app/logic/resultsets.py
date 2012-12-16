@@ -421,7 +421,7 @@ def eval_factorization_diagram(evaluator, variable, parameters=None):
     return smallfactors
 
 def eval_integral(evaluator, variable, parameters=None):
-    return sympy.integrate(evaluator.eval("input_evaluated"), *variable)
+    return sympy.integrate(evaluator.get("input_evaluated"), *variable)
 
 # Result cards
 
