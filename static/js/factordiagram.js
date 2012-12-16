@@ -93,3 +93,11 @@ var FactorDiagram = (function() {
 
     return FactorDiagram;
 })();
+
+function setupFactorization() {
+    $('div.factorization-diagram').each(function() {
+        var primes = $(this).data('primes');
+        var f = new FactorDiagram(d3.select($(this).children('div')[0]), primes);
+        f.draw();
+    });
+}
