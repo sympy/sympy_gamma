@@ -109,66 +109,13 @@ function evaluateCards() {
     var deferred = new $.Deferred();
     var requests = [];
 
-    $('.cell_output').each(function() {
-        var output = $(this);
-        var card_name = output.data('card-name');
-        var variable = encodeURIComponent(output.data('variable'));
-        var expr = encodeURIComponent(output.data('expr'));
-        var parameters = output.data('parameters');
-        if (typeof card_name !== "undefined") {
-            var url = '/card/' + card_name;
-            var d = $.getJSON(
-                url,
-                {
-                    variable: variable,
-                    expression: expr
-                },
-                function(data) {
-                if (typeof data.output !== "undefined") {
-                    var result = $("<div/>").html(data.output);
-                    output.append(result);
+    $('.result_card').each(function() {
+        var card = new Card($(this));
 
-                    // TODO: clean this up - remove repetition and make sure
-                    // errors are handled at all steps
-                    if (parameters.indexOf('digits') !== -1) {
-                        var moreDigits = $('<a href="#">More digits…</a>');
-                        var digits = 25;
-                        output.parent().append(
-                            $("<div/>").addClass('card_options').append(
-                                $('<div/>').append(moreDigits)
-                            )
-                        );
-                        moreDigits.click(function() {
-                            digits += 10;
-                            $.ajax({
-                                url: url,
-                                dataType: 'json',
-                                data: {
-                                    digits: digits,
-                                    variable: variable,
-                                    expression: expr
-                                },
-                                success: function(data) {
-                                    result.html(data.output);
-                                    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-                                }
-                            });
-                        });
-                    }
-                }
-                else {
-                    var error = $("<div/>")
-                        .addClass('cell_output_plain')
-                        .html(data.error);
-                    output.append(error);
-                    output.parent().addClass('result_card_error');
-                }
-                output.children('.loader').fadeOut(500);
-            }).error(function() {
-                output.append($("<div/>").html("Error occurred"));
-                output.children('.loader').fadeOut(500);
-            });
-            requests.push(d);
+        // deferred if can evaluate, false otherwise
+        var result = card.evaluate();
+        if (result) {
+            requests.push(result);
         }
     });
 
@@ -181,8 +128,6 @@ function evaluateCards() {
 
 $(document).ready(function() {
     evaluateCards().done(function() {
-        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-
         setupGraphs();
 
         setupExamples();

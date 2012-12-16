@@ -1,4 +1,3 @@
-
 var PlotBackend = (function() {
     function PlotBackend(plot, container) {
         this.plot = plot;
