@@ -53,7 +53,7 @@ class FakeSymPyFunction(object):
 
     @staticmethod
     def make_result_card(func, title, **kwargs):
-        def eval_fake(evaluator, variable):
+        def eval_fake(evaluator, variable, parameters=None):
             func_data = evaluator.get('input_evaluated')
             return func(*func_data.args)
 
