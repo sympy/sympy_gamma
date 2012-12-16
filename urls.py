@@ -18,7 +18,7 @@ urlpatterns = patterns(
 
     (r'user/remove/(?P<qid>.*)$', 'app.views.remove_query'),
 
-    (r'card/(?P<card_name>\w*)/(?P<variable>(\w|\()[a-zA-Z0-9_\(\),% ]*)/(?P<expression>.*)$', 'app.views.eval_card')
+    (r'card/(?P<card_name>\w*)$', 'app.views.eval_card')
 
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs'

@@ -17,6 +17,7 @@ import logging
 import cgi
 import random
 import json
+import urllib2
 
 LIVE_URL = '<a href="http://live.sympy.org">SymPy Live</a>'
 LIVE_PROMOTION_MESSAGES = [
@@ -103,9 +104,17 @@ def about(request, user):
         "about_active": "selected",
         })
 
-def eval_card(request, card_name, variable, expression):
+def eval_card(request, card_name):
     card = get_card(card_name)
     if card:
+        variable = request.GET.get('variable')
+        expression = request.GET.get('expression')
+        if not variable or not expression:
+            raise Http404
+
+        variable = urllib2.unquote(variable)
+        expression = urllib2.unquote(expression)
+
         g = SymPyGamma()
         evaluator, evaluated, _ = g.eval_input(expression)
         convert_input, _ = find_result_set(evaluated)

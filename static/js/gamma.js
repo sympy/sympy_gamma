@@ -784,12 +784,18 @@ function evaluateCards() {
     $('.cell_output').each(function() {
         var output = $(this);
         var card_name = output.data('card-name');
-        var variable = output.data('variable');
-        var expr = output.data('expr');
+        var variable = encodeURIComponent(output.data('variable'));
+        var expr = encodeURIComponent(output.data('expr'));
         var parameters = output.data('parameters');
         if (typeof card_name !== "undefined") {
-            var url = '/card/' + card_name + '/' + variable + '/' + expr;
-            var d = $.getJSON(url, function(data) {
+            var url = '/card/' + card_name;
+            var d = $.getJSON(
+                url,
+                {
+                    variable: variable,
+                    expression: expr
+                },
+                function(data) {
                 if (typeof data.output !== "undefined") {
                     var result = $("<div/>").html(data.output);
                     output.append(result);
@@ -810,7 +816,9 @@ function evaluateCards() {
                                 url: url,
                                 dataType: 'json',
                                 data: {
-                                    digits: digits
+                                    digits: digits,
+                                    variable: variable,
+                                    expression: expr
                                 },
                                 success: function(data) {
                                     result.html(data.output);
