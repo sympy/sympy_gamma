@@ -20,7 +20,7 @@ var Card = (function() {
             this.parameter('digits', 15);
             this.output.parent().append(
                 $("<div/>").addClass('card_options').append(
-                    $('<div/>').append(moreDigits)
+                    $('<button/>').append(moreDigits).addClass('card_options_toggle')
                 )
             );
             moreDigits.click($.proxy(function() {

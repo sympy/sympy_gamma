@@ -141,9 +141,17 @@ var SVGBackend = (function(_parent) {
             this._xGroup.call(this._xAxis);
             this._xGroup.attr('transform',
                               'translate(' + 0 + ',' + this.plot.yScale(0) + ')');
+
+            var xPos = this.plot.xScale(0);
+            if (xPos > this.plot.width() - 30) {
+                xPos = 370;
+            }
+            else if (xPos < 0) {
+                xPos = 0;
+            }
             this._yGroup.call(this._yAxis);
             this._yGroup.attr('transform',
-                              'translate(' + this.plot.width() / 2 + ',' + 0 + ')');
+                              'translate(' + xPos + ',' + 0 + ')');
 
 
             var color = d3.rgb(50,50,50);
@@ -179,9 +187,9 @@ var SVGBackend = (function(_parent) {
                 .attr('stroke', d3.rgb(175, 175, 175));
 
             this._gridY
-                .attr('x1', xScale(this.plot.xMin()))
+                .attr('x1', xScale(this.plot.xLeft()))
                 .attr('y1', yScale)
-                .attr('x2', xScale(this.plot.xMax()))
+                .attr('x2', xScale(this.plot.xRight()))
                 .attr('y2', yScale)
                 .attr('fill', 'none')
                 .attr('stroke-dasharray', '1, 3')
@@ -237,7 +245,7 @@ var SVGBackend = (function(_parent) {
                 offsetY = e.pageY - $(e.target).offset().top;
             }
             var xval = (((offsetX - (this.plot.width() / 2)) / this.plot.width()) *
-                        (this.plot.xMax() - this.plot.xMin()));
+                        (this.plot.xRight() - this.plot.xLeft()));
             var yval = this.plot.funcValue(xval);
 
             if ($.isNumeric(yval)) {
@@ -268,6 +276,21 @@ var SVGBackend = (function(_parent) {
         }, this));
     };
 
+    SVGBackend.prototype.initDragging = function() {
+        var drag = $.proxy(function() {
+            var dx = (d3.event.dx > 0 ? 0.5 : -0.5);
+            var dy = d3.event.dy / 100;
+
+            this.plot.xLeft(this.plot.xLeft() - dx);
+            this.plot.xRight(this.plot.xRight() - dx);
+
+            this.plot.generateScales();
+            this.generateAxes();
+            this.draw();
+        }, this);
+        this._svg.call(d3.behavior.drag().on('drag', drag));
+    };
+
     SVGBackend.prototype.draw = function() {
         this.drawAxes();
         this.drawPoints();
@@ -296,6 +319,8 @@ var Plot2D = (function() {
         this._xValues = xValues;
         this._xMin = d3.min(xValues);
         this._xMax = d3.max(xValues);
+        this._xLeft = -10;
+        this._xRight = 10;
         this._yValues = yValues;
         this._yMin = d3.min(yValues);
         this._yMax = d3.max(yValues);
@@ -338,12 +363,14 @@ var Plot2D = (function() {
     addGetterSetter(Plot2D, 'xMax');
     addGetterSetter(Plot2D, 'yMin');
     addGetterSetter(Plot2D, 'yMax');
+    addGetterSetter(Plot2D, 'xLeft');
+    addGetterSetter(Plot2D, 'xRight');
 
     Plot2D.prototype.generateScales = function() {
         var OFFSET_Y = 25;
         var MARGIN_TOP = 25;
         this.xScale = d3.scale.linear()
-            .domain([this._xMin, this._xMax])
+            .domain([this.xLeft(), this.xRight()])
             .range([10, this.width() - 10]);
 
         var ymin = this.yMin(), ymax = this.yMax();
@@ -530,6 +557,7 @@ function setupGraphs() {
 
         backend.draw();
         backend.initTracing(variable, output_variable);
+        backend.initDragging();
 
         var moreButton = $('<button>More...</button>')
             .addClass('card_options_toggle');
