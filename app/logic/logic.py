@@ -111,7 +111,9 @@ class SymPyGamma(object):
         if var != None:  # See a better way to do this.
             input_repr = repr(input_evaluated)
             line = "simplify(input_evaluated)"
-            simplified = evaluator.eval(line, use_none_for_exceptions=True)
+            simplified = evaluator.eval(line,
+                                        use_none_for_exceptions=True,
+                                        repr_expression=False)
 
             if (simplified != "None" and
                 simplified != input_repr and

@@ -14,7 +14,7 @@ class Eval(object):
     def set(self, name, value):
         self._namespace[name] = value
 
-    def eval(self, x, use_none_for_exceptions=False):
+    def eval(self, x, use_none_for_exceptions=False, repr_expression=True):
         globals = self._namespace
         try:
             x = x.strip()
@@ -36,11 +36,16 @@ class Eval(object):
                 eval(compile(s, '', 'exec', division.compiler_flag), globals, globals)
 
                 if not z is None:
-                    r = repr(eval(z, globals))
+                    r = eval(z, globals)
+
+                    if repr_expression:
+                        r = repr(r)
                 else:
                     r = ''
-                sys.stdout.seek(0)
-                r = sys.stdout.read() + r
+
+                if repr_expression:
+                    sys.stdout.seek(0)
+                    r = sys.stdout.read() + r
             finally:
                 sys.stdout = old_stdout
             return r
