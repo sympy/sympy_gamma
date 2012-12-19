@@ -112,9 +112,11 @@ function evaluateCards() {
     $('.result_card').each(function() {
         var card = new Card($(this));
 
+        $(this).data('card', card);
+
         // deferred if can evaluate, false otherwise
         var result = card.evaluate();
-        if (result) {
+        if (!(result.state() == "rejected")) {
             requests.push(result);
         }
     });

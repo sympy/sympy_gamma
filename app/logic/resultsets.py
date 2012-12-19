@@ -368,6 +368,10 @@ def format_graph(graph_data, formatter):
     return GRAPHING_CODE.format(**graph_data)
 
 def eval_graph(evaluator, variable, parameters=None):
+    if parameters is None:
+        parameters = {}
+
+    xmin, xmax = parameters.get('xmin', -20), parameters.get('xmax', 20)
     from sympy.plotting.plot import LineOver1DRangeSeries
     func = evaluator.eval("input_evaluated")
 
@@ -376,7 +380,9 @@ def eval_graph(evaluator, variable, parameters=None):
         raise ValueError("Cannot graph function of multiple variables")
 
     try:
-        series = LineOver1DRangeSeries(func, (variable, -10, 10), nb_of_points=200)
+        series = LineOver1DRangeSeries(
+            func, (variable, xmin, xmax),
+            nb_of_points=150)
         # returns a list of [[x,y], [next_x, next_y]] pairs
         series = series.get_segments()
     except TypeError:
@@ -530,7 +536,8 @@ all_cards = {
         "plot(%s)",
         no_pre_output,
         format_output_function=format_graph,
-        eval_method=eval_graph),
+        eval_method=eval_graph,
+        parameters=['xmin', 'xmax']),
 
     'series_fake': FakeSymPyFunction.make_result_card(
         sympy.series,

@@ -37,7 +37,14 @@ var Card = (function() {
         return this.parameterValues[key];
     };
 
-    Card.prototype.evaluate = function() {
+    // TODO use Deferred to replace parameters
+    Card.prototype.evaluate = function(finished, error) {
+        if (finished == null) {
+            finished = $.proxy(this.evaluateFinished, this);
+        }
+        if (error == null) {
+            error = $.proxy(this.evaluateError, this);
+        }
         if (typeof this.card_name !== "undefined") {
             var url = '/card/' + this.card_name;
             var parms = {
@@ -45,12 +52,13 @@ var Card = (function() {
                 expression: this.expr
             };
             $.extend(parms, this.parameterValues);
-            var deferred = $.getJSON(
-                url, parms, $.proxy(this.evaluateFinished, this));
-            deferred.error($.proxy(this.evaluateError, this));
+            var deferred = $.getJSON(url, parms, finished);
+            deferred.error(error);
             return deferred;
         }
-        return false;
+        var result = new $.Deferred();
+        result.reject();
+        return result;
     };
 
     Card.prototype.evaluateFinished = function(data) {

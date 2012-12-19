@@ -1,6 +1,7 @@
 var PlotBackend = (function() {
     function PlotBackend(plot, container) {
         this.plot = plot;
+        this.plot.backend = this;
         this._container = container;
     }
 
@@ -246,6 +247,7 @@ var SVGBackend = (function(_parent) {
             }
             var xval = (((offsetX - (this.plot.width() / 2)) / this.plot.width()) *
                         (this.plot.xRight() - this.plot.xLeft()));
+            xval += (this.plot.xRight() + this.plot.xLeft()) / 2;
             var yval = this.plot.funcValue(xval);
 
             if ($.isNumeric(yval)) {
@@ -253,7 +255,7 @@ var SVGBackend = (function(_parent) {
                 this._tracePoint.attr('cy', this.plot.yScale(yval));
 
                 this._traceText.text(variable + ": " + format(xval) + ", " +
-                                    output_variable + ": " + format(yval));
+                                     output_variable + ": " + format(yval));
             }
             else {
                 this._tracePoint.attr('cy', -1000);
@@ -278,7 +280,7 @@ var SVGBackend = (function(_parent) {
 
     SVGBackend.prototype.initDragging = function() {
         var drag = $.proxy(function() {
-            var dx = (d3.event.dx > 0 ? 0.5 : -0.5);
+            var dx = (d3.event.dx > 0 ? 1 : -1);
             var dy = d3.event.dy / 100;
 
             this.plot.xLeft(this.plot.xLeft() - dx);
@@ -287,6 +289,47 @@ var SVGBackend = (function(_parent) {
             this.plot.generateScales();
             this.generateAxes();
             this.draw();
+
+            var xValues = this.plot.xValues();
+            var yValues = this.plot.yValues();
+
+            var handleDone = $.proxy(function(data) {
+                if (typeof data.output == "undefined") {
+                    // TODO: handle error
+                }
+                var el = $(data.output);
+                var newXValues = el.data('xvalues');
+                var newYValues = el.data('yvalues');
+
+                // TODO find better epsilon
+                if (Math.abs(newXValues[0] - this.plot.xMax()) < 0.01) {
+                    newXValues.shift();
+                    newYValues.shift();
+                    this.plot.setData(xValues.concat(newXValues),
+                                      yValues.concat(newYValues));
+                    this.draw();
+                }
+                else if (Math.abs(
+                    newXValues[newXValues.length - 1] - this.plot.xMin()
+                ) < 0.01) {
+                    newXValues.pop();
+                    newYValues.pop();
+                    this.plot.setData(newXValues.concat(xValues),
+                                      newYValues.concat(yValues));
+                    this.draw();
+                }
+            }, this);
+
+            // TODO: if function available, some sort of interpolation while
+            // waiting for results?
+            if (this.plot.xLeft() < this.plot.xMin()) {
+                this.plot.fetchData(this.plot.xMin() - 10, this.plot.xMin()).
+                    done(handleDone);
+            }
+            if (this.plot.xRight() > this.plot.xMax()) {
+                this.plot.fetchData(this.plot.xMax(), this.plot.xMax() + 10).
+                    done(handleDone);
+            }
         }, this);
         this._svg.call(d3.behavior.drag().on('drag', drag));
     };
@@ -311,19 +354,18 @@ var SVGBackend = (function(_parent) {
 })(PlotBackend);
 
 var Plot2D = (function() {
-    function Plot2D(func, xValues, yValues, width, height) {
+    function Plot2D(func, card, xValues, yValues, width, height) {
         this._func = func;
+        this._card = card;
         this._width = width;
         this._height = height;
 
-        this._xValues = xValues;
-        this._xMin = d3.min(xValues);
-        this._xMax = d3.max(xValues);
         this._xLeft = -10;
         this._xRight = 10;
-        this._yValues = yValues;
-        this._yMin = d3.min(yValues);
-        this._yMax = d3.max(yValues);
+
+        this.setData(xValues, yValues);
+
+        this._fetchRequestPending = false;
 
         this._plotOptions = {
             'grid': true,
@@ -357,6 +399,7 @@ var Plot2D = (function() {
 
     addGetterSetter(Plot2D, 'width');
     addGetterSetter(Plot2D, 'height');
+    addGetterSetter(Plot2D, 'card');
     addGetterSetter(Plot2D, 'xValues');
     addGetterSetter(Plot2D, 'yValues');
     addGetterSetter(Plot2D, 'xMin');
@@ -365,6 +408,34 @@ var Plot2D = (function() {
     addGetterSetter(Plot2D, 'yMax');
     addGetterSetter(Plot2D, 'xLeft');
     addGetterSetter(Plot2D, 'xRight');
+
+    Plot2D.prototype.setData = function(xValues, yValues) {
+        this._xValues = xValues;
+        this._xMin = d3.min(xValues);
+        this._xMax = d3.max(xValues);
+        this._yValues = yValues;
+        this._yMin = d3.min(yValues);
+        this._yMax = d3.max(yValues);
+    };
+
+    Plot2D.prototype.fetchData = function(xMin, xMax) {
+        var card = this.card();
+
+        if (this._fetchRequestPending) {
+            // TODO enqueue another request if xmin/max beyond this one
+            var result = (new $.Deferred()).reject();
+            return result;
+        }
+
+        this._fetchRequestPending = true;
+
+        card.parameter('xmin', xMin);
+        card.parameter('xmax', xMax);
+
+        return card.evaluate("f", "f").always($.proxy(function() {
+            this._fetchRequestPending = false;
+        }, this));
+    };
 
     Plot2D.prototype.generateScales = function() {
         var OFFSET_Y = 25;
@@ -425,7 +496,7 @@ var Plot2D = (function() {
 })();
 
 function setupGraphs() {
-    $('.graph').each(function(){
+    $('.graph').each(function() {
         var WIDTH = 400;
         var HEIGHT = 275;
 
@@ -445,7 +516,9 @@ function setupGraphs() {
         var xvalues = $(this).data('xvalues');
         var yvalues = $(this).data('yvalues');
 
-        var plot = new Plot2D(f, xvalues, yvalues, WIDTH, HEIGHT);
+        var card = $(this).parents('.result_card').data('card');
+
+        var plot = new Plot2D(f, card, xvalues, yvalues, WIDTH, HEIGHT);
         var backend = new SVGBackend(plot, $(this)[0]);
 
         var resizing = false;
