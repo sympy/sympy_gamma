@@ -371,7 +371,7 @@ def eval_graph(evaluator, variable, parameters=None):
     if parameters is None:
         parameters = {}
 
-    xmin, xmax = parameters.get('xmin', -20), parameters.get('xmax', 20)
+    xmin, xmax = parameters.get('xmin', -10), parameters.get('xmax', 10)
     from sympy.plotting.plot import LineOver1DRangeSeries
     func = evaluator.eval("input_evaluated")
 
@@ -390,11 +390,20 @@ def eval_graph(evaluator, variable, parameters=None):
 
     xvalues = []
     yvalues = []
+
+    def limit_y(y):
+        CEILING = 1e8
+        if y > CEILING:
+            y = CEILING
+        if y < -CEILING:
+            y = -CEILING
+        return y
+
     for point in series:
         xvalues.append(point[0][0])
-        yvalues.append(point[0][1])
+        yvalues.append(limit_y(point[0][1]))
     xvalues.append(series[-1][1][0])
-    yvalues.append(series[-1][1][1])
+    yvalues.append(limit_y(series[-1][1][1]))
     return {
         'function': sympy.jscode(sympy.sympify(func)),
         'variable': repr(variable),
