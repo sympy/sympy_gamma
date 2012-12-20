@@ -1,16 +1,65 @@
-@import url(http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400);
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
 @import url(http://fonts.googleapis.com/css?family=Gentium+Basic&text=Sympy%20Live);
 
 body {
-  font-family: 'Gentium Book Basic', serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 100%;
   padding: 0;
   margin: 0;
+  background-color: #EEE;
+}
+
+::-webkit-scrollbar {
+  background-color: #CCC;
+  width: 10px;
+}
+
+::-webkit-scrollbar:horizontal {
+  background-color: #CCC;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #999;
+  -webkit-box-shadow: inset 0 0 10px rgba(0,0,0,0.3); 
+  margin: auto;
+}
+
+::-webkit-scrollbar-button {
+  background-color: #555;
+  height: 22px;
+}
+
+::-webkit-scrollbar-button:horizontal {
+  width: 22px;
+}
+
+::-webkit-scrollbar-button:decrement {
+  border-bottom: 2px solid #81B953;
+}
+
+::-webkit-scrollbar-button:increment {
+  border-top: 2px solid #81B953;
+}
+
+::-webkit-scrollbar-button:decrement:horizontal {
+  border-right: 2px solid #81B953;
+  border-bottom: 0;
+}
+
+::-webkit-scrollbar-button:increment:horizontal {
+  border-left: 2px solid #81B953;
+  border-top: 0;
 }
 
 pre, ul, button, h2, h3, h4, input, label {
   margin: 0;
   padding: 0;
+}
+
+pre {
+  font-family: "Droid Sans Mono", monospace;
 }
 
 h1 {
@@ -37,10 +86,11 @@ h1 a img {
   padding: 0 0.5em;
   font-family: sans-serif;
   border-bottom: 2px solid #81B953;
+  background-color: #555;
 }
 
 .menu a {
-  color: #00F !important;
+  color: #BBB !important;
   text-decoration: none;
   font-size: 1em;
   line-height: 1em;
@@ -48,16 +98,16 @@ h1 a img {
 }
 
 .menu a.selected {
-  color: black !important;
+  color: #FFF !important;
   text-decoration: none;
-  font-weight: bold;
 }
 
 .result_card {
-  border: 2px solid #a8a8a8;
   margin: 10px;
   padding: 10px;
   background: #FFF;
+  -webkit-box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
 }
 
 .result_card.result_card_error {
@@ -76,21 +126,19 @@ h1 a img {
 
 .cell_input {
   color: black;
-  font-size:12pt;
-  margin-top: 10px;
+  margin: 0.25em 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .cell_output {
   color: black;
-  font-size: 12pt;
   border-top: 1px solid  #a8a8a8;
-  padding: 10px 0 0 0;
+  padding: 0.25em 0;
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
-  font-family: monospace;
+  font-family: 'Droid Sans Mono', monospace;
   text-align: center;
 }
 
@@ -113,13 +161,13 @@ h1 a img {
   list-style-type: none;
 }
 
-.result_card button.card_options_toggle {
+.result_card .card_options_toggle {
   background: none;
   border: none;
   color: blue;
   text-decoration: underline;
   cursor: pointer;
-  font-family: inherit;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .result_card .card_options {
@@ -151,11 +199,10 @@ h1 a img {
 }
 
 .input input[type="text"] {
-  font-family: monospace;
-  width: 83%;
+  font-family: 'Droid Sans Mono', monospace;
+  width: 82%;
   height: 1.5em;
-  line-height: 1.75em;
-  font-size: 1.5em;
+  font-size: 1.25em;
   padding: 0 0.25em;
   border: 0;
   vertical-align: top;
@@ -165,11 +212,10 @@ h1 a img {
 .input input[type="submit"] {
   border-radius: 0;
   vertical-align: top;
-  font-family: monospace;
+  font-family: 'Droid Sans Mono', monospace;
   width: 15%;
   height: 1.5em;
-  line-height: 1.8em;
-  font-size: 1.5em;
+  font-size: 1.25em;
   color: #FFF;
   border: 0;
   background-color: #96C56F;
@@ -228,9 +274,19 @@ h1 a img {
 
 /* Main page columns (saved and example queries) */
 
+.main {
+  line-height: 1.15em;
+}
+
+.main p {
+  font-size: 80%;
+  margin: 0;
+  padding: 0;
+}
+
 .col h2 {
   text-align: center;
-  font-size: 1.25em;
+  font-size: 1em;
   font-weight: normal;
 }
 
@@ -239,9 +295,8 @@ h1 a img {
 }
 
 .col.recent li {
-  border-bottom: 0.15em solid #a8a8a8;
   margin: 0.5em 0;
-  line-height: 1.15em;
+  border-bottom: 1px solid #a8a8a8;
 }
 
 .col.recent a:link, .col.recent a:visited,
@@ -250,13 +305,13 @@ h1 a img {
   color: #3B5526;
   width: 70%;
   display: inline-block;
-  font-family: monospace;
+  font-family: 'Droid Sans Mono', monospace;
+  font-size: 80%;
 }
 
 .col.recent a.remove {
   width: auto;
   float: right;
-  line-height: 200%;
   display: none;
 }
 
@@ -269,15 +324,15 @@ h1 a img {
 }
 
 .example-group h3 {
-  font-size: 1em;
+  font-size: 80%;
   font-weight: normal;
   padding: 0;
-  border-bottom: 0.15em solid #a8a8a8;
+  border-bottom: 1px solid #a8a8a8;
   cursor: pointer;
 }
 
 .example-group h4 {
-  font-size: 1em;
+  font-size: 0.8em;
   font-weight: normal;
   margin-top: 0.5em;
 }
@@ -292,19 +347,24 @@ h1 a img {
 
 .example-group li {
   margin: 0 1em;
+  font-size: 80%;
 }
 
 .example-group a:link, .example-group a:visited,
 .example-group a:hover, .example-group a:active, a#random-example {
   text-decoration: none;
   color: #3B5526;
-  font-family: monospace;
+  font-family: 'Droid Sans Mono', monospace;
 }
 
 .example-group li > span {
   display: inline-block;
   float: right;
   font-style: italic;
+}
+
+#random-example, #clear-all-recent {
+  font-size: 80%;
 }
 
 /* General styling */
@@ -323,16 +383,16 @@ p {
 
 button {
   display: block;
+  font-family: 'Open Sans', sans-serif;
 }
 
 /* Graphs */
 
 .graph {
-  width: 400px;
+  max-width: 400px;
   height: 275px;
   margin: 1em auto;
   border: 1px solid #CCC;
-  cursor: ne-resize;
   padding: 10px;
 }
 
@@ -341,7 +401,7 @@ button {
 }
 
 svg {
-  cursor: default;
+  cursor: all-scroll;
 }
 
 /* Factorization diagrams */
@@ -394,6 +454,14 @@ svg {
 }
 
 @media screen and (max-device-width: 640px) {
+  .menu {
+    padding: 0.25em 0.5em;
+  }
+  
+  .menu a {
+    font-size: 1.25em;
+  }
+  
   .col {
     width: auto;
     margin: 10px 10px;
@@ -533,5 +601,9 @@ svg {
 
   .col.example .example-group li > span:after {
     content: "";
+  }
+
+  .col.recent a.remove {
+    display: none;
   }
 }
