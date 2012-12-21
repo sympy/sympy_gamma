@@ -175,6 +175,9 @@ var SVGBackend = (function(_parent) {
             this._gridX.attr('opacity', 1);
             this._gridY.attr('opacity', 1);
 
+            this._gridX.data(this.plot.xScale.ticks(10));
+            this._gridY.data(this.plot.yScale.ticks(10));
+
             var xScale = this.plot.xScale;
             var yScale = this.plot.yScale;
 
@@ -185,7 +188,7 @@ var SVGBackend = (function(_parent) {
                 .attr('y2', yScale(this.plot.yBottom()))
                 .attr('fill', 'none')
                 .attr('stroke-dasharray', '1, 3')
-                .attr('stroke', d3.rgb(175, 175, 175));
+                .attr('stroke', d3.rgb(125, 125, 125));
 
             this._gridY
                 .attr('x1', xScale(this.plot.xLeft()))
@@ -194,7 +197,7 @@ var SVGBackend = (function(_parent) {
                 .attr('y2', yScale)
                 .attr('fill', 'none')
                 .attr('stroke-dasharray', '1, 3')
-                .attr('stroke', d3.rgb(175, 175, 175));
+                .attr('stroke', d3.rgb(125, 125, 125));
         }
         else {
             this._gridX.attr('opacity', 0);
@@ -659,7 +662,7 @@ function setupGraphs() {
             return $('<div/>').append([
                 $('<input type="checkbox" id="plot-' + opt + '" />')
                     .click(function(e) {
-                        plot.drawOption(opt,  $(e.target).prop('checked'));
+                        plot.drawOption(opt, $(e.target).prop('checked'));
                         backend.draw();
                     })
                     .prop('checked', plot.isOptionEnabled(opt)),
