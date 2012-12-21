@@ -283,7 +283,7 @@ var SVGBackend = (function(_parent) {
 
     SVGBackend.prototype.initDragging = function() {
         var drag = $.proxy(function() {
-            var dx = (d3.event.dx > 0 ? 1 : -1);
+            var dx = d3.event.dx > 0 ? 1 : -1;
             var dy = d3.event.dy / 100;
 
             this.plot.xLeft(this.plot.xLeft() - dx);
@@ -458,7 +458,7 @@ var Plot2D = (function() {
         if (generate_y) {
             if (auto_y) {
                 var yValues = this.yValues();
-                var ytop = this.yMin(), ybottom = this.yMax();
+                var ybottom = this.yMin(), ytop = this.yMax();
                 var ypos = [];
                 var yneg = [];
 
