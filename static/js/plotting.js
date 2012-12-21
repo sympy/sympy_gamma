@@ -180,9 +180,9 @@ var SVGBackend = (function(_parent) {
 
             this._gridX
                 .attr('x1', xScale)
-                .attr('y1', yScale(this.plot.yMax()))
+                .attr('y1', yScale(this.plot.yTop()))
                 .attr('x2', xScale)
-                .attr('y2', yScale(this.plot.yMin()))
+                .attr('y2', yScale(this.plot.yBottom()))
                 .attr('fill', 'none')
                 .attr('stroke-dasharray', '1, 3')
                 .attr('stroke', d3.rgb(175, 175, 175));
@@ -408,6 +408,8 @@ var Plot2D = (function() {
     addGetterSetter(Plot2D, 'yMax');
     addGetterSetter(Plot2D, 'xLeft');
     addGetterSetter(Plot2D, 'xRight');
+    addGetterSetter(Plot2D, 'yTop');
+    addGetterSetter(Plot2D, 'yBottom');
 
     Plot2D.prototype.setData = function(xValues, yValues) {
         this._xValues = xValues;
@@ -437,9 +439,10 @@ var Plot2D = (function() {
         }, this));
     };
 
-    Plot2D.prototype.generateScales = function(generate_x, generate_y) {
+    Plot2D.prototype.generateScales = function(generate_x, generate_y, auto_y) {
         if (typeof generate_x === "undefined") generate_x = true;
         if (typeof generate_y === "undefined") generate_y = true;
+        if (typeof auto_y === "undefined") auto_y = true;
 
         var OFFSET_Y = 25;
         var MARGIN_TOP = 25;
@@ -450,37 +453,43 @@ var Plot2D = (function() {
         }
 
         if (generate_y) {
-            var yValues = this.yValues();
-            var ymin = this.yMin(), ymax = this.yMax();
-            var ypos = [];
-            var yneg = [];
+            if (auto_y) {
+                var yValues = this.yValues();
+                var ytop = this.yMin(), ybottom = this.yMax();
+                var ypos = [];
+                var yneg = [];
 
-            for (var i = 0; i < yValues.length; i++) {
-                if (yValues[i] >= 0) {
-                    ypos.push(yValues[i]);
+                for (var i = 0; i < yValues.length; i++) {
+                    if (yValues[i] >= 0) {
+                        ypos.push(yValues[i]);
+                    }
+                    if (yValues[i] <= 0) {
+                        yneg.push(yValues[i]);
+                    }
                 }
-                if (yValues[i] <= 0) {
-                    yneg.push(yValues[i]);
+                var yposmean = Math.abs(d3.mean(ypos));
+                var ynegmean = Math.abs(d3.mean(yneg));
+
+                // Prevent asymptotes from dominating the graph
+                if (Math.abs(ytop) >= 10 * yposmean) {
+                    ytop = yposmean;
                 }
-            }
-            var yposmean = Math.abs(d3.mean(ypos));
-            var ynegmean = Math.abs(d3.mean(yneg));
+                if (Math.abs(ybottom) >= 10 * ynegmean) {
+                    ybottom = -ynegmean;
+                }
 
-            // Prevent asymptotes from dominating the graph
-            if (Math.abs(ymax) >= 10 * yposmean) {
-                ymax = yposmean;
-            }
-            if (Math.abs(ymin) >= 10 * ynegmean) {
-                ymin = -ynegmean;
+                if (this.isOptionEnabled('square')) {
+                    ytop = d3.max([Math.abs(ytop), Math.abs(ybottom)]);
+                    ybottom = -yTop;
+                }
+                this.yTop(ytop);
+                this.yBottom(ybottom);
             }
 
-            if (this.isOptionEnabled('square')) {
-                ymax = d3.max([Math.abs(ymax), Math.abs(ymin)]);
-                ymin = -ymax;
-            }
+            var ytop = this.yTop(), ybottom = this.yBottom();
 
             this.yScale = d3.scale.linear()
-                .domain([Math.ceil(ymax), Math.floor(ymin)])
+                .domain([Math.ceil(ytop), Math.floor(ybottom)])
                 .range([OFFSET_Y + MARGIN_TOP, this.height() - OFFSET_Y]);
         }
     };
@@ -532,6 +541,8 @@ function setupGraphs() {
         var container = $(this);
         var originalWidth = $(this).width();
         var originalHeight = $(this).height();
+        var originalYTop = plot.yTop();
+        var originalYBottom = plot.yBottom();
         $(this).mousedown(function(e) {
             var offsetX = e.offsetX;
             if (typeof e.offsetX == "undefined") {
@@ -625,7 +636,7 @@ function setupGraphs() {
 
                 plot.width(newW);
                 plot.height(newH);
-                plot.generateScales(true, false);
+                plot.generateScales(true, true);
                 backend.resize();
                 backend.generateAxes();
                 backend.draw();
@@ -671,14 +682,18 @@ function setupGraphs() {
             ]),
             $('<div/>').append($('<h2>Plot Options</h2>')).append(options),
             $('<div/>').append([
-                $('<button>Reset Viewport</button>')
+                $('<button>Reset</button>')
                     .click(function() {
                         container.width(originalWidth);
                         container.height(originalHeight);
                         plot.drawOption('square', false);
                         plot.width(originalWidth);
                         plot.height(originalHeight);
-                        plot.generateScales();
+                        plot.xLeft(-10);
+                        plot.xRight(10);
+                        plot.yTop(originalYTop);
+                        plot.yBottom(originalYBottom);
+                        plot.generateScales(true, true, false);
                         backend.resize();
                         backend.generateAxes();
                         backend.draw();
