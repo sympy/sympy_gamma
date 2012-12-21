@@ -10,49 +10,6 @@ body {
   background-color: #EEE;
 }
 
-::-webkit-scrollbar {
-  background-color: #CCC;
-  width: 10px;
-}
-
-::-webkit-scrollbar:horizontal {
-  background-color: #CCC;
-  height: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: #999;
-  -webkit-box-shadow: inset 0 0 10px rgba(0,0,0,0.3); 
-  margin: auto;
-}
-
-::-webkit-scrollbar-button {
-  background-color: #555;
-  height: 22px;
-}
-
-::-webkit-scrollbar-button:horizontal {
-  width: 22px;
-}
-
-::-webkit-scrollbar-button:decrement {
-  border-bottom: 2px solid #81B953;
-}
-
-::-webkit-scrollbar-button:increment {
-  border-top: 2px solid #81B953;
-}
-
-::-webkit-scrollbar-button:decrement:horizontal {
-  border-right: 2px solid #81B953;
-  border-bottom: 0;
-}
-
-::-webkit-scrollbar-button:increment:horizontal {
-  border-left: 2px solid #81B953;
-  border-top: 0;
-}
-
 pre, ul, button, h2, h3, h4, input, label {
   margin: 0;
   padding: 0;
@@ -460,6 +417,15 @@ svg {
   
   .menu a {
     font-size: 1.25em;
+  }
+
+  .result_card {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border: 2px solid #DDD;
+    border-radius: 2px;
+    margin: 3px;
+    padding: 5px;
   }
   
   .col {
