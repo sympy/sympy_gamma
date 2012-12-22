@@ -42,16 +42,20 @@ h1 a img {
 .menu {
   padding: 0 0.5em;
   font-family: sans-serif;
-  border-bottom: 2px solid #81B953;
-  background-color: #555;
+  border-bottom: 1px solid #81B953;
+  background: #3C4932;
 }
 
-.menu a {
-  color: #BBB !important;
+.menu a:link, .menu a:visited, .menu a:active {
+  color: #BBB;
   text-decoration: none;
   font-size: 1em;
   line-height: 1em;
   margin-right: 0.5em;
+}
+
+.menu a:hover {
+  color: #DDD;
 }
 
 .menu a.selected {
@@ -254,6 +258,7 @@ h1 a img {
 .col.recent li {
   margin: 0.5em 0;
   border-bottom: 1px solid #a8a8a8;
+  font-size: 80%;
 }
 
 .col.recent a:link, .col.recent a:visited,
@@ -263,7 +268,6 @@ h1 a img {
   width: 70%;
   display: inline-block;
   font-family: 'Droid Sans Mono', monospace;
-  font-size: 80%;
 }
 
 .col.recent a.remove {
@@ -278,10 +282,10 @@ h1 a img {
 
 .example-group {
   margin: 0.5em 0;
+  font-size: 80%;
 }
 
 .example-group h3 {
-  font-size: 80%;
   font-weight: normal;
   padding: 0;
   border-bottom: 1px solid #a8a8a8;
@@ -289,7 +293,6 @@ h1 a img {
 }
 
 .example-group h4 {
-  font-size: 0.8em;
   font-weight: normal;
   margin-top: 0.5em;
 }
@@ -304,7 +307,6 @@ h1 a img {
 
 .example-group li {
   margin: 0 1em;
-  font-size: 80%;
 }
 
 .example-group a:link, .example-group a:visited,
