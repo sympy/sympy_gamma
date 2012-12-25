@@ -214,7 +214,8 @@ var SVGBackend = (function(_parent) {
 
     SVGBackend.prototype.drawPoints = function() {
         if (this.plot.isOptionEnabled('points')) {
-            this._points
+            this._points = this._pointGroup.selectAll('circle')
+                .data(this.plot.xValues())
                 .attr('opacity', 1)
                 .attr('cx', $.proxy(function(value) {
                     return this.plot.xScale(value);
@@ -224,6 +225,7 @@ var SVGBackend = (function(_parent) {
                 }, this))
                 .attr('r', 1.5)
                 .attr('fill', d3.rgb(0, 100, 200));
+            this._points.enter().append('circle')
         }
         else {
             this._points.attr('opacity', 0);
@@ -710,6 +712,29 @@ function setupGraphs() {
                         plot.xRight(10);
                         plot.yTop(originalYTop);
                         plot.yBottom(originalYBottom);
+                        plot.generateScales(true, true, false);
+                        backend.resize();
+                        backend.generateAxes();
+                        backend.draw();
+                    }),
+                $('<button>Auto Viewport</button>')
+                    .click(function() {
+                        plot.generateScales(true, true, true);
+                        backend.resize();
+                        backend.generateAxes();
+                        backend.draw();
+                    }),
+                $('<button>Square Viewport</button>')
+                    .click(function() {
+                        var side = d3.max([container.width(), container.height()]);
+                        container.width(side);
+                        container.height(side);
+                        plot.drawOption('square', true);
+                        plot.width(side);
+                        plot.height(side);
+
+                        plot.yTop(plot.xRight());
+                        plot.yBottom(plot.xLeft());
                         plot.generateScales(true, true, false);
                         backend.resize();
                         backend.generateAxes();
