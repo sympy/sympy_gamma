@@ -119,7 +119,7 @@ class SymPyGamma(object):
                 simplified != input_repr and
                 not isinstance(input_evaluated, FakeSymPyFunction)):
                 result.append(
-                    {"title": "Simplification", "input": simplified,
+                    {"title": "Simplification", "input": repr(simplified),
                      "output": mathjax_latex(simplified)})
 
             for card_name in cards:
