@@ -139,13 +139,20 @@ var SVGBackend = (function(_parent) {
             this._xGroup.attr('opacity', 1);
             this._yGroup.attr('opacity', 1);
 
+            var yPos = this.plot.yScale(0);
+            if (yPos > this.plot.height() - 30) {
+                yPos = this.plot.height() - 30;
+            }
+            else if (yPos < 40) {
+                yPos = 40;
+            }
             this._xGroup.call(this._xAxis);
             this._xGroup.attr('transform',
-                              'translate(' + 0 + ',' + this.plot.yScale(0) + ')');
+                              'translate(' + 0 + ',' + yPos + ')');
 
             var xPos = this.plot.xScale(0);
             if (xPos > this.plot.width() - 30) {
-                xPos = 370;
+                xPos = this.plot.width() - 30;
             }
             else if (xPos < 0) {
                 xPos = 0;
@@ -284,12 +291,18 @@ var SVGBackend = (function(_parent) {
     SVGBackend.prototype.initDragging = function() {
         var drag = $.proxy(function() {
             var dx = d3.event.dx > 0 ? 1 : -1;
-            var dy = d3.event.dy / 100;
+            var dy = (this.plot.yTop() - this.plot.yBottom()) / 20;
+            dy = d3.event.dy > 0 ? dy : -dy;
+
+            if (Math.abs(d3.event.dx) > Math.abs(d3.event.dy)) dy = 0;
+            if (Math.abs(d3.event.dx) < Math.abs(d3.event.dy)) dx = 0;
 
             this.plot.xLeft(this.plot.xLeft() - dx);
             this.plot.xRight(this.plot.xRight() - dx);
+            this.plot.yTop(this.plot.yTop() + dy);
+            this.plot.yBottom(this.plot.yBottom() + dy);
 
-            this.plot.generateScales(true, false);
+            this.plot.generateScales(true, true, false);
             this.generateAxes();
             this.draw();
 
@@ -299,6 +312,7 @@ var SVGBackend = (function(_parent) {
             var handleDone = $.proxy(function(data) {
                 if (typeof data.output == "undefined") {
                     // TODO: handle error
+                    return;
                 }
                 var el = $(data.output);
                 var newXValues = el.data('xvalues');
