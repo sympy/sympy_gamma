@@ -43,7 +43,7 @@ h1 a img {
   padding: 0 0.5em;
   font-family: sans-serif;
   border-bottom: 1px solid #81B953;
-  background: #3C4932;
+  background: #002200;
 }
 
 .menu a:link, .menu a:visited, .menu a:active {
@@ -352,7 +352,7 @@ button {
   height: 275px;
   margin: 1em auto;
   border: 1px solid #CCC;
-  padding: 10px;
+  padding: 20px;
 }
 
 .graph:hover {
