@@ -1,5 +1,5 @@
 application: sympy-gamma-hrd
-version: 7
+version: 8
 runtime: python27
 threadsafe: true
 api_version: 1
