@@ -1,6 +1,6 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans:400);
 @import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
-@import url(http://fonts.googleapis.com/css?family=Gentium+Basic&text=Sympy%20Live);
+@import url(http://fonts.googleapis.com/css?family=Gentium+Basic&text=SymPy%20Gamma);
 
 body {
   font-family: 'Open Sans', sans-serif;
@@ -412,7 +412,7 @@ svg {
      to { background-position: -256px; }
 }
 
-@media screen and (max-device-width: 640px) {
+@media screen and (max-device-width: 767px) {
   .menu {
     padding: 0.25em 0.5em;
   }
