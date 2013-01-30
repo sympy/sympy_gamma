@@ -48,7 +48,7 @@ h1 a img {
 }
 
 .menu a:link, .menu a:visited, .menu a:active {
-  color: #BBB;
+  color: #CCC;
   text-decoration: none;
   font-size: 1em;
   line-height: 1em;
@@ -56,7 +56,7 @@ h1 a img {
 }
 
 .menu a:hover {
-  color: #DDD;
+  color: #FFF;
 }
 
 .menu a.selected {
@@ -95,7 +95,7 @@ h1 a img {
 
 .cell_output {
   color: black;
-  border-top: 1px solid  #a8a8a8;
+  border-top: 1px solid  #777;
   padding: 0.25em 0;
   overflow-x: auto;
   overflow-y: visible;
@@ -134,7 +134,7 @@ h1 a img {
 }
 
 .result_card .card_options {
-  border-top: 1px solid #a8a8a8;
+  border-top: 1px solid #777;
   font-size: 1em;
 }
 
@@ -232,7 +232,7 @@ h1 a img {
 
 .foot {
   text-align: center;
-  font-size: 10pt;
+  font-size: 90%;
 }
 
 /* Main page columns (saved and example queries) */
@@ -258,7 +258,7 @@ h1 a img {
 
 .col.recent li {
   margin: 0.5em 0;
-  border-bottom: 1px solid #a8a8a8;
+  border-bottom: 1px solid #777;
 }
 
 .col.recent a:link, .col.recent a:visited,
@@ -287,7 +287,7 @@ h1 a img {
 .example-group h3 {
   font-weight: normal;
   padding: 0;
-  border-bottom: 1px solid #a8a8a8;
+  border-bottom: 1px solid #777;
   cursor: pointer;
   font-size: 100%;
 }
