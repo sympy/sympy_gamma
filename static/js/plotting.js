@@ -747,6 +747,10 @@ function setupGraphs() {
         moreButton.click(function() {
             moreContent.slideToggle();
         });
+        $(this).parents('.result_card').append([
+            $('<p>Drag plot to pan, (shift-)double-click to zoom, drag edges to resize</p>')
+                .addClass('help')
+        ]);
         $(this).parents('.result_card').append(moreButton).append(moreContent);
     });
 }
