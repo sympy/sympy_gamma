@@ -24,6 +24,7 @@ h1 {
   font-weight: normal;
   color: #FFF;
   margin: 0;
+  line-height: 50px;
 }
 
 h1 a:link, h1 a:visited, h1 a:active {
