@@ -294,17 +294,7 @@ var SVGBackend = (function(_parent) {
         var zoom = d3.behavior.zoom();
         zoom.x(this.plot.xScale);
         zoom.y(this.plot.yScale);
-
-        var prevScale = zoom.scale();
-        var prevTrans = zoom.translate();
-
         zoom.on('zoom', $.proxy(function() {
-            var scale = d3.event.scale / prevScale;
-            prevScale = d3.event.scale;
-            prevTrans = d3.event.translate;
-
-            this.plot.xScale = zoom.x();
-            this.plot.yScale = zoom.y();
             this.draw();
 
             var xValues = this.plot.xValues();
@@ -426,6 +416,7 @@ var Plot2D = (function() {
     addGetterSetter(Plot2D, 'yMin');
     addGetterSetter(Plot2D, 'yMax');
 
+    // TODO setters don't seem to work properly
     Plot2D.prototype.xLeft = function(value) {
         if (typeof value !== "undefined") {
             this.xScale.domain([value, this.xRight()]);
@@ -725,19 +716,13 @@ function setupGraphs() {
                         plot.drawOption('square', false);
                         plot.width(originalWidth);
                         plot.height(originalHeight);
-                        plot.xLeft(-10);
-                        plot.xRight(10);
-                        plot.yTop(originalYTop);
-                        plot.yBottom(originalYBottom);
                         backend.resize();
                         plot.resize();
+                        plot.xScale.domain([-10, 10]);
+                        plot.yScale.domain([originalYBottom, originalYTop]);
                         backend.generateAxes();
                         backend.draw();
-                    }),
-                $('<button>Auto Viewport</button>')
-                    .click(function() {
-                        backend.generateAxes();
-                        backend.draw();
+                        backend.initDraggingZooming();
                     }),
                 $('<button>Square Viewport</button>')
                     .click(function() {
