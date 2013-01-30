@@ -242,14 +242,13 @@ h1 a img {
 }
 
 .main p {
-  font-size: 80%;
   margin: 0;
   padding: 0;
 }
 
 .col h2 {
   text-align: center;
-  font-size: 1em;
+  font-size: 1.25em;
   font-weight: normal;
 }
 
@@ -260,7 +259,6 @@ h1 a img {
 .col.recent li {
   margin: 0.5em 0;
   border-bottom: 1px solid #a8a8a8;
-  font-size: 80%;
 }
 
 .col.recent a:link, .col.recent a:visited,
@@ -284,7 +282,6 @@ h1 a img {
 
 .example-group {
   margin: 0.5em 0;
-  font-size: 80%;
 }
 
 .example-group h3 {
@@ -292,6 +289,7 @@ h1 a img {
   padding: 0;
   border-bottom: 1px solid #a8a8a8;
   cursor: pointer;
+  font-size: 100%;
 }
 
 .example-group h4 {
@@ -319,13 +317,14 @@ h1 a img {
 }
 
 .example-group li > span {
-  display: inline-block;
-  float: right;
+  display: block;
+  padding: 0.125em 0;
   font-style: italic;
+  font-size: 90%;
 }
 
 #random-example, #clear-all-recent {
-  font-size: 80%;
+  font-size: 90%;
 }
 
 /* General styling */
@@ -454,8 +453,6 @@ svg {
   }
 
   .col.example .example-group li > span {
-    display: block;
-    float: none;
     padding-top: 0.25em;
   }
 
@@ -537,11 +534,6 @@ svg {
     margin: 0.25em 0;
   }
 
-  .col.example .example-group li > span {
-    display: block;
-    float: none;
-  }
-
   .col.example .example-group li > span:after {
     content: ":";
   }
@@ -569,15 +561,6 @@ svg {
 
   .col.example .example-group li {
     margin: 0;
-  }
-
-  .col.example .example-group li > span {
-    display: block;
-    float: right;
-  }
-
-  .col.example .example-group li > span:after {
-    content: "";
   }
 
   .col.recent a.remove {

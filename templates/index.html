@@ -76,7 +76,7 @@ SymPy Gamma
                     <ul>
                         <li><span>Polynomial division</span>
                             {% make_query_link 'div(x**2 - 4 + x, x-2)' %}</li>
-                        <li><span>Greatest common divisor…</span>
+                        <li><span>Greatest common divisor</span>
                             {% make_query_link 'gcd(2*x**2 + 6*x, 12*x)' %}</li>
                         <li><span>…and least common multiple</span>
                             {% make_query_link 'lcm(2*x**2 + 6*x, 12*x)' %}</li>
@@ -148,15 +148,17 @@ SymPy Gamma
                     <h4>Integrals</h4>
                     <ul>
                         <li>{% make_query_link 'integrate(tan(x))' %}</li>
-                        <li>{% make_query_link 'integrate(2*x + y, y)' %}
-                            <span>Multiple variables</span></li>
-                        <li>{% make_query_link 'integrate(2*x + y, (x, 1, 3))' %}
-                            <span>Limits of integration</span></li>
+                        <li>
+                            <span>Multiple variables</span>{% make_query_link 'integrate(2*x + y, y)' %}</li>
+                        <li><span>Limits of integration</span> {% make_query_link 'integrate(2*x + y, (x, 1, 3))' %}
+                            </li>
                         <li>{% make_query_link 'integrate(2*x + y, (x, 1, 3), (y, 2, 4))' %}</li>
-                        <li>{% make_query_link 'integrate(tan(x), (x, 0, pi/2))' %}
-                            <span>Improper integrals</span></li>
-                        <li>{% make_query_link 'integrate(1/(x**2 + 1), (x, 0, oo))' %}
-                            <span>Exact answers</span></li>
+                        <li><span>Improper integrals</span>
+                            {% make_query_link 'integrate(tan(x), (x, 0, pi/2))' %}
+                            </li>
+                        <li><span>Exact answers</span>
+                            {% make_query_link 'integrate(1/(x**2 + 1), (x, 0, oo))' %}
+                            </li>
                     </ul>
                 </div>
                 
