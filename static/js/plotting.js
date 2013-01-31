@@ -330,12 +330,14 @@ var SVGBackend = (function(_parent) {
 
             // TODO: if function available, some sort of interpolation while
             // waiting for results?
+            var xWidth = Math.abs(this.plot.xRight() - this.plot.xLeft());
+            console.log(xWidth);
             if (this.plot.xLeft() < this.plot.xMin()) {
-                this.plot.fetchData(this.plot.xMin() - 10, this.plot.xMin()).
+                this.plot.fetchData(this.plot.xMin() - Math.floor(xWidth / 2), this.plot.xMin()).
                     done(handleDone);
             }
             if (this.plot.xRight() > this.plot.xMax()) {
-                this.plot.fetchData(this.plot.xMax(), this.plot.xMax() + 10).
+                this.plot.fetchData(this.plot.xMax(), this.plot.xMax() + Math.ceil(xWidth / 2)).
                     done(handleDone);
             }
         }, this));
@@ -739,6 +741,7 @@ function setupGraphs() {
                         plot.resize();
                         backend.generateAxes();
                         backend.draw();
+                        backend.initDraggingZooming();
                     })
             ])
         ]);
