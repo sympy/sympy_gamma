@@ -24,7 +24,11 @@ var Card = (function() {
                 )
             );
             moreDigits.click($.proxy(function() {
-                this.parameter('digits', this.parameter('digits') + 10);
+                var delta = 10;
+                if (this.parameter('digits') <= 15) {
+                    delta = 35;
+                }
+                this.parameter('digits', this.parameter('digits') + delta);
                 this.evaluate();
             }, this));
         }
