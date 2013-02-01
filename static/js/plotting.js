@@ -297,6 +297,8 @@ var SVGBackend = (function(_parent) {
         zoom.on('zoom', $.proxy(function() {
             this.draw();
 
+            // TODO: zoom triggers reload of all data?
+
             var xValues = this.plot.xValues();
             var yValues = this.plot.yValues();
 
