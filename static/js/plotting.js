@@ -333,7 +333,6 @@ var SVGBackend = (function(_parent) {
             // TODO: if function available, some sort of interpolation while
             // waiting for results?
             var xWidth = Math.abs(this.plot.xRight() - this.plot.xLeft());
-            console.log(xWidth);
             if (this.plot.xLeft() < this.plot.xMin()) {
                 this.plot.fetchData(this.plot.xMin() - Math.floor(xWidth / 2), this.plot.xMin()).
                     done(handleDone);
