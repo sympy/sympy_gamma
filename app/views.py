@@ -85,8 +85,8 @@ def input(request, user):
                     "output": "Can't handle the input."
                 }]
             elif user and not models.Query.query(models.Query.text==input).get():
-                    query = models.Query(text=input, user_id=user.user_id())
-                    query.put()
+                query = models.Query(text=input, user_id=user.user_id())
+                query.put()
 
             # For some reason the |random tag always returns the same result
             return ("result.html", {
@@ -116,7 +116,7 @@ def eval_card(request, card_name):
         expression = urllib2.unquote(expression)
 
         g = SymPyGamma()
-        evaluator, evaluated, _ = g.eval_input(expression)
+        _, evaluator, evaluated, _ = g.eval_input(expression)
         convert_input, _ = find_result_set(evaluated)
         var = sympy.sympify(variable.encode('utf-8'))
         evaluated, var = convert_input(evaluated, var)

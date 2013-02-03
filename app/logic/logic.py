@@ -5,7 +5,9 @@ from resultsets import find_result_set, fake_sympy_function, \
 from sympy import latex, series, sympify, solve, Derivative, \
     Integral, Symbol, diff, integrate
 import sympy
-import sympy.parsing.sympy_parser as sympy_parser
+from sympy.parsing.sympy_parser import stringify_expr, eval_expr, \
+    standard_transformations, convert_xor, implicit_multiplication_application, \
+    TokenError
 
 PREEXEC = """from __future__ import division
 from sympy import *
@@ -31,7 +33,7 @@ class SymPyGamma(object):
 
         try:
             result = self.eval_input(s)
-        except sympy_parser.TokenError:
+        except TokenError:
             return [
                 {"title": "Input", "input": s},
                 {"title": "Error", "input": s, "error": "Invalid input"}
@@ -40,14 +42,14 @@ class SymPyGamma(object):
             return self.handle_error(s, e)
 
         if result:
-            evaluator, evaluated, variables = result
+            parsed, evaluator, evaluated, variables = result
 
             if len(variables) > 0:
                 var = variables.pop()
             else:
                 var = None
 
-            return self.prepare_cards(evaluator, evaluated, var)
+            return self.prepare_cards(parsed, evaluator, evaluated, var)
 
     def handle_error(self, s, e):
         if isinstance(e, SyntaxError):
@@ -75,14 +77,19 @@ class SymPyGamma(object):
         if not len(s):
             return None
 
-        evaluated = sympify(s, convert_xor=True, locals={
+        transformations = standard_transformations + (convert_xor, implicit_multiplication_application)
+        local_dict = {
             'integrate': sympy.Integral,
             'plot': lambda func: func,
             'diff': sympy.Derivative,
             'series': fake_sympy_function('series'),
             'solve': fake_sympy_function('solve'),
             'solve_poly_system': fake_sympy_function('solve_poly_system')
-        })
+        }
+        global_dict = {}
+        exec 'from sympy import *' in global_dict
+        parsed = stringify_expr(s, local_dict, global_dict, transformations)
+        evaluated = eval_expr(parsed, local_dict, global_dict)
         input_repr = repr(evaluated)
         namespace['input_evaluated'] = evaluated
 
@@ -91,9 +98,9 @@ class SymPyGamma(object):
         else:
             variables = []
 
-        return evaluator, evaluated, variables
+        return parsed, evaluator, evaluated, variables
 
-    def prepare_cards(self, evaluator, evaluated, var):
+    def prepare_cards(self, parsed, evaluator, evaluated, var):
         input_repr = repr(evaluated)
 
         result = [
