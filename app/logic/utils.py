@@ -1,7 +1,9 @@
 from __future__ import division
 import traceback
 import sys
+import ast
 from StringIO import StringIO
+import sympy
 
 class Eval(object):
 
@@ -59,3 +61,61 @@ class Eval(object):
             #tb = tb.tb_next
             s = "".join(traceback.format_exception(etype, value, tb))
             return s
+
+class LatexVisitor(ast.NodeVisitor):
+    EXCEPTIONS = {'integrate': sympy.Integral, 'diff': sympy.Derivative}
+
+    def eval_node(self, node):
+        tree = ast.fix_missing_locations(ast.Expression(node))
+        return eval(compile(tree, '<string>', 'eval'), self.namespace)
+
+    def visit_Call(self, node):
+        buffer = []
+        fname = node.func.id
+
+        # Only apply to lowercase names (i.e. functions, not classes)
+        if fname in self.__class__.EXCEPTIONS:
+            node.func.id = self.__class__.EXCEPTIONS[fname].__name__
+            self.latex = sympy.latex(self.eval_node(node))
+        elif fname == 'solve':
+            buffer = ['\\mathrm{solve}\\;',
+                      sympy.latex(self.eval_node(node.args[0]))]
+            if len(node.args) > 1:
+                buffer.append('\\;\\mathrm{for}\\;')
+            for arg in node.args[1:]:
+                buffer.append(sympy.latex(self.eval_node(arg)))
+                buffer.append(',\\, ')
+            if len(node.args) > 1:
+                buffer.pop()
+            self.latex = ''.join(buffer)
+        elif fname[0].lower() == fname[0]:
+            buffer.append("\\mathrm{%s}" % fname.replace('_', '\\_'))
+            buffer.append('(')
+
+            latexes = []
+            for arg in node.args:
+                if isinstance(arg, ast.Call) and arg.func.id[0].lower() == arg.func.id[0]:
+                    latexes.append(self.visit_Call(arg))
+                else:
+                    latexes.append(sympy.latex(self.eval_node(arg)))
+
+            buffer.append(', '.join(latexes))
+            buffer.append(')')
+
+            self.latex = ''.join(buffer)
+            return ''.join(buffer)
+
+class TopCallVisitor(ast.NodeVisitor):
+    def visit_Call(self, node):
+        self.call = node
+
+def latexify(string, evaluator):
+    a = LatexVisitor()
+    a.namespace = evaluator._namespace
+    a.visit(ast.parse(string))
+    return a.latex
+
+def topcall(string):
+    a = TopCallVisitor()
+    a.visit(ast.parse(string))
+    return a.call

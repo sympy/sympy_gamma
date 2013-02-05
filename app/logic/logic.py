@@ -1,10 +1,11 @@
 import sys
-from utils import Eval
+from utils import Eval, latexify, topcall
 from resultsets import find_result_set, fake_sympy_function, \
     get_card, FakeSymPyFunction
 from sympy import latex, series, sympify, solve, Derivative, \
     Integral, Symbol, diff, integrate
 import sympy
+from sympy.core.function import FunctionClass
 from sympy.parsing.sympy_parser import stringify_expr, eval_expr, \
     standard_transformations, convert_xor, implicit_multiplication_application, \
     TokenError
@@ -80,8 +81,8 @@ class SymPyGamma(object):
         transformations = standard_transformations + (convert_xor, implicit_multiplication_application)
         local_dict = {
             'integrate': sympy.Integral,
-            'plot': lambda func: func,
             'diff': sympy.Derivative,
+            'plot': lambda func: func,
             'series': fake_sympy_function('series'),
             'solve': fake_sympy_function('solve'),
             'solve_poly_system': fake_sympy_function('solve_poly_system')
@@ -102,11 +103,20 @@ class SymPyGamma(object):
 
     def prepare_cards(self, parsed, evaluator, evaluated, var):
         input_repr = repr(evaluated)
+        first_func_name = topcall(parsed).func.id
+        first_func = evaluator.get(first_func_name)
+
+        if first_func and not isinstance(first_func, FunctionClass):
+            latex_input = ''.join(['<script type="math/tex; mode=display">',
+                                   latexify(parsed, evaluator),
+                                   '</script>'])
+        else:
+            latex_input = mathjax_latex(evaluated)
 
         result = [
             {"title": "SymPy",
              "input": input_repr,
-             "output": mathjax_latex(evaluated)},
+             "output": latex_input},
         ]
 
         convert_input, cards = find_result_set(evaluated)

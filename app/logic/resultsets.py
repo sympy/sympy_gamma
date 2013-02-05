@@ -273,7 +273,7 @@ def extract_solve(input_evaluated, variable):
             input_evaluated.function == 'solve')
     args = input_evaluated.args
     if len(args) >= 2:
-        return input_evaluated, args[1]
+        return input_evaluated, args[1:]
     elif len(args) == 1:
         try:
             equation = sympy.sympify(args[0])
@@ -328,7 +328,7 @@ def format_list(items, formatter):
         html.append('</ul>')
         return '\n'.join(html)
     except TypeError:  # not iterable, like None
-        return items
+        return formatter(items)
 
 def format_series_fake_title(title, evaluated):
     if len(evaluated.args) >= 3:
