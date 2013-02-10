@@ -375,8 +375,10 @@ svg {
 
 .factorization-diagram p {
   text-align: left;
-  font-family: 'Gentium Book Basic', serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: smaller;
+  margin: 0;
+  padding: 0;
 }
 
 /* Loading PNG */
