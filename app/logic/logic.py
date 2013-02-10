@@ -1,4 +1,5 @@
 import sys
+import collections
 from utils import Eval, latexify, topcall, removeSymPy
 from resultsets import find_result_set, fake_sympy_function, \
     get_card, FakeSymPyFunction
@@ -105,9 +106,10 @@ class SymPyGamma(object):
         input_repr = repr(evaluated)
         first_func_name = topcall(parsed).func.id
         first_func = evaluator.get(first_func_name)
+        is_function_not_class = (first_func and not isinstance(first_func, FunctionClass)
+                                 and first_func_name and first_func_name[0].islower())
 
-        if (first_func and not isinstance(first_func, FunctionClass) and
-            first_func_name and first_func_name[0].islower()):
+        if is_function_not_class:
             latex_input = ''.join(['<script type="math/tex; mode=display">',
                                    latexify(parsed, evaluator),
                                    '</script>'])
@@ -124,9 +126,17 @@ class SymPyGamma(object):
         input_evaluated, var = convert_input(evaluated, var)
         evaluator.set('input_evaluated', input_evaluated)
 
+
         # Come up with a solution to use all variables if more than 1
         # is entered.
-        if var != None:  # See a better way to do this.
+        if var is None:  # See a better way to do this.
+            if is_function_not_class:
+                result.append({
+                    'title': 'Result',
+                    'input': removeSymPy(parsed),
+                    'output': mathjax_latex(evaluated)
+                })
+        else:
             input_repr = repr(input_evaluated)
             line = "simplify(input_evaluated)"
             simplified = evaluator.eval(line,
@@ -142,6 +152,7 @@ class SymPyGamma(object):
 
             for card_name in cards:
                 card = get_card(card_name)
+
                 if not card:
                     continue
 
