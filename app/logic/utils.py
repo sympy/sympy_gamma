@@ -2,6 +2,7 @@ from __future__ import division
 import traceback
 import sys
 import ast
+import re
 from StringIO import StringIO
 import sympy
 
@@ -119,3 +120,14 @@ def topcall(string):
     a = TopCallVisitor()
     a.visit(ast.parse(string))
     return a.call
+
+re_calls = re.compile(r'(Integer|Symbol|Float|Rational)\s*\([\'\"]?([a-zA-Z0-9\.]+)[\'\"]?\s*\)')
+
+def re_calls_sub(match):
+    return match.groups()[1]
+
+def removeSymPy(string):
+    try:
+        return re_calls.sub(re_calls_sub, string)
+    except IndexError:
+        return string

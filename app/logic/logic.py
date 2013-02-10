@@ -1,5 +1,5 @@
 import sys
-from utils import Eval, latexify, topcall
+from utils import Eval, latexify, topcall, removeSymPy
 from resultsets import find_result_set, fake_sympy_function, \
     get_card, FakeSymPyFunction
 from sympy import latex, series, sympify, solve, Derivative, \
@@ -106,7 +106,8 @@ class SymPyGamma(object):
         first_func_name = topcall(parsed).func.id
         first_func = evaluator.get(first_func_name)
 
-        if first_func and not isinstance(first_func, FunctionClass):
+        if (first_func and not isinstance(first_func, FunctionClass) and
+            first_func_name and first_func_name[0].islower()):
             latex_input = ''.join(['<script type="math/tex; mode=display">',
                                    latexify(parsed, evaluator),
                                    '</script>'])
@@ -115,7 +116,7 @@ class SymPyGamma(object):
 
         result = [
             {"title": "SymPy",
-             "input": input_repr,
+             "input": removeSymPy(parsed),
              "output": latex_input},
         ]
 
