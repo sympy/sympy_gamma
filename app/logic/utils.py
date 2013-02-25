@@ -5,6 +5,7 @@ import ast
 import re
 from StringIO import StringIO
 import sympy
+from sympy.core.relational import Relational
 
 class Eval(object):
 
@@ -79,8 +80,12 @@ class LatexVisitor(ast.NodeVisitor):
             node.func.id = self.__class__.EXCEPTIONS[fname].__name__
             self.latex = sympy.latex(self.eval_node(node))
         elif fname == 'solve':
-            buffer = ['\\mathrm{solve}\\;',
-                      sympy.latex(self.eval_node(node.args[0]))]
+            expr = self.eval_node(node.args[0])
+            buffer = ['\\mathrm{solve}\\;', sympy.latex(expr)]
+
+            if not isinstance(expr, Relational):
+                buffer.append('=0')
+
             if len(node.args) > 1:
                 buffer.append('\\;\\mathrm{for}\\;')
             for arg in node.args[1:]:
@@ -88,6 +93,7 @@ class LatexVisitor(ast.NodeVisitor):
                 buffer.append(',\\, ')
             if len(node.args) > 1:
                 buffer.pop()
+
             self.latex = ''.join(buffer)
         elif fname[0].lower() == fname[0]:
             buffer.append("\\mathrm{%s}" % fname.replace('_', '\\_'))
