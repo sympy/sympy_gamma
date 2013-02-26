@@ -381,6 +381,24 @@ svg {
   padding: 0;
 }
 
+/* Documentation */
+
+.document {
+  text-align: left;
+}
+
+.document p {
+  margin: 0.25em 0;
+  padding: 0;
+}
+
+.document h1 {
+  font-family: inherit;
+  color: #000;
+  font-size: 1.25em;
+  line-height: 1.25em;
+}
+
 /* Loading PNG */
 
 .loader {

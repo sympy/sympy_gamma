@@ -125,7 +125,9 @@ def latexify(string, evaluator):
 def topcall(string):
     a = TopCallVisitor()
     a.visit(ast.parse(string))
-    return a.call
+    if hasattr(a, 'call'):
+        return a.call
+    return None
 
 re_calls = re.compile(r'(Integer|Symbol|Float|Rational)\s*\([\'\"]?([a-zA-Z0-9\.]+)[\'\"]?\s*\)')
 

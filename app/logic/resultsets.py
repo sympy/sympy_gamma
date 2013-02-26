@@ -1,5 +1,8 @@
+import sys
 import json
 import sympy
+from sympy.core.function import FunctionClass
+import docutils.core
 from operator import itemgetter
 
 
@@ -237,6 +240,9 @@ def is_trig(input_evaluated):
     except AttributeError:
         return False
 
+def is_uncalled_function(input_evaluated):
+    return isinstance(input_evaluated, FunctionClass)
+
 
 # Functions to convert input and extract variable used
 
@@ -298,6 +304,9 @@ def default_variable(input_evaluated, variable):
 
 
 # Formatting functions
+
+def format_nothing(arg, formatter):
+    return arg
 
 def format_long_integer(line, integer, variable):
     intstr = str(integer)
@@ -438,6 +447,37 @@ def eval_factorization_diagram(evaluator, variable, parameters=None):
 def eval_integral(evaluator, variable, parameters=None):
     return sympy.integrate(evaluator.get("input_evaluated"), *variable)
 
+# http://www.python.org/dev/peps/pep-0257/
+def trim(docstring):
+    if not docstring:
+        return ''
+    # Convert tabs to spaces (following the normal Python rules)
+    # and split into a list of lines:
+    lines = docstring.expandtabs().splitlines()
+    # Determine minimum indentation (first line doesn't count):
+    indent = sys.maxint
+    for line in lines[1:]:
+        stripped = line.lstrip()
+        if stripped:
+            indent = min(indent, len(line) - len(stripped))
+    # Remove indentation (first line is special):
+    trimmed = [lines[0].strip()]
+    if indent < sys.maxint:
+        for line in lines[1:]:
+            trimmed.append(line[indent:].rstrip())
+    # Strip off trailing and leading blank lines:
+    while trimmed and not trimmed[-1]:
+        trimmed.pop()
+    while trimmed and not trimmed[0]:
+        trimmed.pop(0)
+    # Return a single string:
+    return '\n'.join(trimmed)
+
+def eval_function_docs(evaluator, variable, parameters=None):
+    docstring = trim(evaluator.get("input_evaluated").__doc__)
+    return docutils.core.publish_parts(docstring, writer_name='html4css1',
+                                       settings_overrides={'_disable_config': True})['html_body']
+
 # Result cards
 
 no_pre_output = lambda *args: ""
@@ -548,6 +588,14 @@ all_cards = {
         eval_method=eval_graph,
         parameters=['xmin', 'xmax']),
 
+    'function_docs': FakeResultCard(
+        "Documentation",
+        "help(%s)",
+        no_pre_output,
+        eval_method=eval_function_docs,
+        format_output_function=format_nothing
+    ),
+
     'series_fake': FakeSymPyFunction.make_result_card(
         sympy.series,
         "Series expansion about {0} up to {1}",
@@ -593,6 +641,7 @@ result_sets = [
     (is_complex, default_variable,
      ['absolute_value', 'polar_angle', 'conjugate']),
     (is_trig, do_nothing, ['trig_alternate']),
+    (is_uncalled_function, default_variable, ['function_docs']),
     (lambda x: True, do_nothing, ['graph', 'roots', 'diff', 'integral', 'series'])
 ]
 

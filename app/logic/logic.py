@@ -104,10 +104,16 @@ class SymPyGamma(object):
 
     def prepare_cards(self, parsed, evaluator, evaluated, var):
         input_repr = repr(evaluated)
-        first_func_name = topcall(parsed).func.id
-        first_func = evaluator.get(first_func_name)
-        is_function_not_class = (first_func and not isinstance(first_func, FunctionClass)
-                                 and first_func_name and first_func_name[0].islower())
+        tc = topcall(parsed)
+
+        if tc:
+            first_func_name = topcall(parsed).func.id
+            first_func = evaluator.get(first_func_name)
+            is_function_not_class = (first_func and not isinstance(first_func, FunctionClass)
+                                     and first_func_name and first_func_name[0].islower())
+        else:
+            first_func_name = first_func = None
+            is_function_not_class = False
 
         if is_function_not_class:
             latex_input = ''.join(['<script type="math/tex; mode=display">',
