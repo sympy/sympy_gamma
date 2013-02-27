@@ -194,7 +194,7 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
         elif (isinstance(tok, AppliedFunction) and
               nextTok[0] == OP and nextTok[1] == '('):
             # Applied function followed by an open parenthesis
-            if len(tok.args[1][1]) == 3:
+            if tok.function[1] == 'Symbol' and len(tok.args[1][1]) == 3:
                 continue
             result.append((OP, '*'))
         elif (tok[0] == OP and tok[1] == ')' and
