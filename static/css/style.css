@@ -1,21 +1,30 @@
-@import url(http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic);
-@import url(http://fonts.googleapis.com/css?family=Gentium+Basic&text=Sympy%20Live);
-
-
-* {
-  padding: 0px;
-  margin: 0px;
-}
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400);
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
+@import url(http://fonts.googleapis.com/css?family=Gentium+Basic&text=SymPy%20Gamma);
 
 body {
-  font-family: 'Gentium Book Basic', serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 100%;
+  padding: 0;
+  margin: 0;
+  background-color: #EEE;
+}
+
+pre, ul, button, h2, h3, h4, input, label {
+  margin: 0;
+  padding: 0;
+}
+
+pre {
+  font-family: "Droid Sans Mono", monospace;
 }
 
 h1 {
   font-family: 'Gentium Basic', serif;
   font-weight: normal;
   color: #FFF;
+  margin: 0;
+  line-height: 50px;
 }
 
 h1 a:link, h1 a:visited, h1 a:active {
@@ -31,143 +40,145 @@ h1 a img {
   vertical-align: bottom;
 }
 
-div.menu {
+.menu {
   padding: 0 0.5em;
   font-family: sans-serif;
-  border-bottom: 2px solid #81B953;
+  border-bottom: 1px solid #81B953;
+  background: #002200;
 }
 
-div.menu a {
-  color: #00F !important;
+.menu a:link, .menu a:visited, .menu a:active {
+  color: #CCC;
   text-decoration: none;
   font-size: 1em;
   line-height: 1em;
   margin-right: 0.5em;
 }
 
-div.menu a.selected {
-  color: black !important;
-  text-decoration: none;
-  font-weight: bold;
+.menu a:hover {
+  color: #FFF;
 }
 
-div.result_card {
-  border: 2px solid #a8a8a8;
+.menu a.selected {
+  color: #FFF !important;
+  text-decoration: none;
+}
+
+.result_card {
   margin: 10px;
   padding: 10px;
   background: #FFF;
+  -webkit-box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
 }
 
-div.result_card.result_card_error {
-  border: 2px solid #F00;
+.result_card.result_card_error {
+  border: 2px solid #F33;
+  opacity: 0.7;
 }
 
 /* Highlight position of a syntax error */
-div.result_card_error .cell_output_plain span:first-child {
-  border-right: 1px solid #F00;
+.result_card_error .cell_output_plain span:first-child {
+  border-right: 1px solid #F33;
 }
 
-div.card_title {
+.card_title {
   font-size: 12pt;
 }
 
-div.cell_input {
+.cell_input {
   color: black;
-  font-size:12pt;
-  margin-top: 10px;
+  margin: 0.25em 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-div.cell_output {
+.cell_output {
   color: black;
-  font-size: 12pt;
-  border-top: 1px solid  #a8a8a8;
-  padding: 10px 0 0 0;
-  opacity: 0.1;
+  border-top: 1px solid  #777;
+  padding: 0.25em 0;
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
-  font-family: monospace;
+  font-family: 'Droid Sans Mono', monospace;
   text-align: center;
 }
 
-div.cell_output div.cell_pre_output {
+.cell_output .cell_pre_output {
   text-align: left;
 }
 
-div.cell_output table {
+.cell_output table {
   border-collapse: collapse;
   border: 1px solid #000;
   margin: auto;
 }
 
-div.cell_output td, div.cell_output th {
+.cell_output td, .cell_output th {
   border: 1px solid #000;
   padding: 0.25em 0.5em;
 }
 
-div.cell_output ul {
+.cell_output ul {
   list-style-type: none;
 }
 
-div.result_card button.card_options_toggle {
+.result_card .card_options_toggle {
   background: none;
   border: none;
   color: blue;
   text-decoration: underline;
   cursor: pointer;
-  font-family: inherit;
+  font-family: 'Open Sans', sans-serif;
+  font-size: smaller;
 }
 
-div.result_card div.card_options {
-  border-top: 1px solid #a8a8a8;
+.result_card .card_options {
+  border-top: 1px solid #777;
   font-size: 1em;
 }
 
-div.result_card div.card_options h2 {
+.result_card .card_options h2 {
   font-size: 1em;
   margin: 0.5em 0;
   padding: 0;
 }
 
-div.result_card div.card_options label {
+.result_card .card_options label {
   margin-left: 0.25em;
 }
 
-div.input {
+.input {
   text-align: center;
   padding: 20px 0;
   width: 100%;
   background: #3B5526;
 }
 
-div.input form {
+.input form {
   margin: 0 auto;
   margin-top: 20px;
   width: 580px;
 }
 
-div.input input[type="text"] {
-  font-family: monospace;
-  width: 83%;
+.input input[type="text"] {
+  font-family: 'Droid Sans Mono', monospace;
+  width: 82%;
   height: 1.5em;
-  line-height: 1.75em;
-  font-size: 1.5em;
+  font-size: 1.25em;
   padding: 0 0.25em;
   border: 0;
   vertical-align: top;
   border-radius: 0;
 }
 
-div.input input[type="submit"] {
+.input input[type="submit"] {
   border-radius: 0;
   vertical-align: top;
-  font-family: monospace;
+  font-family: 'Droid Sans Mono', monospace;
   width: 15%;
   height: 1.5em;
-  line-height: 1.8em;
-  font-size: 1.5em;
+  font-size: 1.25em;
   color: #FFF;
   border: 0;
   background-color: #96C56F;
@@ -179,7 +190,7 @@ div.input input[type="submit"] {
   background-image: linear-gradient(top, #96C56F, #81B953);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#96C56F, endColorstr=#81B953);
 }
 
-div.input input[type="submit"]:hover {
+.input input[type="submit"]:hover {
   background-color: #7bb64b;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#7bb64b), color-stop(100%, #689a3f));
   background-image: -webkit-linear-gradient(top, #7bb64b, #689a3f);
@@ -189,11 +200,11 @@ div.input input[type="submit"]:hover {
   background-image: linear-gradient(top, #7bb64b, #689a3f);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7bb64b, endColorstr=#689a3f);
 }
 
-div#mobile-keyboard {
+#mobile-keyboard {
   display: none;
 }
 
-div#mobile-keyboard button {
+#mobile-keyboard button {
   color: #FFF;
   border: 0;
   display: inline-block;
@@ -208,7 +219,7 @@ div#mobile-keyboard button {
   #81B953);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#96C56F, endColorstr=#81B953);
 }
 
-div#mobile-keyboard button:hover {
+#mobile-keyboard button:hover {
   background-color: #7bb64b;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#7bb64b), color-stop(100%, #689a3f));
   background-image: -webkit-linear-gradient(top, #7bb64b, #689a3f);
@@ -219,90 +230,101 @@ div#mobile-keyboard button:hover {
 }
 
 
-div.foot {
+.foot {
   text-align: center;
-  font-size: 10pt;
+  font-size: 90%;
 }
 
 /* Main page columns (saved and example queries) */
 
-div.col h2 {
+.main {
+  line-height: 1.15em;
+}
+
+.main p {
+  margin: 0;
+  padding: 0;
+}
+
+.col h2 {
   text-align: center;
   font-size: 1.25em;
   font-weight: normal;
 }
 
-div.col ul {
+.col ul {
   list-style-type: none;
 }
 
-div.col.recent li {
-  border-bottom: 0.15em solid #a8a8a8;
+.col.recent li {
   margin: 0.5em 0;
-  line-height: 1.15em;
+  border-bottom: 1px solid #777;
 }
 
-div.col.recent a:link, div.col.recent a:visited,
-div.col.recent a:hover, div.col.recent a:active {
+.col.recent a:link, .col.recent a:visited,
+.col.recent a:hover, .col.recent a:active {
   text-decoration: none;
   color: #3B5526;
   width: 70%;
   display: inline-block;
-  font-family: monospace;
+  font-family: 'Droid Sans Mono', monospace;
 }
 
-div.col.recent a.remove {
+.col.recent a.remove {
   width: auto;
   float: right;
-  line-height: 200%;
   display: none;
 }
 
-div.col.recent li:hover a.remove {
+.col.recent li:hover a.remove {
   display: block;
 }
 
-div.example-group {
+.example-group {
   margin: 0.5em 0;
 }
 
-div.example-group h3 {
-  font-size: 1em;
+.example-group h3 {
   font-weight: normal;
   padding: 0;
-  border-bottom: 0.15em solid #a8a8a8;
+  border-bottom: 1px solid #777;
   cursor: pointer;
+  font-size: 100%;
 }
 
-div.example-group h4 {
-  font-size: 1em;
+.example-group h4 {
   font-weight: normal;
   margin-top: 0.5em;
 }
 
-div.example-group h3:before {
+.example-group h3:before {
   content: "▸ ";
 }
 
-div.example-group h3.shown:before {
+.example-group h3.shown:before {
   content: "▾ ";
 }
 
-div.example-group li {
+.example-group li {
   margin: 0 1em;
 }
 
-div.example-group a:link, div.example-group a:visited,
-div.example-group a:hover, div.example-group a:active, a#random-example {
+.example-group a:link, .example-group a:visited,
+.example-group a:hover, .example-group a:active, a#random-example {
   text-decoration: none;
   color: #3B5526;
-  font-family: monospace;
+  font-family: 'Droid Sans Mono', monospace;
 }
 
-div.example-group li > span {
-  display: inline-block;
-  float: right;
+.example-group li > span {
+  display: block;
+  padding: 0.125em 0;
   font-style: italic;
+  font-size: 90%;
+}
+
+#random-example, #clear-all-recent {
+  font-size: 90%;
 }
 
 /* General styling */
@@ -321,17 +343,17 @@ p {
 
 button {
   display: block;
+  font-family: 'Open Sans', sans-serif;
 }
 
 /* Graphs */
 
 .graph {
-  width: 400px;
+  max-width: 400px;
   height: 275px;
   margin: 1em auto;
   border: 1px solid #CCC;
-  cursor: ne-resize;
-  padding: 10px;
+  padding: 20px;
 }
 
 .graph:hover {
@@ -339,54 +361,171 @@ button {
 }
 
 svg {
-  cursor: default;
+  cursor: all-scroll;
+}
+
+.help {
+  margin: 0;
+  padding: 0;
+  font-size: smaller;
+  color: #777;
 }
 
 /* Factorization diagrams */
 
 .factorization-diagram p {
   text-align: left;
-  font-family: 'Gentium Book Basic', serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: smaller;
+  margin: 0;
+  padding: 0;
 }
 
-@media screen and (max-device-width: 640px) {
-  div.col {
+/* Documentation */
+
+.document {
+  text-align: left;
+  font-size: 0.9em;
+  font-family: 'Open Sans', Arial, sans-serif;
+}
+
+.document p {
+  margin: 0.25em 0;
+  padding: 0;
+}
+
+.document h1 {
+  font-family: inherit;
+  color: #000;
+  font-size: 1.2em;
+  line-height: 1.25em;
+  margin: 0.25em 0 0.5em 0;
+}
+
+.document pre {
+  background-color: #eeffcc;
+  color: #333333;
+  padding: 5px;
+  border: 1px solid #ac9;
+  border-left: none;
+  border-right: none;
+}
+
+.sympy-live-eval-button {
+  margin-top: 0.25em;
+  color: #FFF;
+  border: 0;
+  background-color: transparent;
+  padding: 0.25em;
+  height: 25px;
+  line-height: 20px;
+  display: block;
+  font-family: Arial;
+  font-size: 13px;
+  border-radius: 5px 5px 0 0;
+  background-color: #3B5526;
+  display: inline-block;
+  margin-bottom: -1px;
+}
+
+.sympy-live-eval-button:hover {
+  color: #81B953;
+  text-decoration: underline;
+}
+
+/* Loading PNG */
+
+.loader {
+  width: 32px;
+  height: 32px;
+  background-size: 256px 32px;
+  background-image: url(/static/images/loader.png);
+  margin: auto;
+
+  -webkit-animation: loader .8s steps(8) infinite;
+  -moz-animation: loader .8s steps(8) infinite;
+  -ms-animation: loader .8s steps(8) infinite;
+  -o-animation: loader .8s steps(8) infinite;
+  animation: loader .8s steps(8) infinite;
+}
+
+@-webkit-keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
+@-moz-keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
+@-ms-keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
+@-o-keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
+@keyframes loader {
+   from { background-position:    0px; }
+     to { background-position: -256px; }
+}
+
+@media screen and (max-device-width: 767px) {
+  .menu {
+    padding: 0.25em 0.5em;
+  }
+  
+  .menu a {
+    font-size: 1.25em;
+  }
+
+  .result_card {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border: 2px solid #DDD;
+    border-radius: 2px;
+    margin: 3px;
+    padding: 5px;
+  }
+  
+  .col {
     width: auto;
     margin: 10px 10px;
     font-size: 125%;
   }
 
-  div.col.recent a.remove {
+  .col.recent a.remove {
     display: inline-block;
   }
 
-  div.col.example div.example-group li {
+  .col.example .example-group li {
     margin: 0.25em 0;
   }
 
-  div.col.example div.example-group li > span {
-    display: block;
-    float: none;
+  .col.example .example-group li > span {
     padding-top: 0.25em;
   }
 
-  div.col.example div.example-group li > span:after {
+  .col.example .example-group li > span:after {
     content: ":";
   }
   
-  div.input form {
+  .input form {
     margin: 0 auto;
     margin-top: 10px;
     width: auto;
   }
 
-  div.input input[type="text"] {
+  .input input[type="text"] {
     margin: 0 auto;
     width: 90%;
   }
 
-  div.input input[type="submit"] {
+  .input input[type="submit"] {
     width: 50%;
     height: 150%;
     line-height: 150%;
@@ -396,16 +535,16 @@ svg {
     border-radius: 0;
   }
 
-  div.result {
+  .result {
     width: 100%;
     margin: 10px auto;
   }
 
-  div.menu_right {
+  .menu_right {
     display: inline;
   }
 
-  div#mobile-keyboard button {
+  #mobile-keyboard button {
     width: 2em;
     font-size: 1.25em;
   }
@@ -413,52 +552,47 @@ svg {
 
 /* Tablets and base for desktops */
 @media screen and (min-device-width: 768px) {
-  div.result {
+  .result {
     width: 600px;
     margin: 10px auto;
   }
 
-  div.main {
+  .main {
     width: 740px;
     margin: 10px auto;
   }
   
-  div.col {
+  .col {
     width: 360px;
   }
 
-  div.col.recent {
+  .col.recent {
     float: left;
     height: 100%;
   }
 
-  div.col.recent a.remove {
+  .col.recent a.remove {
     display: inline-block;
   }
 
-  div.col.example {
+  .col.example {
     margin: auto;
   }
 
-  div.col.recent~div.col.example {
+  .col.recent~.col.example {
     float: right;
     height: 100%;
   }
 
-  div.col.example div.example-group li {
+  .col.example div.example-group li {
     margin: 0.25em 0;
   }
 
-  div.col.example div.example-group li > span {
-    display: block;
-    float: none;
-  }
-
-  div.col.example div.example-group li > span:after {
+  .col.example .example-group li > span:after {
     content: ":";
   }
 
-  div.menu_right {
+  .menu_right {
     float: right;
     display: block;
   }
@@ -470,21 +604,20 @@ svg {
 }
 
 @media screen and (min-device-width: 1280px) {
-  div.main {
+  .main {
     width: 800px;
     margin: 10px auto;
   }
 
-  div.col {
+  .col {
     width: 390px;
   }
 
-  div.col.example div.example-group li {
+  .col.example .example-group li {
     margin: 0;
   }
 
-  div.col.example div.example-group li > span {
-    display: block;
-    float: right;
+  .col.recent a.remove {
+    display: none;
   }
 }
