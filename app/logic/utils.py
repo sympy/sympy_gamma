@@ -139,3 +139,90 @@ def removeSymPy(string):
         return re_calls.sub(re_calls_sub, string)
     except IndexError:
         return string
+
+from sympy.parsing.sympy_parser import AppliedFunction, ParenthesisGroup,\
+    _apply_functions, _split_symbols, _function_exponents,\
+    _implicit_application, OP, NAME, _flatten
+
+
+def _group_parentheses(tokens, local_dict, global_dict):
+    """Group tokens between parentheses with ParenthesisGroup.
+
+    Also processes those tokens recursively.
+
+    """
+    result = []
+    stacks = []
+    stacklevel = 0
+    for token in tokens:
+        if token[0] == OP:
+            if token[1] == '(':
+                stacks.append(ParenthesisGroup([]))
+                stacklevel += 1
+            elif token[1] == ')':
+                stacks[-1].append(token)
+                stack = stacks.pop()
+
+                if len(stacks) > 0:
+                    # We don't recurse here since the upper-level stack
+                    # would reprocess these tokens
+                    stacks[-1].extend(stack)
+                else:
+                    # Recurse here to handle nested parentheses
+                    # Strip off the outer parentheses to avoid an infinite loop
+                    inner = stack[1:-1]
+                    inner = custom_implicit_transformation(inner,
+                                                           local_dict,
+                                                           global_dict)
+                    parenGroup = [stack[0]] + inner + [stack[-1]]
+                    result.append(ParenthesisGroup(parenGroup))
+                stacklevel -= 1
+                continue
+        if stacklevel:
+            stacks[-1].append(token)
+        else:
+            result.append(token)
+    return result
+
+def _implicit_multiplication(tokens, local_dict, global_dict):
+    result = []
+    for tok, nextTok in zip(tokens, tokens[1:]):
+        result.append(tok)
+        if (isinstance(tok, AppliedFunction) and
+                isinstance(nextTok, AppliedFunction)):
+            result.append((OP, '*'))
+        elif (isinstance(tok, AppliedFunction) and
+              nextTok[0] == OP and nextTok[1] == '('):
+            # Applied function followed by an open parenthesis
+            if len(tok.args[1][1]) == 3:
+                continue
+            result.append((OP, '*'))
+        elif (tok[0] == OP and tok[1] == ')' and
+              isinstance(nextTok, AppliedFunction)):
+            # Close parenthesis followed by an applied function
+            result.append((OP, '*'))
+        elif (tok[0] == OP and tok[1] == ')' and
+              nextTok[0] == NAME):
+            # Close parenthesis followed by an implicitly applied function
+            result.append((OP, '*'))
+        elif (tok[0] == nextTok[0] == OP
+              and tok[1] == ')' and nextTok[1] == '('):
+            # Close parenthesis followed by an open parenthesis
+            result.append((OP, '*'))
+        elif (isinstance(tok, AppliedFunction) and nextTok[0] == NAME):
+            # Applied function followed by implicitly applied function
+            result.append((OP, '*'))
+    result.append(tokens[-1])
+    return result
+
+def custom_implicit_transformation(result, local_dict, global_dict):
+    for step in (_group_parentheses,
+                 _apply_functions,
+                 _split_symbols,
+                 _function_exponents,
+                 _implicit_application,
+                 _implicit_multiplication):
+        result = step(result, local_dict, global_dict)
+
+    result = _flatten(result)
+    return result

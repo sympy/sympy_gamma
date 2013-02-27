@@ -1,6 +1,6 @@
 import sys
 import collections
-from utils import Eval, latexify, topcall, removeSymPy
+from utils import Eval, latexify, topcall, removeSymPy, custom_implicit_transformation
 from resultsets import find_result_set, fake_sympy_function, \
     get_card, FakeSymPyFunction
 from sympy import latex, series, sympify, solve, Derivative, \
@@ -8,8 +8,7 @@ from sympy import latex, series, sympify, solve, Derivative, \
 import sympy
 from sympy.core.function import FunctionClass
 from sympy.parsing.sympy_parser import stringify_expr, eval_expr, \
-    standard_transformations, convert_xor, implicit_multiplication_application, \
-    TokenError
+    standard_transformations, convert_xor, TokenError
 
 PREEXEC = """from __future__ import division
 from sympy import *
@@ -79,7 +78,7 @@ class SymPyGamma(object):
         if not len(s):
             return None
 
-        transformations = standard_transformations + (convert_xor, implicit_multiplication_application)
+        transformations = standard_transformations + (convert_xor, custom_implicit_transformation)
         local_dict = {
             'integrate': sympy.Integral,
             'diff': sympy.Derivative,

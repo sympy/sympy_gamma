@@ -241,7 +241,7 @@ def is_trig(input_evaluated):
         return False
 
 def is_uncalled_function(input_evaluated):
-    return isinstance(input_evaluated, FunctionClass)
+    return hasattr(input_evaluated, '__call__') and not isinstance(input_evaluated, sympy.Basic)
 
 
 # Functions to convert input and extract variable used
