@@ -1,4 +1,5 @@
 function setupDocumentation() {
+    return;
     $('.document').each(function() {
         var docs = $(this);
 
