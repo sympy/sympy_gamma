@@ -136,6 +136,9 @@ $(document).ready(function() {
         setupSavedQueries();
 
         setupFactorization();
+
+        // TODO: finish integration with Sphinx
+        // setupDocumentation();
     });
 
     if (screen.width <= 1024) {

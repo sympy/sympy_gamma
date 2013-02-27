@@ -385,6 +385,8 @@ svg {
 
 .document {
   text-align: left;
+  font-size: 0.9em;
+  font-family: 'Open Sans', Arial, sans-serif;
 }
 
 .document p {
@@ -395,8 +397,40 @@ svg {
 .document h1 {
   font-family: inherit;
   color: #000;
-  font-size: 1.25em;
+  font-size: 1.2em;
   line-height: 1.25em;
+  margin: 0.25em 0 0.5em 0;
+}
+
+.document pre {
+  background-color: #eeffcc;
+  color: #333333;
+  padding: 5px;
+  border: 1px solid #ac9;
+  border-left: none;
+  border-right: none;
+}
+
+.sympy-live-eval-button {
+  margin-top: 0.25em;
+  color: #FFF;
+  border: 0;
+  background-color: transparent;
+  padding: 0.25em;
+  height: 25px;
+  line-height: 20px;
+  display: block;
+  font-family: Arial;
+  font-size: 13px;
+  border-radius: 5px 5px 0 0;
+  background-color: #3B5526;
+  display: inline-block;
+  margin-bottom: -1px;
+}
+
+.sympy-live-eval-button:hover {
+  color: #81B953;
+  text-decoration: underline;
 }
 
 /* Loading PNG */
