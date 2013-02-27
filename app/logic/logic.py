@@ -103,10 +103,9 @@ class SymPyGamma(object):
 
     def prepare_cards(self, parsed, evaluator, evaluated, var):
         input_repr = repr(evaluated)
-        tc = topcall(parsed)
+        first_func_name = topcall(parsed)
 
-        if tc:
-            first_func_name = topcall(parsed).func.id
+        if first_func_name:
             first_func = evaluator.get(first_func_name)
             is_function_not_class = (first_func and not isinstance(first_func, FunctionClass)
                                      and first_func_name and first_func_name[0].islower())
