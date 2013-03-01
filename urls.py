@@ -7,7 +7,8 @@ from django.conf.urls.defaults import *
 import os.path
 p = os.path.join(os.path.dirname(__file__), 'media/')
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     # Example:
     # (r'^notebook/', include('notebook.foo.urls')),
     (r'^$', 'app.views.index'),
@@ -15,10 +16,9 @@ urlpatterns = patterns('',
     (r'^input/', 'app.views.input'),
     (r'^about/$', 'app.views.about'),
 
-    (r'^media_files/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': p}),
+    (r'user/remove/(?P<qid>.*)$', 'app.views.remove_query'),
 
-    (r'user/remove/(?P<qid>.*)$', 'app.views.remove_query')
+    (r'card/(?P<card_name>\w*)$', 'app.views.eval_card')
 
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs'

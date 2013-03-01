@@ -1,3 +1,6 @@
 [submodule "sympy"]
 	path = sympy
 	url = git://github.com/sympy/sympy.git
+[submodule "docutils"]
+	path = docutils
+	url = git://repo.or.cz/docutils.git

@@ -1,77 +1,7 @@
-// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-(function() {
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame =
-            window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-    }
-
-    if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                                       timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
-
-    if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
-}());
-
-// http://www.quirksmode.org/js/cookies.html
-// Used under terms at http://www.quirksmode.org/about/copyright.html
-function createCookie(name,value,days) {
-	if (days) {
-		var date = new Date();
-		date.setTime(date.getTime()+(days*24*60*60*1000));
-		var expires = "; expires="+date.toGMTString();
-	}
-	else var expires = "";
-	document.cookie = name+"="+value+expires+"; path=/";
-}
-
-function readCookie(name) {
-	var nameEQ = name + "=";
-	var ca = document.cookie.split(';');
-	for(var i=0;i < ca.length;i++) {
-		var c = ca[i];
-		while (c.charAt(0)==' ') c = c.substring(1,c.length);
-		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-	}
-	return null;
-}
-
-function eraseCookie(name) {
-	createCookie(name,"",-1);
-}
-
-var __extend = function(parent, child) {
-    for (var key in parent) {
-        if (Object.hasOwnProperty.call(parent, key)) {
-            child[key] = parent[key];
-        }
-    }
-
-    function ctor() {
-        this.constructor = child;
-    }
-
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor();
-    child.__super__ = parent.prototype;
-
-    return child;
-}
-
 var PlotBackend = (function() {
     function PlotBackend(plot, container) {
         this.plot = plot;
+        this.plot.backend = this;
         this._container = container;
     }
 
@@ -209,12 +139,27 @@ var SVGBackend = (function(_parent) {
             this._xGroup.attr('opacity', 1);
             this._yGroup.attr('opacity', 1);
 
+            var yPos = this.plot.yScale(0);
+            if (yPos > this.plot.height() - 30) {
+                yPos = this.plot.height() - 30;
+            }
+            else if (yPos < 40) {
+                yPos = 40;
+            }
             this._xGroup.call(this._xAxis);
             this._xGroup.attr('transform',
-                              'translate(' + 0 + ',' + this.plot.yScale(0) + ')');
+                              'translate(' + 0 + ',' + yPos + ')');
+
+            var xPos = this.plot.xScale(0);
+            if (xPos > this.plot.width() - 30) {
+                xPos = this.plot.width() - 30;
+            }
+            else if (xPos < 0) {
+                xPos = 0;
+            }
             this._yGroup.call(this._yAxis);
             this._yGroup.attr('transform',
-                              'translate(' + this.plot.width() / 2 + ',' + 0 + ')');
+                              'translate(' + xPos + ',' + 0 + ')');
 
 
             var color = d3.rgb(50,50,50);
@@ -237,26 +182,29 @@ var SVGBackend = (function(_parent) {
             this._gridX.attr('opacity', 1);
             this._gridY.attr('opacity', 1);
 
+            this._gridX.data(this.plot.xScale.ticks(10));
+            this._gridY.data(this.plot.yScale.ticks(10));
+
             var xScale = this.plot.xScale;
             var yScale = this.plot.yScale;
 
             this._gridX
                 .attr('x1', xScale)
-                .attr('y1', yScale(this.plot.yMax()))
+                .attr('y1', yScale(this.plot.yTop()))
                 .attr('x2', xScale)
-                .attr('y2', yScale(this.plot.yMin()))
+                .attr('y2', yScale(this.plot.yBottom()))
                 .attr('fill', 'none')
                 .attr('stroke-dasharray', '1, 3')
-                .attr('stroke', d3.rgb(175, 175, 175));
+                .attr('stroke', d3.rgb(125, 125, 125));
 
             this._gridY
-                .attr('x1', xScale(this.plot.xMin()))
+                .attr('x1', xScale(this.plot.xLeft()))
                 .attr('y1', yScale)
-                .attr('x2', xScale(this.plot.xMax()))
+                .attr('x2', xScale(this.plot.xRight()))
                 .attr('y2', yScale)
                 .attr('fill', 'none')
                 .attr('stroke-dasharray', '1, 3')
-                .attr('stroke', d3.rgb(175, 175, 175));
+                .attr('stroke', d3.rgb(125, 125, 125));
         }
         else {
             this._gridX.attr('opacity', 0);
@@ -266,7 +214,8 @@ var SVGBackend = (function(_parent) {
 
     SVGBackend.prototype.drawPoints = function() {
         if (this.plot.isOptionEnabled('points')) {
-            this._points
+            this._points = this._pointGroup.selectAll('circle')
+                .data(this.plot.xValues())
                 .attr('opacity', 1)
                 .attr('cx', $.proxy(function(value) {
                     return this.plot.xScale(value);
@@ -276,6 +225,7 @@ var SVGBackend = (function(_parent) {
                 }, this))
                 .attr('r', 1.5)
                 .attr('fill', d3.rgb(0, 100, 200));
+            this._points.enter().append('circle')
         }
         else {
             this._points.attr('opacity', 0);
@@ -308,7 +258,8 @@ var SVGBackend = (function(_parent) {
                 offsetY = e.pageY - $(e.target).offset().top;
             }
             var xval = (((offsetX - (this.plot.width() / 2)) / this.plot.width()) *
-                        (this.plot.xMax() - this.plot.xMin()));
+                        (this.plot.xRight() - this.plot.xLeft()));
+            xval += (this.plot.xRight() + this.plot.xLeft()) / 2;
             var yval = this.plot.funcValue(xval);
 
             if ($.isNumeric(yval)) {
@@ -316,7 +267,7 @@ var SVGBackend = (function(_parent) {
                 this._tracePoint.attr('cy', this.plot.yScale(yval));
 
                 this._traceText.text(variable + ": " + format(xval) + ", " +
-                                    output_variable + ": " + format(yval));
+                                     output_variable + ": " + format(yval));
             }
             else {
                 this._tracePoint.attr('cy', -1000);
@@ -339,6 +290,62 @@ var SVGBackend = (function(_parent) {
         }, this));
     };
 
+    SVGBackend.prototype.initDraggingZooming = function() {
+        var zoom = d3.behavior.zoom();
+        zoom.x(this.plot.xScale);
+        zoom.y(this.plot.yScale);
+        zoom.on('zoom', $.proxy(function() {
+            this.draw();
+
+            // TODO: zoom triggers reload of all data?
+
+            var xValues = this.plot.xValues();
+            var yValues = this.plot.yValues();
+
+            var handleDone = $.proxy(function(data) {
+                if (typeof data.output == "undefined") {
+                    // TODO: handle error
+                    return;
+                }
+                var el = $(data.output);
+                var newXValues = el.data('xvalues');
+                var newYValues = el.data('yvalues');
+
+                // TODO find better epsilon
+                if (Math.abs(newXValues[0] - this.plot.xMax()) < 0.01) {
+                    newXValues.shift();
+                    newYValues.shift();
+                    this.plot.setData(xValues.concat(newXValues),
+                                      yValues.concat(newYValues));
+                    this.draw();
+                }
+                else if (Math.abs(
+                    newXValues[newXValues.length - 1] - this.plot.xMin()
+                ) < 0.01) {
+                    newXValues.pop();
+                    newYValues.pop();
+                    this.plot.setData(newXValues.concat(xValues),
+                                      newYValues.concat(yValues));
+                    this.draw();
+                }
+            }, this);
+
+            // TODO: if function available, some sort of interpolation while
+            // waiting for results?
+            var xWidth = Math.abs(this.plot.xRight() - this.plot.xLeft());
+            if (this.plot.xLeft() < this.plot.xMin()) {
+                this.plot.fetchData(this.plot.xMin() - Math.floor(xWidth / 2), this.plot.xMin()).
+                    done(handleDone);
+            }
+            if (this.plot.xRight() > this.plot.xMax()) {
+                this.plot.fetchData(this.plot.xMax(), this.plot.xMax() + Math.ceil(xWidth / 2)).
+                    done(handleDone);
+            }
+        }, this));
+
+        this._svg.call(zoom);
+    };
+
     SVGBackend.prototype.draw = function() {
         this.drawAxes();
         this.drawPoints();
@@ -359,17 +366,18 @@ var SVGBackend = (function(_parent) {
 })(PlotBackend);
 
 var Plot2D = (function() {
-    function Plot2D(func, xValues, yValues, width, height) {
+    function Plot2D(func, card, xValues, yValues, width, height) {
         this._func = func;
+        this._card = card;
         this._width = width;
         this._height = height;
 
-        this._xValues = xValues;
-        this._xMin = d3.min(xValues);
-        this._xMax = d3.max(xValues);
-        this._yValues = yValues;
-        this._yMin = d3.min(yValues);
-        this._yMax = d3.max(yValues);
+        this._xLeft = -10;
+        this._xRight = 10;
+
+        this.setData(xValues, yValues);
+
+        this._fetchRequestPending = false;
 
         this._plotOptions = {
             'grid': true,
@@ -403,6 +411,7 @@ var Plot2D = (function() {
 
     addGetterSetter(Plot2D, 'width');
     addGetterSetter(Plot2D, 'height');
+    addGetterSetter(Plot2D, 'card');
     addGetterSetter(Plot2D, 'xValues');
     addGetterSetter(Plot2D, 'yValues');
     addGetterSetter(Plot2D, 'xMin');
@@ -410,15 +419,73 @@ var Plot2D = (function() {
     addGetterSetter(Plot2D, 'yMin');
     addGetterSetter(Plot2D, 'yMax');
 
+    // TODO setters don't seem to work properly
+    Plot2D.prototype.xLeft = function(value) {
+        if (typeof value !== "undefined") {
+            this.xScale.domain([value, this.xRight()]);
+        }
+        return this.xScale.domain()[0];
+    };
+
+    Plot2D.prototype.xRight = function(value) {
+        if (typeof value !== "undefined") {
+            this.xScale.domain([this.xLeft(), value]);
+        }
+        return this.xScale.domain()[1];
+    };
+
+    Plot2D.prototype.yBottom = function(value) {
+        if (typeof value !== "undefined") {
+            this.xScale.domain([value, this.yTop()]);
+        }
+        return this.yScale.domain()[0];
+    };
+
+    Plot2D.prototype.yTop = function(value) {
+        if (typeof value !== "undefined") {
+            this.xScale.domain([this.yBottom(), value]);
+        }
+        return this.yScale.domain()[1];
+    };
+
+    Plot2D.prototype.setData = function(xValues, yValues) {
+        this._xValues = xValues;
+        this._xMin = d3.min(xValues);
+        this._xMax = d3.max(xValues);
+        this._yValues = yValues;
+        this._yMin = d3.min(yValues);
+        this._yMax = d3.max(yValues);
+    };
+
+    Plot2D.prototype.fetchData = function(xMin, xMax) {
+        var card = this.card();
+
+        if (this._fetchRequestPending) {
+            // TODO enqueue another request if xmin/max beyond this one
+            var result = (new $.Deferred()).reject();
+            return result;
+        }
+
+        this._fetchRequestPending = true;
+
+        card.parameter('xmin', xMin);
+        card.parameter('xmax', xMax);
+
+        return card.evaluate("f", "f").always($.proxy(function() {
+            this._fetchRequestPending = false;
+        }, this));
+    };
+
+    var OFFSET_Y = 25;
+    var MARGIN_TOP = 25;
+
     Plot2D.prototype.generateScales = function() {
-        var OFFSET_Y = 25;
-        var MARGIN_TOP = 25;
         this.xScale = d3.scale.linear()
-            .domain([this._xMin, this._xMax])
+            .domain([-10, 10])
             .range([10, this.width() - 10]);
 
-        var ymin = this.yMin(), ymax = this.yMax();
         var yValues = this.yValues();
+        var ybottom = this.yMin(), ytop = this.yMax();
         var ypos = [];
         var yneg = [];
 
@@ -434,22 +501,27 @@ var Plot2D = (function() {
         var ynegmean = Math.abs(d3.mean(yneg));
 
         // Prevent asymptotes from dominating the graph
-        if (Math.abs(ymax) >= 10 * yposmean) {
-            ymax = yposmean;
+        if (Math.abs(ytop) >= 10 * yposmean) {
+            ytop = yposmean;
         }
-        if (Math.abs(ymin) >= 10 * ynegmean) {
-            ymin = -ynegmean;
+        if (Math.abs(ybottom) >= 10 * ynegmean) {
+            ybottom = -ynegmean;
         }
 
         if (this.isOptionEnabled('square')) {
-            ymax = d3.max([Math.abs(ymax), Math.abs(ymin)]);
-            ymin = -ymax;
+            ytop = d3.max([Math.abs(ytop), Math.abs(ybottom)]);
+            ybottom = -yTop;
         }
 
         this.yScale = d3.scale.linear()
-            .domain([Math.ceil(ymax), Math.floor(ymin)])
+            .domain([ytop, ybottom])
             .range([OFFSET_Y + MARGIN_TOP, this.height() - OFFSET_Y]);
     };
+
+    Plot2D.prototype.resize = function() {
+        this.xScale.range([10, this.width() - 10]);
+        this.yScale.range([OFFSET_Y + MARGIN_TOP, this.height() - OFFSET_Y]);
+    }
 
     Plot2D.prototype.drawOption = function(option, value) {
         this._plotOptions[option] = value;
@@ -469,7 +541,7 @@ var Plot2D = (function() {
 })();
 
 function setupGraphs() {
-    $('.graph').each(function(){
+    $('.graph').each(function() {
         var WIDTH = 400;
         var HEIGHT = 275;
 
@@ -489,13 +561,17 @@ function setupGraphs() {
         var xvalues = $(this).data('xvalues');
         var yvalues = $(this).data('yvalues');
 
-        var plot = new Plot2D(f, xvalues, yvalues, WIDTH, HEIGHT);
+        var card = $(this).parents('.result_card').data('card');
+
+        var plot = new Plot2D(f, card, xvalues, yvalues, WIDTH, HEIGHT);
         var backend = new SVGBackend(plot, $(this)[0]);
 
         var resizing = false;
         var container = $(this);
         var originalWidth = $(this).width();
         var originalHeight = $(this).height();
+        var originalYTop = plot.yTop();
+        var originalYBottom = plot.yBottom();
         $(this).mousedown(function(e) {
             var offsetX = e.offsetX;
             if (typeof e.offsetX == "undefined") {
@@ -574,6 +650,7 @@ function setupGraphs() {
                     newW = originalWidth;
                 }
                 container.width(newW);
+                container.css('max-width', newW + 'px');
 
                 if (e.pageY < offset.top + 30) {
                     newH = originalHeight + offset.top - e.pageY;
@@ -589,7 +666,7 @@ function setupGraphs() {
 
                 plot.width(newW);
                 plot.height(newH);
-                plot.generateScales();
+                plot.resize();
                 backend.resize();
                 backend.generateAxes();
                 backend.draw();
@@ -601,6 +678,7 @@ function setupGraphs() {
 
         backend.draw();
         backend.initTracing(variable, output_variable);
+        backend.initDraggingZooming();
 
         var moreButton = $('<button>More...</button>')
             .addClass('card_options_toggle');
@@ -611,7 +689,7 @@ function setupGraphs() {
             return $('<div/>').append([
                 $('<input type="checkbox" id="plot-' + opt + '" />')
                     .click(function(e) {
-                        plot.drawOption(opt,  $(e.target).prop('checked'));
+                        plot.drawOption(opt, $(e.target).prop('checked'));
                         backend.draw();
                     })
                     .prop('checked', plot.isOptionEnabled(opt)),
@@ -634,17 +712,37 @@ function setupGraphs() {
             ]),
             $('<div/>').append($('<h2>Plot Options</h2>')).append(options),
             $('<div/>').append([
-                $('<button>Reset Viewport</button>')
+                $('<button>Reset</button>')
                     .click(function() {
                         container.width(originalWidth);
                         container.height(originalHeight);
                         plot.drawOption('square', false);
                         plot.width(originalWidth);
                         plot.height(originalHeight);
-                        plot.generateScales();
                         backend.resize();
+                        plot.resize();
+                        plot.xScale.domain([-10, 10]);
+                        plot.yScale.domain([originalYBottom, originalYTop]);
                         backend.generateAxes();
                         backend.draw();
+                        backend.initDraggingZooming();
+                    }),
+                $('<button>Square Viewport</button>')
+                    .click(function() {
+                        var side = d3.max([container.width(), container.height()]);
+                        container.width(side);
+                        container.height(side);
+                        plot.drawOption('square', true);
+                        plot.width(side);
+                        plot.height(side);
+
+                        plot.yTop(plot.xRight());
+                        plot.yBottom(plot.xLeft());
+                        backend.resize();
+                        plot.resize();
+                        backend.generateAxes();
+                        backend.draw();
+                        backend.initDraggingZooming();
                     })
             ])
         ]);
@@ -653,142 +751,10 @@ function setupGraphs() {
         moreButton.click(function() {
             moreContent.slideToggle();
         });
+        $(this).parents('.result_card').append([
+            $('<p>Drag plot to pan, (shift-)double-click to zoom, drag edges to resize</p>')
+                .addClass('help')
+        ]);
         $(this).parents('.result_card').append(moreButton).append(moreContent);
     });
 }
-
-function setupExamples() {
-    var delay = 0;
-    $('.example-group div.contents').each(function() {
-        var contents = $(this);
-        var header = $(this).siblings('h3');
-        var wasOpen = readCookie(header.html());
-        var visitedBefore = readCookie('visitedBefore');
-
-        if (!visitedBefore) {
-            createCookie('visitedBefore', true, 365);
-        }
-
-        if (!wasOpen || wasOpen === 'false') {
-            if (!visitedBefore) {
-                contents.delay(500 + delay).slideUp(500);
-                delay += 100;
-            }
-            else {
-                contents.hide();
-            }
-        }
-        else {
-            header.addClass('shown');
-        }
-    });
-
-    $('.example-group h3').click(function(e) {
-        var header = $(e.target);
-        var contents = header.siblings('div.contents');
-
-        contents.stop(false, true).slideToggle(500, function() {
-            createCookie(header.html(), contents.is(':visible'), 365);
-        });
-        header.toggleClass('shown');
-    });
-
-    $('#random-example').click(function(e) {
-        var examples = $('.example-group a');
-        var index = Math.floor(Math.random() * examples.length);
-        window.location = $(examples[index]).attr('href');
-    });
-}
-
-function setupSavedQueries() {
-    $('div.col.recent a.remove').click(function(e) {
-        var link = $(e.target);
-        e.preventDefault();
-        link.parent().slideUp(300);
-        $.get(link.attr('href'));
-    });
-
-    $('#clear-all-recent').click(function() {
-        $('div.col.recent a.remove').click();
-    })
-}
-
-function setupMobileKeyboard() {
-    var keyboard = $('<div id="mobile-keyboard"/>');
-
-    keyboard.append([
-        $('<button data-key="+">+</button>'),
-        $('<button data-key="-">-</button>'),
-        $('<button data-key="*">*</button>'),
-        $('<button data-key="/">/</button>'),
-        $('<button data-key="()">()</button>'),
-        $('<button data-offset="-1">&lt;</button>'),
-        $('<button data-offset="1">&gt;</button>')
-    ]);
-
-    var h1height = $('.input h1').height();
-
-    $('.input').prepend(keyboard);
-    $('form input[type=text]').focus(function() {
-        keyboard.find('button').height(h1height);
-        keyboard.slideDown();
-        $('.input h1').slideUp();
-    });
-    $('form input[type=text]').blur(function() {
-        setTimeout(function() {
-            if (!(document.activeElement.tagName.toLowerCase() == 'input' &&
-                  document.activeElement.getAttribute('type') == 'text')) {
-                keyboard.slideUp();
-                $('.input h1').slideDown();
-            }
-        }, 100);
-    });
-
-    $('#mobile-keyboard button').click(function(e) {
-        $('#mobile-keyboard').stop().show().height(h1height);
-        $('.input h1').stop().hide();
-
-        var input = $('.input input[type=text]')[0];
-        var start = input.selectionStart;
-        if ($(this).data('key')) {
-            var text = input.value;
-
-            input.value = (text.substring(0, start) +
-                           $(this).data('key') + text.substring(start));
-            input.setSelectionRange(start + 1, start + 1);
-        }
-        else if ($(this).data('offset')) {
-            var offset = parseInt($(this).data('offset'), 10);
-            input.setSelectionRange(start + offset, start + offset);
-        }
-    });
-}
-
-function setupFactorization() {
-    $('div.factorization-diagram').each(function() {
-        var primes = $(this).data('primes');
-        var f = new FactorDiagram(d3.select($(this).children('div')[0]), primes);
-        f.draw();
-    });
-}
-
-$(document).ready(function() {
-    $('.cell_output:not(:has(script))').css('opacity', 1);
-    MathJax.Hub.Register.MessageHook("New Math", function (message) {
-        var script = MathJax.Hub.getJaxFor(message[1]).SourceElement();
-        $(script).parents('.cell_output').animate({
-            opacity: 1
-        }, 700);
-    });
-
-    setupGraphs();
-
-    setupExamples();
-    setupSavedQueries();
-
-    setupFactorization();
-
-    if (screen.width <= 1024) {
-        setupMobileKeyboard();
-    }
-});

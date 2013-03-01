@@ -6,8 +6,8 @@
     {% block content %}
         <div class="input">
             <h1><a href="/">
-                    <img src="{{ MEDIA_URL }}/images/logo.png"
-                         alt="SymPy Gamma logo" width="50" height="33" />
+                    <img src="{{ MEDIA_URL }}images/logo.png"
+                         alt="SymPy Gamma logo" width="75" height="50" />
                     SymPy Gamma
             </a></h1>
             <form action="/input/" method="GET">
@@ -31,6 +31,20 @@
                             </div>
                             {% endif %}
                             {{ cell.output|safe }}
+                        </div>
+                    {% endif %}
+                    {% if cell.card %}
+                        <div class="cell_output"
+                             data-card-name="{{ cell.card|safe }}"
+                             data-variable="{{ cell.var|escape }}"
+                             data-expr="{{ input|escape }}"
+                             data-parameters="{{ cell.parameters|safe }}">
+                            {% if cell.pre_output %}
+                            <div class="cell_pre_output">
+                                <script type="math/tex"> {{cell.pre_output|safe }} = </script>
+                            </div>
+                            {% endif %}
+                            <div class="loader"></div>
                         </div>
                     {% else %}
                         {% comment %}Ugly hack since Django 1.3 (latest
