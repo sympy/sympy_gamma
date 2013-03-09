@@ -137,6 +137,8 @@ $(document).ready(function() {
 
         setupFactorization();
 
+        setupSteps();
+
         // TODO: finish integration with Sphinx
         // setupDocumentation();
     });

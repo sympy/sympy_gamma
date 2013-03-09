@@ -433,6 +433,85 @@ svg {
   text-decoration: underline;
 }
 
+/* Derivative steps */
+
+.diffsteps {
+  text-align: left;
+  font-size: 0.9em;
+  font-family: 'Open Sans', Arial, sans-serif;
+  max-width: 1600px;
+  overflow: auto;
+  -webkit-transition: all 800ms ease-in-out;
+  -moz-transition: all 800ms ease-in-out;
+  -ms-transition: all 800ms ease-in-out;
+  -o-transition: all 800ms ease-in-out;
+  transition: all 800ms ease-in-out;
+}
+
+.diffsteps li {
+  min-width: 300px;
+}
+
+/* colors from http://gamedev.stackexchange.com/questions/46463 */
+.diffsteps ol {
+  list-style-type: decimal;
+  border-left: 1px solid #FF8080;
+  padding: 0 30px;
+}
+.diffsteps ol h2 {
+  border-bottom: 1px solid #FF8080;
+}
+
+.diffsteps ol ol {
+  list-style-type: upper-alpha;
+  border-left: 1px solid #92D169;
+}
+
+.diffsteps ol ol h2 {
+  border-bottom: 1px solid #92D169;
+}
+
+.diffsteps ol ol ol {
+  list-style-type: upper-roman;
+  border-left: 1px solid #78BEF0;
+}
+
+.diffsteps ol ol ol h2 {
+  border-bottom: 1px solid #78BEF0;
+}
+
+.diffsteps ol ol ol ol {
+  list-style-type: lower-alpha;
+  border-left: 1px solid #CC66C9;
+}
+
+.diffsteps ol ol ol ol h2 {
+  border-bottom: 1px solid #CC66C9;
+}
+
+.diffsteps ol ol ol ol ol {
+  list-style-type: lower-roman;
+  border-left: 1px solid #F2A279;
+}
+
+.diffsteps ol ol ol ol ol h2 {
+  border-bottom: 1px solid #F2A279;
+}
+
+.collapsible > h2 {
+  cursor: pointer;
+  padding: 0;
+  font-size: 1em;
+}
+
+.collapsible > h2:before {
+  content: "-";
+}
+
+.collapsible > h2.shown:before {
+  content: "+";
+}
+
 /* Loading PNG */
 
 .loader {

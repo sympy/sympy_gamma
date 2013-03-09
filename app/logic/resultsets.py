@@ -4,6 +4,7 @@ import sympy
 from sympy.core.function import FunctionClass
 import docutils.core
 from operator import itemgetter
+import diffsteps
 
 
 class FakeSymPyFunction(object):
@@ -308,6 +309,9 @@ def default_variable(input_evaluated, variable):
 def format_nothing(arg, formatter):
     return arg
 
+def format_diffsteps(arg, formatter):
+    return '<div class="diffsteps">{}</div>'.format(arg)
+
 def format_long_integer(line, integer, variable):
     intstr = str(integer)
     if len(intstr) > 100:
@@ -447,6 +451,9 @@ def eval_factorization_diagram(evaluator, variable, parameters=None):
 def eval_integral(evaluator, variable, parameters=None):
     return sympy.integrate(evaluator.get("input_evaluated"), *variable)
 
+def eval_diffsteps(evaluator, variable, paramters=None):
+    return diffsteps.steps(evaluator.get("input_evaluated"), variable)
+
 # http://www.python.org/dev/peps/pep-0257/
 def trim(docstring):
     if not docstring:
@@ -504,6 +511,13 @@ all_cards = {
     'diff': ResultCard("Derivative",
                        "diff(%s, {_var})",
                        sympy.Derivative),
+
+    'diffsteps': FakeResultCard(
+        "Derivative Steps",
+        "diff(%s, {_var})",
+        no_pre_output,
+        format_output_function=format_diffsteps,
+        eval_method=eval_diffsteps),
 
     'series': ResultCard(
         "Series expansion around 0",
@@ -626,7 +640,7 @@ all_cards['trig_alternate'] = MultiResultCard(
 
 result_sets = [
     (is_integral, extract_integrand, ['integral_fake']),
-    (is_derivative, extract_derivative, ['diff', 'graph']),
+    (is_derivative, extract_derivative, ['diff', 'diffsteps', 'graph']),
     (is_fake_function('series'), extract_series, ['series_fake']),
     (is_fake_function('solve'), extract_solve, ['solve_fake']),
     (is_fake_function('solve_poly_system'), extract_solve_poly_system,
