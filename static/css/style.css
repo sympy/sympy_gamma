@@ -469,11 +469,6 @@ svg {
   opacity: 0.95
 }
 
-.fullscreen .diffsteps {
-  margin: 5em auto;
-  width: 700px;
-}
-
 .diffsteps li {
   min-width: 300px;
 }
@@ -528,6 +523,7 @@ svg {
   cursor: pointer;
   padding: 0;
   font-size: 1em;
+  margin: 0.25em 0;
 }
 
 .collapsible > h2:before {
@@ -725,5 +721,10 @@ svg {
 
   .col.recent a.remove {
     display: none;
+  }
+
+  .fullscreen .diffsteps {
+    margin: 2em auto;
+    width: 700px;
   }
 }
