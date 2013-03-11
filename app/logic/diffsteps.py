@@ -2,6 +2,7 @@ import sympy
 import collections
 import itertools
 
+from sympy.core.function import AppliedUndef
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
 
 def concat(l):
@@ -19,6 +20,8 @@ DivRule = Rule("DivRule", "numerator denominator numerstep denomstep")
 ChainRule = Rule("ChainRule", "substep inner innerstep")
 TrigRule = Rule("TrigRule", "f")
 ExpRule = Rule("ExpRule", "f base")
+LogRule = Rule("LogRule", "arg base")
+FunctionRule = Rule("FunctionRule")
 AlternativeRule = Rule("AlternativeRule", "alternatives")
 DontKnowRule = Rule("DontKnowRule")
 RewriteRule = Rule("RewriteRule", "rewritten substep")
@@ -95,6 +98,18 @@ def diffsteps(f, symbol=sympy.Symbol("x")):
             return ExpRule(f, sympy.E, f, symbol)
         return ChainRule(ExpRule(f, sympy.E, f, symbol),
                          exp, diffsteps(exp, symbol), f, symbol)
+    elif rule == sympy.log:
+        arg = f.args[0]
+        if len(f.args) == 2:
+            base = f.args[1]
+        else:
+            base = sympy.E
+        if type(arg) == sympy.Symbol:
+            return LogRule(arg, base, f, symbol)
+        return ChainRule(LogRule(arg, base, f, symbol),
+                         arg, diffsteps(arg, symbol), f, symbol)
+    elif isinstance(f, AppliedUndef):
+        return FunctionRule(f, symbol)
     else:
         return DontKnowRule(f, symbol)
 
@@ -135,12 +150,18 @@ def diffmanually(rule):
         if rule.base == sympy.E:
             return rule.f
         return rule.f * sympy.ln(rule.base)
+    elif isinstance(rule, LogRule):
+        if rule.base == sympy.E:
+            return 1 / rule.arg
+        return 1 / (rule.arg * sympy.ln(rule.base))
     elif isinstance(rule, AlternativeRule):
         return diffmanually(rule.alternatives[0])
     elif isinstance(rule, DontKnowRule):
         return rule.context.diff(rule.symbol)
     elif isinstance(rule, RewriteRule):
         return diffmanually(rule.substep)
+    elif isinstance(rule, FunctionRule):
+        return rule.context.diff(rule.symbol)
 
 def functionnames(numterms):
     if numterms == 2:
@@ -206,12 +227,16 @@ class DiffPrinter(object):
             self.print_Trig(rule)
         elif isinstance(rule, ExpRule):
             self.print_Exp(rule)
+        elif isinstance(rule, LogRule):
+            self.print_Log(rule)
         elif isinstance(rule, DontKnowRule):
             self.print_DontKnow(rule)
         elif isinstance(rule, AlternativeRule):
             self.print_Alternative(rule)
         elif isinstance(rule, RewriteRule):
             self.print_Rewrite(rule)
+        elif isinstance(rule, FunctionRule):
+            self.print_Function(rule)
         else:
             self.lines.append(repr(rule))
 
@@ -242,6 +267,9 @@ class DiffPrinter(object):
     def print_Exp(self, rule):
         self.lines.append(self.level * "\t" + repr(rule))
 
+    def print_Log(self, rule):
+        self.lines.append(self.level * "\t" + repr(rule))
+
     def print_Alternative(self, rule):
         self.lines.append(self.level * "\t" + repr(rule))
 
@@ -249,6 +277,9 @@ class DiffPrinter(object):
         self.lines.append(self.level * "\t" + repr(rule))
 
     def print_Rewrite(self, rule):
+        self.lines.append(self.level * "\t" + repr(rule))
+
+    def print_Function(self, rule):
         self.lines.append(self.level * "\t" + repr(rule))
 
     def finalize(self):
@@ -351,12 +382,17 @@ class IndentPrinter(DiffPrinter):
     def print_Chain(self, rule):
         self.print_rule(rule.substep)
         with self.new_step():
-            self.append("Then, apply the chain rule. Multiply by {}:".format(
-                self.format_math(sympy.Derivative(rule.inner, rule.symbol))))
-            with self.new_level():
-                self.print_rule(rule.innerstep)
-            self.append("The result of the chain rule is:")
-            self.append(self.format_math_display(diffmanually(rule)))
+            if isinstance(rule.innerstep, FunctionRule):
+                self.append("Then, apply the chain rule. Multiply by {}:".format(
+                    self.format_math(sympy.Derivative(rule.inner, rule.symbol))))
+                self.append(self.format_math_display(diffmanually(rule)))
+            else:
+                self.append("Then, apply the chain rule. Multiply by {}:".format(
+                    self.format_math(sympy.Derivative(rule.inner, rule.symbol))))
+                with self.new_level():
+                    self.print_rule(rule.innerstep)
+                    self.append("The result of the chain rule is:")
+                    self.append(self.format_math_display(diffmanually(rule)))
 
     def print_Trig(self, rule):
         with self.new_step():
@@ -380,6 +416,21 @@ class IndentPrinter(DiffPrinter):
                     self.format_math(Equals(sympy.Derivative(rule.f),
                                             diffmanually(rule)))))
 
+    def print_Log(self, rule):
+        with self.new_step():
+            if rule.base == sympy.E:
+                self.append("The derivative of {} is {}.".format(
+                    self.format_math(rule.context),
+                    self.format_math(diffmanually(rule))
+                ))
+            else:
+                self.append("The derivative of {} is {}.".format(
+                    self.format_math(sympy.log(rule.symbol, rule.base, evaluate=False)),
+                    self.format_math(1/(rule.arg * sympy.ln(rule.base)))))
+                self.append("So {}".format(
+                    self.format_math(Equals(sympy.Derivative(rule.context),
+                                            diffmanually(rule)))))
+
     def print_Alternative(self, rule):
         with self.new_step():
             self.append("There are multiple ways to do this derivative.")
@@ -392,6 +443,13 @@ class IndentPrinter(DiffPrinter):
             self.append("Rewrite the function to be differentiated:")
             self.append(self.format_math_display(Equals(rule.context, rule.rewritten)))
             self.print_rule(rule.substep)
+
+    def print_Function(self, rule):
+        with self.new_step():
+            self.append("Trivial:")
+            self.append(self.format_math_display(
+                Equals(sympy.Derivative(rule.context, rule.symbol),
+                       diffmanually(rule))))
 
     def print_DontKnow(self, rule):
         with self.new_step():
