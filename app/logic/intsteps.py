@@ -10,7 +10,7 @@ ConstantRule = Rule("ConstantRule", "constant")
 ConstantTimesRule = Rule("ConstantTimesRule", "constant other substep")
 PowerRule = Rule("PowerRule", "base exp")
 AddRule = Rule("AddRule", "substeps")
-URule = Rule("URule", "substep inner innerstep")
+URule = Rule("URule", "u_var u_func constant substep")
 TrigRule = Rule("TrigRule", "func arg")
 ExpRule = Rule("ExpRule", "base exp")
 AlternativeRule = Rule("AlternativeRule", "alternatives")
@@ -19,40 +19,44 @@ RewriteRule = Rule("RewriteRule", "rewritten substep")
 
 # Method based on that on SIN, described in "Symbolic Integration: The
 # Stormy Decade"
-def find_substitution(integrand, symbol):
+def find_substitutions(integrand, symbol):
     results = []
 
-    def is_subterm(term):
-        for t in integrand.args:
-            difference = sympy.simplify(sympy.trigsimp(term / t))
-            if difference.is_constant(symbol):
-                return True
-        return False
+    def subterm_constant(func, u_diff):
+        quotient = sympy.simplify(integrand / (func * u_diff))
+        if quotient.is_constant(symbol):
+            return quotient
+        return None
 
     def possible_subterms(term):
         if term.func in (sympy.sin, sympy.cos, sympy.tan,
                          sympy.asin, sympy.acos, sympy.atan,
-                         sympy.exp, sympy.log, sympy.Mul):
-            return term.args
+                         sympy.exp, sympy.log):
+            return [(term, arg) for arg in term.args]
+        elif term.func == sympy.Mul:
+            return [(arg, arg) for arg in term.args]
         elif term.func == sympy.Pow:
             if term.args[1].is_constant(symbol):
-                return [term.args[0]]
+                return [(term, term.args[0])]
             elif term.args[0].is_constant(symbol):
-                return [term.args[1]]
+                return [(term, term.args[1])]
         return []
 
-    for term in possible_subterms(integrand):
-        if is_subterm(term.diff(symbol)):
-            results.append(term)
+    for func, term in possible_subterms(integrand):
+        c = subterm_constant(func, term.diff(symbol))
+        if c is not None:
+            results.append((c, term))
 
         subterms = possible_subterms(term)
-        for subterm in subterms:
-            if is_subterm(subterm.diff(symbol)):
-                results.append(subterm)
+        for func, subterm in subterms:
+            c = subterm_constant(func, subterm.diff(symbol))
+            if c is not None:
+                results.append((c, subterm))
 
     return results
 
-def intsteps(integrand, symbol):
+def intsteps(integrand, symbol, **options):
+    u_var = options.setdefault('u_var', sympy.Symbol('u'))
     func = integrand.func
 
     if integrand.is_constant(symbol):
@@ -83,6 +87,22 @@ def intsteps(integrand, symbol):
                                          intsteps(args[0], symbol),
                                          integrand, symbol)
 
+    substitutions = find_substitutions(integrand, symbol)
+    if substitutions:
+        ways = []
+        for substitution in substitutions:
+            c, u_func = substitution
+            substituted = integrand / u_func.diff(symbol) / c
+            substituted = substituted.subs(u_func, u_var)
+            options['u_var'] = sympy.Symbol(u_var.name + '_1')
+            ways.append(URule(u_var, u_func, c, intsteps(substituted, u_var, **options),
+                              integrand, symbol))
+
+        if len(ways) > 1:
+            return AlternativeRule(ways, integrand, symbol)
+        if ways:
+            return ways[0]
+
     return DontKnowRule(integrand, symbol)
 
 
@@ -98,6 +118,10 @@ def intmanually(rule):
 
     elif isinstance(rule, ConstantTimesRule):
         return rule.constant * intmanually(rule.substep)
+
+    elif isinstance(rule, URule):
+        result = rule.constant * intmanually(rule.substep)
+        return result.subs(rule.u_var, rule.u_func)
 
     return None
 
@@ -174,6 +198,25 @@ class IntegralPrinter(object):
             self.append("The result is: {}".format(
                 self.format_math(intmanually(rule))))
 
+    def print_U(self, rule):
+        with self.new_step():
+            u = rule.u_var
+            du = sympy.Symbol('d' + u.name)
+            self.append("Let {}.".format(
+                self.format_math(Equals(u, rule.u_func))))
+            self.append("Then let {} and substitute {}.".format(
+                self.format_math(Equals(du, rule.u_func.diff(rule.symbol))),
+                self.format_math(rule.constant * du)
+            ))
+
+            with self.new_level():
+                self.print_rule(rule.substep)
+
+            self.append("Now substitute {} back in:".format(
+                self.format_math(u)))
+
+            self.append(self.format_math_display(intmanually(rule)))
+
     def print_DontKnow(self, rule):
         with self.new_step():
             self.append("Don't know the steps in finding this integral.")
@@ -204,9 +247,9 @@ class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
                 with self.new_step():
                     self.append("Now simplify:")
                     self.append(self.format_math_display(simp))
-        with self.new_step():
-            self.append("Add the constant of integration:")
-            self.append(self.format_math_display(answer + sympy.Symbol('constant')))
+            with self.new_step():
+                self.append("Add the constant of integration:")
+                self.append(self.format_math_display(answer + sympy.Symbol('constant')))
         self.lines.append('</ol>')
         return '\n'.join(self.lines)
 

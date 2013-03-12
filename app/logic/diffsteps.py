@@ -400,12 +400,12 @@ class HTMLPrinter(DiffPrinter, stepprinter.HTMLPrinter):
 
     def finalize(self):
         answer = diffmanually(self.rule)
-        if answer:
-            simp = sympy.simplify(sympy.trigsimp(answer))
-            if simp != answer:
-                with self.new_step():
-                    self.append("Now simplify:")
-                    self.append(self.format_math_display(simp))
+        # if answer:
+        #     simp = sympy.simplify(answer)
+        #     if simp != answer:
+        #         with self.new_step():
+        #             self.append("Now simplify:")
+        #             self.append(self.format_math_display(simp))
         self.lines.append('</ol>')
         return '\n'.join(self.lines)
 
