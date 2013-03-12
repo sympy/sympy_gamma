@@ -4,7 +4,7 @@ function setupSteps() {
         $(this).toggleClass('shown');
     });
 
-    $('.diffsteps').each(function() {
+    $('.steps').each(function() {
         var button = $("<button>Fullscreen</button>");
         var steps = $(this).parent();
         var filler = $('<div/>').hide();

@@ -2,6 +2,9 @@ import sympy
 import collections
 import itertools
 
+import stepprinter
+from stepprinter import functionnames, Equals
+
 from sympy.core.function import AppliedUndef
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
 
@@ -167,50 +170,10 @@ def diffmanually(rule):
     elif isinstance(rule, FunctionRule):
         return rule.context.diff(rule.symbol)
 
-def functionnames(numterms):
-    if numterms == 2:
-        return ["f", "g"]
-    elif numterms == 3:
-        return ["f", "g", "h"]
-    else:
-        return ["f_{}".format(i) for i in range(numterms)]
-
-class Equals(sympy.Basic):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-
-    def _latex(self, printer):
-        return '{} = {}'.format(sympy.latex(self.left),
-                                sympy.latex(self.right))
-
-    def __str__(self):
-        return '{} = {}'.format(str(self.left), str(self.right))
-
-from contextlib import contextmanager
 class DiffPrinter(object):
     def __init__(self, rule):
-        self.lines = []
-        self.level = 0
         self.print_rule(rule)
         self.rule = rule
-
-    def format_math(self, math):
-        return str(math)
-
-    def format_math_display(self, math):
-        return self.format_math(math)
-
-    @contextmanager
-    def new_level(self):
-        self.level += 1
-        yield self.level
-        self.level -= 1
-
-    @contextmanager
-    def new_step(self):
-        yield self.level
-        self.lines.append('\n')
 
     def print_rule(self, rule):
         if isinstance(rule, PowerRule):
@@ -242,56 +205,7 @@ class DiffPrinter(object):
         elif isinstance(rule, FunctionRule):
             self.print_Function(rule)
         else:
-            self.lines.append(repr(rule))
-
-    def print_Power(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Number(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_ConstantTimes(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Add(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Mul(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Div(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Chain(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Trig(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Exp(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Log(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Alternative(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_DontKnow(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Rewrite(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def print_Function(self, rule):
-        self.lines.append(self.level * "\t" + repr(rule))
-
-    def finalize(self):
-        return "\n".join(self.lines)
-
-class IndentPrinter(DiffPrinter):
-    def append(self, text):
-        self.lines.append(self.level * "\t" + text)
+            self.append(repr(rule))
 
     def print_Power(self, rule):
         with self.new_step():
@@ -307,7 +221,8 @@ class IndentPrinter(DiffPrinter):
 
     def print_ConstantTimes(self, rule):
         with self.new_step():
-            self.append("The derivative of a constant times a function is the constant times the derivative of the function.")
+            self.append("The derivative of a constant times a function "
+                        "is the constant times the derivative of the function.")
             with self.new_level():
                 self.print_rule(rule.substep)
             self.append("So, the result is: {}".format(
@@ -469,49 +384,10 @@ class IndentPrinter(DiffPrinter):
             self.append("But the derivative is")
             self.append(self.format_math_display(diffmanually(rule)))
 
-class LaTeXPrinter(IndentPrinter):
-    def format_math(self, math):
-        return sympy.latex(math)
-
-class HTMLPrinter(LaTeXPrinter):
+class HTMLPrinter(DiffPrinter, stepprinter.HTMLPrinter):
     def __init__(self, rule):
-        super(HTMLPrinter, self).__init__(rule)
-        self.lines = ['<ol>']
-        self.print_rule(rule)
-
-    def format_math(self, math):
-        return '<script type="math/tex; mode=inline">{}</script>'.format(
-            sympy.latex(math))
-
-    def format_math_display(self, math):
-        return '<script type="math/tex; mode=display">{}</script>'.format(
-            sympy.latex(math))
-
-    @contextmanager
-    def new_level(self):
-        self.level += 1
-        self.lines.append(self.level * '    ' + '<ol>')
-        yield
-        self.lines.append(self.level * '    ' + '</ol>')
-        self.level -= 1
-
-    @contextmanager
-    def new_step(self):
-        self.lines.append(self.level * '    ' + '<li>')
-        yield self.level
-        self.lines.append(self.level * '    ' + '</li>')
-
-    @contextmanager
-    def new_collapsible(self):
-        self.lines.append(self.level * '    ' + '<div class="collapsible">')
-        yield self.level
-        self.lines.append(self.level * '    ' + '</div>')
-
-    def append(self, text):
-        self.lines.append((self.level + 1) * '    ' + '<p>{}</p>'.format(text))
-
-    def append_header(self, text):
-        self.lines.append((self.level + 1) * '    ' + '<h2>{}</h2>'.format(text))
+        stepprinter.HTMLPrinter.__init__(self)
+        DiffPrinter.__init__(self, rule)
 
     def print_Alternative(self, rule):
         with self.new_step():
@@ -533,9 +409,6 @@ class HTMLPrinter(LaTeXPrinter):
         self.lines.append('</ol>')
         return '\n'.join(self.lines)
 
-def print_html(rule):
-    a = HTMLPrinter(rule)
+def print_html_steps(function, symbol):
+    a = HTMLPrinter(diffsteps(function, symbol))
     return a.finalize()
-
-def steps(diff, symbol=sympy.Symbol('x')):
-    return print_html(diffsteps(diff, symbol))

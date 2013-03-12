@@ -452,9 +452,9 @@ svg {
   text-decoration: underline;
 }
 
-/* Derivative steps */
+/* Derivative/integral steps */
 
-.diffsteps {
+.steps {
   text-align: left;
   font-size: 0.9em;
   font-family: 'Open Sans', Arial, sans-serif;
@@ -469,53 +469,53 @@ svg {
   opacity: 0.95
 }
 
-.diffsteps li {
+.steps li {
   min-width: 300px;
 }
 
 /* colors from http://gamedev.stackexchange.com/questions/46463 */
-.diffsteps ol {
+.steps ol {
   list-style-type: decimal;
   border-left: 1px solid #FF8080;
   padding: 0 30px;
 }
-.diffsteps ol h2 {
+.steps ol h2 {
   border-bottom: 1px solid #FF8080;
 }
 
-.diffsteps ol ol {
+.steps ol ol {
   list-style-type: upper-alpha;
   border-left: 1px solid #92D169;
 }
 
-.diffsteps ol ol h2 {
+.steps ol ol h2 {
   border-bottom: 1px solid #92D169;
 }
 
-.diffsteps ol ol ol {
+.steps ol ol ol {
   list-style-type: upper-roman;
   border-left: 1px solid #78BEF0;
 }
 
-.diffsteps ol ol ol h2 {
+.steps ol ol ol h2 {
   border-bottom: 1px solid #78BEF0;
 }
 
-.diffsteps ol ol ol ol {
+.steps ol ol ol ol {
   list-style-type: lower-alpha;
   border-left: 1px solid #CC66C9;
 }
 
-.diffsteps ol ol ol ol h2 {
+.steps ol ol ol ol h2 {
   border-bottom: 1px solid #CC66C9;
 }
 
-.diffsteps ol ol ol ol ol {
+.steps ol ol ol ol ol {
   list-style-type: lower-roman;
   border-left: 1px solid #F2A279;
 }
 
-.diffsteps ol ol ol ol ol h2 {
+.steps ol ol ol ol ol h2 {
   border-bottom: 1px solid #F2A279;
 }
 
@@ -723,7 +723,7 @@ svg {
     display: none;
   }
 
-  .fullscreen .diffsteps {
+  .fullscreen .steps {
     margin: 2em auto;
     width: 700px;
   }
