@@ -1,0 +1,13 @@
+import sympy
+from sympy.printing.latex import LatexPrinter
+
+class GammaLatexPrinter(LatexPrinter):
+    def _needs_function_brackets(self, expr):
+        if expr.func == sympy.Abs:
+            return False
+        return super(GammaLatexPrinter, self)._needs_function_brackets(expr)
+
+
+def latex(expr, **settings):
+    settings['fold_func_brackets'] = True
+    return GammaLatexPrinter(settings).doprint(expr)

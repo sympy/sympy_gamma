@@ -1,6 +1,8 @@
 import sympy
 from contextlib import contextmanager
 
+from latexprinter import latex
+
 def functionnames(numterms):
     if numterms == 2:
         return ["f", "g"]
@@ -15,8 +17,8 @@ class Equals(sympy.Basic):
         self.right = right
 
     def _latex(self, printer):
-        return '{} = {}'.format(sympy.latex(self.left),
-                                sympy.latex(self.right))
+        return '{} = {}'.format(latex(self.left),
+                                latex(self.right))
 
     def __str__(self):
         return '{} = {}'.format(str(self.left), str(self.right))
@@ -51,7 +53,7 @@ class Printer(object):
 
 class LaTeXPrinter(Printer):
     def format_math(self, math):
-        return sympy.latex(math)
+        return latex(math)
 
 class HTMLPrinter(LaTeXPrinter):
     def __init__(self):
@@ -60,11 +62,11 @@ class HTMLPrinter(LaTeXPrinter):
 
     def format_math(self, math):
         return '<script type="math/tex; mode=inline">{}</script>'.format(
-            sympy.latex(math))
+            latex(math))
 
     def format_math_display(self, math):
         return '<script type="math/tex; mode=display">{}</script>'.format(
-            sympy.latex(math))
+            latex(math))
 
     @contextmanager
     def new_level(self):
