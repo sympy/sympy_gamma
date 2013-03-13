@@ -15,6 +15,7 @@ URule = Rule("URule", "u_var u_func constant substep")
 TrigRule = Rule("TrigRule", "func arg")
 ExpRule = Rule("ExpRule", "base exp")
 LogRule = Rule("LogRule", "func")
+ArctanRule = Rule("ArctanRule")
 AlternativeRule = Rule("AlternativeRule", "alternatives")
 DontKnowRule = Rule("DontKnowRule")
 RewriteRule = Rule("RewriteRule", "rewritten substep")
@@ -74,9 +75,37 @@ def intsteps(integrand, symbol, **options):
                 return LogRule(base, integrand, symbol)
             return PowerRule(base, exp, integrand, symbol)
 
+        # arctan case
+        if sympy.simplify(exp + 1) == 0:
+            a, b = sympy.Wild('a'), sympy.Wild('b')
+            match = base.match(a + b*symbol**2)
+            if match and all(v.is_constant(symbol) for v in match.values()):
+                a, b = match[a], match[b]
+
+                if a != 1 or b != 1:
+                    rewritten = sympy.Rational(1, a) * (base / a) ** (-1)
+                    u_func = sympy.sqrt(sympy.Rational(b, a)) * symbol
+                    constant = 1 / sympy.sqrt(sympy.Rational(b, a))
+                    options['u_var'] = sympy.Symbol(u_var.name + '_1')
+                    substituted = rewritten.subs(u_func, u_var)
+
+                    if a == b:
+                        substep = ArctanRule(other, symbol)
+                    else:
+                        substep = URule(u_var, u_func, constant,
+                                        ArctanRule(substituted, u_var),
+                                        integrand, symbol)
+
+                    other = (base / a) ** (-1)
+                    return ConstantTimesRule(
+                        sympy.Rational(1, a), other,
+                        substep, integrand, symbol)
+                return ArctanRule(integrand, symbol)
+
     elif func == sympy.Add:
-        return AddRule([intsteps(g, symbol) for g in integrand.args],
-                       integrand, symbol)
+        return AddRule(
+            [intsteps(g, symbol) for g in integrand.as_ordered_terms()],
+            integrand, symbol)
 
     elif func == sympy.Mul:
         args = integrand.args
@@ -121,13 +150,27 @@ def intsteps(integrand, symbol, **options):
             substituted = integrand / u_func.diff(symbol) / c
             substituted = substituted.subs(u_func, u_var)
             options['u_var'] = sympy.Symbol(u_var.name + '_1')
-            ways.append(URule(u_var, u_func, c, intsteps(substituted, u_var, **options),
+            ways.append(URule(u_var, u_func, c,
+                              intsteps(substituted, u_var, **options),
                               integrand, symbol))
 
         if len(ways) > 1:
             return AlternativeRule(ways, integrand, symbol)
         if ways:
             return ways[0]
+
+    if integrand.has(sympy.exp):
+        options['u_var'] = sympy.Symbol(u_var.name + '_1')
+        u_func = sympy.exp(symbol)
+        c = 1
+        substituted = integrand / u_func.diff(symbol)
+        substituted = substituted.subs(u_func, u_var)
+        return URule(u_var, u_func, c, intsteps(substituted, u_var, **options),
+                     integrand, symbol)
+
+    if integrand.is_rational_function():
+        rewritten = sympy.apart(integrand)
+        return RewriteRule(rewritten, intsteps(rewritten, symbol), integrand, symbol)
 
     return DontKnowRule(integrand, symbol)
 
@@ -158,6 +201,9 @@ def intmanually(rule):
     elif isinstance(rule, LogRule):
         return sympy.ln(sympy.Abs(rule.func))
 
+    elif isinstance(rule, ArctanRule):
+        return sympy.atan(rule.symbol)
+
     elif isinstance(rule, RewriteRule):
         return intmanually(rule.substep)
 
@@ -185,6 +231,8 @@ class IntegralPrinter(object):
             self.print_Exp(rule)
         elif isinstance(rule, LogRule):
             self.print_Log(rule)
+        elif isinstance(rule, ArctanRule):
+            self.print_Arctan(rule)
         elif isinstance(rule, AlternativeRule):
             self.print_Alternative(rule)
         elif isinstance(rule, DontKnowRule):
@@ -271,6 +319,13 @@ class IntegralPrinter(object):
         with self.new_step():
             self.append("The integral of {} is {}.".format(
                 self.format_math(1 / rule.func),
+                self.format_math(intmanually(rule))
+            ))
+
+    def print_Arctan(self, rule):
+        with self.new_step():
+            self.append("The integral of {} is {}.".format(
+                self.format_math(1 / (1 + rule.symbol ** 2)),
                 self.format_math(intmanually(rule))
             ))
 
