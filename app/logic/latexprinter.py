@@ -10,4 +10,5 @@ class GammaLatexPrinter(LatexPrinter):
 
 def latex(expr, **settings):
     settings['fold_func_brackets'] = True
+    settings['inv_trig_style'] = 'power'
     return GammaLatexPrinter(settings).doprint(expr)
