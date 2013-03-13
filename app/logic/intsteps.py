@@ -2,6 +2,7 @@ import sympy
 import collections
 import stepprinter
 from stepprinter import functionnames, Equals
+from sympy.functions.elementary.trigonometric import TrigonometricFunction
 
 def Rule(name, props=""):
     return collections.namedtuple(name, props + " context symbol")
@@ -13,6 +14,7 @@ AddRule = Rule("AddRule", "substeps")
 URule = Rule("URule", "u_var u_func constant substep")
 TrigRule = Rule("TrigRule", "func arg")
 ExpRule = Rule("ExpRule", "base exp")
+LogRule = Rule("LogRule", "func")
 AlternativeRule = Rule("AlternativeRule", "alternatives")
 DontKnowRule = Rule("DontKnowRule")
 RewriteRule = Rule("RewriteRule", "rewritten substep")
@@ -68,6 +70,8 @@ def intsteps(integrand, symbol, **options):
     elif func == sympy.Pow:
         base, exp = integrand.as_base_exp()
         if exp.is_constant(symbol) and base.func == sympy.Symbol:
+            if sympy.simplify(exp + 1) == 0:
+                return LogRule(base, integrand, symbol)
             return PowerRule(base, exp, integrand, symbol)
 
     elif func == sympy.Add:
@@ -86,6 +90,28 @@ def intsteps(integrand, symbol, **options):
                 return ConstantTimesRule(args[1], args[0],
                                          intsteps(args[0], symbol),
                                          integrand, symbol)
+
+    if isinstance(integrand, TrigonometricFunction):
+        if func in (sympy.sin, sympy.cos):
+            if not integrand.args:
+                arg = symbol
+            else:
+                arg = integrand.args[0]
+
+            if type(arg) != sympy.Symbol:
+                return DontKnowRule(integrand, symbol)
+
+            return TrigRule(func, arg, integrand, symbol)
+
+        if func == sympy.tan:
+            rewritten = sympy.sin(*integrand.args) / sympy.cos(*integrand.args)
+        elif func == sympy.cot:
+            rewritten = sympy.cos(*integrand.args) / sympy.sin(*integrand.args)
+        return RewriteRule(
+            rewritten,
+            intsteps(rewritten, symbol, **options),
+            integrand, symbol
+        )
 
     substitutions = find_substitutions(integrand, symbol)
     if substitutions:
@@ -123,6 +149,18 @@ def intmanually(rule):
         result = rule.constant * intmanually(rule.substep)
         return result.subs(rule.u_var, rule.u_func)
 
+    elif isinstance(rule, TrigRule):
+        if rule.func == sympy.sin:
+            return -sympy.cos(rule.arg)
+        elif rule.func == sympy.cos:
+            return sympy.sin(rule.arg)
+
+    elif isinstance(rule, LogRule):
+        return sympy.ln(sympy.Abs(rule.func))
+
+    elif isinstance(rule, RewriteRule):
+        return intmanually(rule.substep)
+
     return None
 
 class IntegralPrinter(object):
@@ -145,6 +183,8 @@ class IntegralPrinter(object):
             self.print_Trig(rule)
         elif isinstance(rule, ExpRule):
             self.print_Exp(rule)
+        elif isinstance(rule, LogRule):
+            self.print_Log(rule)
         elif isinstance(rule, AlternativeRule):
             self.print_Alternative(rule)
         elif isinstance(rule, DontKnowRule):
@@ -217,11 +257,35 @@ class IntegralPrinter(object):
 
             self.append(self.format_math_display(intmanually(rule)))
 
+    def print_Trig(self, rule):
+        with self.new_step():
+            if rule.func == sympy.sin:
+                self.append("The integral of sine is negative cosine:")
+            elif rule.func == sympy.cos:
+                self.append("The integral of cosine is sine:")
+            self.append(self.format_math_display(
+                Equals(sympy.Integral(rule.context, rule.symbol),
+                       intmanually(rule))))
+
+    def print_Log(self, rule):
+        with self.new_step():
+            self.append("The integral of {} is {}.".format(
+                self.format_math(1 / rule.func),
+                self.format_math(intmanually(rule))
+            ))
+
+    def print_Rewrite(self, rule):
+        with self.new_step():
+            self.append("Rewrite the integrand:")
+            self.append(self.format_math_display(
+                Equals(rule.context, rule.rewritten)))
+            self.print_rule(rule.substep)
+
     def print_DontKnow(self, rule):
         with self.new_step():
             self.append("Don't know the steps in finding this integral.")
             self.append("But the integral is")
-            self.append(self.format_math_display(intmanually(rule)))
+            self.append(self.format_math_display(sympy.integrate(rule.context, rule.symbol)))
 
 
 class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
