@@ -77,9 +77,10 @@ def intsteps(integrand, symbol, **options):
 
         # arctan case
         if sympy.simplify(exp + 1) == 0:
-            a, b = sympy.Wild('a'), sympy.Wild('b')
+            a = sympy.Wild('a', exclude=[symbol])
+            b = sympy.Wild('b', exclude=[symbol])
             match = base.match(a + b*symbol**2)
-            if match and all(v.is_constant(symbol) for v in match.values()):
+            if match:
                 a, b = match[a], match[b]
 
                 if a != 1 or b != 1:
@@ -90,16 +91,18 @@ def intsteps(integrand, symbol, **options):
                     substituted = rewritten.subs(u_func, u_var)
 
                     if a == b:
-                        substep = ArctanRule(other, symbol)
+                        substep = ArctanRule(integrand, symbol)
                     else:
                         substep = URule(u_var, u_func, constant,
                                         ArctanRule(substituted, u_var),
                                         integrand, symbol)
 
-                    other = (base / a) ** (-1)
-                    return ConstantTimesRule(
-                        sympy.Rational(1, a), other,
-                        substep, integrand, symbol)
+                    if a != 1:
+                        other = (base / a) ** (-1)
+                        return ConstantTimesRule(
+                            sympy.Rational(1, a), other,
+                            substep, integrand, symbol)
+                    return substep
                 return ArctanRule(integrand, symbol)
 
     elif func == sympy.Add:
