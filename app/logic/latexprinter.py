@@ -5,6 +5,8 @@ class GammaLatexPrinter(LatexPrinter):
     def _needs_function_brackets(self, expr):
         if expr.func == sympy.Abs:
             return False
+        if not self._needs_brackets(expr):
+            return True
         return super(GammaLatexPrinter, self)._needs_function_brackets(expr)
 
 
