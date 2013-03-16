@@ -7,6 +7,7 @@ from stepprinter import functionnames, Equals
 
 from sympy.core.function import AppliedUndef
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
+from sympy.strategies.core import switch, identity
 
 def concat(l):
     return list(itertools.chain.from_iterable(l))
@@ -14,9 +15,9 @@ def concat(l):
 def Rule(name, props=""):
     return collections.namedtuple(name, props + " context symbol")
 
-NumberRule = Rule("NumberRule", "number")
+ConstantRule = Rule("ConstantRule", "number")
 ConstantTimesRule = Rule("ConstantTimesRule", "constant other substep")
-PowerRule = Rule("PowerRule", "f")
+PowerRule = Rule("PowerRule", "base exp")
 AddRule = Rule("AddRule", "substeps")
 MulRule = Rule("MulRule", "terms substeps")
 DivRule = Rule("DivRule", "numerator denominator numerstep denomstep")
@@ -29,146 +30,225 @@ AlternativeRule = Rule("AlternativeRule", "alternatives")
 DontKnowRule = Rule("DontKnowRule")
 RewriteRule = Rule("RewriteRule", "rewritten substep")
 
-def diffsteps(f, symbol):
-    rule = type(f)
+DerivativeInfo = collections.namedtuple('DerivativeInfo', 'expr symbol recurse')
 
-    if f.is_constant(symbol):
-        return NumberRule(f, f, symbol)
-    elif rule == sympy.Symbol:
-        return PowerRule(f, f, symbol)
-    elif rule == sympy.Pow:
-        base, exp = f.as_base_exp()
-        r = PowerRule(f, f, symbol)
+def do(rule):
+    def _do(derivative):
+        r = rule(derivative)
+        return evaluators[r.__class__](derivative, *r)
+    return _do
+
+evaluators = {}
+def evaluates(rule):
+    def _evaluates(func):
+        func.rule = rule
+        evaluators[rule] = func
+        return func
+    return _evaluates
+
+def power_rule(derivative):
+    expr, symbol = derivative.expr, derivative.symbol
+    base, exp = expr.as_base_exp()
+
+    if base.is_constant(symbol):
+        r = ExpRule(expr, base, expr, symbol)
+        chain = exp
+    else:
+        r = PowerRule(base, exp, expr, symbol)
         chain = base
 
-        if base.is_constant(symbol):
-            r = ExpRule(f, base, f, symbol)
-            chain = exp
+    if chain.func != sympy.Symbol:
+        return ChainRule(r, chain, diff_steps(chain, symbol), expr, symbol)
+    else:
+        return r
 
-        if type(chain) != sympy.Symbol:
-            return ChainRule(r, chain, diffsteps(chain, symbol), f, symbol)
-        else:
-            return r
-    elif rule == sympy.Add:
-        terms = f.args
-        return AddRule([diffsteps(g, symbol) for g in terms], f, symbol)
-    elif rule == sympy.Mul:
-        terms = f.args
-        is_div = 1 / sympy.Wild("denominator")
-        if len(terms) == 2:
-            if terms[0].is_constant(symbol):
-                return ConstantTimesRule(terms[0], terms[1],
-                                         diffsteps(terms[1], symbol), f, symbol)
-            elif terms[1].is_constant(symbol):
-                return ConstantTimesRule(terms[1], terms[0],
-                                         diffsteps(terms[0], symbol), f, symbol)
-            elif (terms[1].match(is_div) and
-                type(terms[1]) == sympy.Pow and terms[1].args[1] == -1):
-                numerator = terms[0]
-                denominator = terms[1].args[0]
-            elif (terms[0].match(is_div) and
-                  type(terms[0]) == sympy.Pow and terms[0].args[1] == -1):
-                numerator = terms[1]
-                denominator = terms[0].args[0]
-            else:
-                return MulRule(terms, [diffsteps(g, symbol) for g in terms],
-                               f, symbol)
+def add_rule(derivative):
+    expr, symbol = derivative.expr, derivative.symbol
+    return AddRule([derivative.recurse(arg, symbol) for arg in expr.args],
+                   expr, symbol)
 
-            return DivRule(numerator, denominator,
-                           diffsteps(numerator, symbol),
-                           diffsteps(denominator, symbol), f, symbol)
+def constant_rule(derivative):
+    expr, symbol = derivative.expr, derivative.symbol
+    return ConstantRule(expr, expr, symbol)
+
+def mul_rule(derivative):
+    expr, symbol, recurse = derivative
+    terms = expr.args
+    is_div = 1 / sympy.Wild("denominator")
+    if len(terms) == 2:
+        if terms[0].is_constant(symbol):
+            return ConstantTimesRule(terms[0], terms[1],
+                                     recurse(terms[1], symbol), expr, symbol)
+        elif terms[1].is_constant(symbol):
+            return ConstantTimesRule(terms[1], terms[0],
+                                     recurse(terms[0], symbol), expr, symbol)
+        elif (terms[1].match(is_div) and
+            type(terms[1]) == sympy.Pow and terms[1].args[1] == -1):
+            numerator = terms[0]
+            denominator = terms[1].args[0]
+        elif (terms[0].match(is_div) and
+              type(terms[0]) == sympy.Pow and terms[0].args[1] == -1):
+            numerator = terms[1]
+            denominator = terms[0].args[0]
         else:
-            return MulRule(terms, [diffsteps(g, symbol) for g in terms], f, symbol)
-    elif isinstance(f, TrigonometricFunction):
-        if rule in (sympy.sin, sympy.cos):
-            diffrule = TrigRule(f, f, symbol)
-            arg = f.args[0]
-            if type(arg) != sympy.Symbol:
-                return ChainRule(diffrule, arg,
-                                 diffsteps(arg, symbol), f, symbol)
-            return diffrule
-        elif rule == sympy.tan:
-            f_r = sympy.sin(*f.args) / sympy.cos(*f.args)
-            return RewriteRule(f_r, diffsteps(f_r, symbol), f, symbol)
-        elif rule == sympy.cot:
-            f_r_1 = 1 / sympy.tan(*f.args)
-            f_r_2 = sympy.cos(*f.args) / sympy.sin(*f.args)
-            return AlternativeRule([
-                RewriteRule(f_r_1, diffsteps(f_r_1, symbol), f, symbol),
-                RewriteRule(f_r_2, diffsteps(f_r_2, symbol), f, symbol)
-            ], f, symbol)
-        else:
-            return DontKnowRule(f, symbol)
-    elif rule == sympy.exp:
-        exp = f.args[0]
-        if type(exp) == sympy.Symbol:
-            return ExpRule(f, sympy.E, f, symbol)
-        return ChainRule(ExpRule(f, sympy.E, f, symbol),
-                         exp, diffsteps(exp, symbol), f, symbol)
-    elif rule == sympy.log:
-        arg = f.args[0]
-        if len(f.args) == 2:
-            base = f.args[1]
-        else:
-            base = sympy.E
-        if type(arg) == sympy.Symbol:
-            return LogRule(arg, base, f, symbol)
-        return ChainRule(LogRule(arg, base, f, symbol),
-                         arg, diffsteps(arg, symbol), f, symbol)
-    elif isinstance(f, AppliedUndef):
-        return FunctionRule(f, symbol)
+            return MulRule(terms, [recurse(g, symbol) for g in terms],
+                           expr, symbol)
+
+        return DivRule(numerator, denominator,
+                       recurse(numerator, symbol),
+                       recurse(denominator, symbol), expr, symbol)
+    else:
+        return MulRule(terms, [recurse(g, symbol) for g in terms], expr, symbol)
+
+def trig_rule(derivative):
+    expr, symbol, recurse = derivative
+    function = expr.func
+    arg = expr.args[0]
+
+    default = TrigRule(expr, expr, symbol)
+    if type(arg) != sympy.Symbol:
+        default = ChainRule(default, arg, recurse(arg, symbol),
+                            expr, symbol)
+
+    if function in (sympy.sin, sympy.cos):
+        return default
+    elif function == sympy.tan:
+        f_r = sympy.sin(arg) / sympy.cos(arg)
+
+        return AlternativeRule([
+            default,
+            RewriteRule(f_r, recurse(f_r, symbol), expr, symbol)
+        ], expr, symbol)
+    elif function == sympy.cot:
+        f_r_1 = 1 / sympy.tan(arg)
+        f_r_2 = sympy.cos(arg) / sympy.sin(arg)
+        return AlternativeRule([
+            default,
+            RewriteRule(f_r_1, recurse(f_r_1, symbol), expr, symbol),
+            RewriteRule(f_r_2, recurse(f_r_2, symbol), expr, symbol)
+        ], expr, symbol)
     else:
         return DontKnowRule(f, symbol)
 
+def exp_rule(derivative):
+    expr, symbol, recurse = derivative
+    exp = expr.args[0]
+    if type(exp) == sympy.Symbol:
+        return ExpRule(expr, sympy.E, expr, symbol)
+    return ChainRule(ExpRule(expr, sympy.E, expr, symbol),
+                     exp, recurse(exp, symbol), expr, symbol)
 
-def diffmanually(rule):
-    if isinstance(rule, PowerRule):
-        base, exp = rule.f.as_base_exp()
-        return exp * (base ** (exp - 1))
-    elif isinstance(rule, NumberRule):
-        return 0
-    elif isinstance(rule, ConstantTimesRule):
-        return rule.constant * diffmanually(rule.substep)
-    elif isinstance(rule, ChainRule):
-        return diffmanually(rule.substep) * diffmanually(rule.innerstep)
-    elif isinstance(rule, AddRule):
-        return sum(map(diffmanually, rule.substeps))
-    elif isinstance(rule, MulRule):
-        result = []
-        for index in range(len(rule.terms)):
-            intermediate = []
-            for i in range(len(rule.terms)):
-                if i == index:
-                    intermediate.append(diffmanually(rule.substeps[i]))
-                else:
-                    intermediate.append(rule.terms[i])
-            result.append(reduce(lambda x,y: x*y, intermediate))
-        return sum(result)
-    elif isinstance(rule, DivRule):
-        f, g = rule.numerator, rule.denominator
-        fp, gp = diffmanually(rule.numerstep), diffmanually(rule.denomstep)
-        return (g * fp - f * gp)/(g**2)
-    elif isinstance(rule, TrigRule):
-        if type(rule.f) == sympy.sin:
-            return sympy.cos(*rule.f.args)
-        elif type(rule.f) == sympy.cos:
-            return -sympy.sin(*rule.f.args)
-    elif isinstance(rule, ExpRule):
-        if rule.base == sympy.E:
-            return rule.f
-        return rule.f * sympy.ln(rule.base)
-    elif isinstance(rule, LogRule):
-        if rule.base == sympy.E:
-            return 1 / rule.arg
-        return 1 / (rule.arg * sympy.ln(rule.base))
-    elif isinstance(rule, AlternativeRule):
-        return diffmanually(rule.alternatives[0])
-    elif isinstance(rule, DontKnowRule):
-        return rule.context.diff(rule.symbol)
-    elif isinstance(rule, RewriteRule):
-        return diffmanually(rule.substep)
-    elif isinstance(rule, FunctionRule):
-        return rule.context.diff(rule.symbol)
+def log_rule(derivative):
+    expr, symbol, recurse = derivative
+    arg = expr.args[0]
+    if len(expr.args) == 2:
+        base = expr.args[1]
+    else:
+        base = sympy.E
+        if type(arg) == sympy.Symbol:
+            return LogRule(arg, base, expr, symbol)
+        return ChainRule(LogRule(arg, base, expr, symbol),
+                         arg, recurse(arg, symbol), expr, symbol)
+
+def function_rule(derivative):
+    return FunctionRule(derivative.expr, derivative.symbol)
+
+@evaluates(ConstantRule)
+def eval_constant(*args):
+    return 0
+
+@evaluates(ConstantTimesRule)
+def eval_constanttimes(constant, other, substep, expr, symbol):
+    return constant * diff(substep)
+
+@evaluates(AddRule)
+def eval_add(substeps, expr, symbol):
+    results = [diff(step) for step in substeps]
+    return sum(results)
+
+@evaluates(DivRule)
+def eval_div(numer, denom, numerstep, denomstep, expr, symbol):
+    d_numer = diff(numerstep)
+    d_denom = diff(denomstep)
+    return (denom * d_numer - numer * d_denom) / (denom **2)
+
+@evaluates(ChainRule)
+def eval_chain(substep, inner, innerstep, expr, symbol):
+    return diff(substep) * diff(innerstep)
+
+@evaluates(PowerRule)
+@evaluates(MulRule)
+@evaluates(ExpRule)
+@evaluates(LogRule)
+@evaluates(DontKnowRule)
+@evaluates(FunctionRule)
+def eval_default(*args):
+    func, symbol = args[-2], args[-1]
+
+    if func.func == sympy.Symbol:
+        func = sympy.Pow(func, 1, evaluate=False)
+
+    # Automatically derive and apply the rule (don't use diff() directly as
+    # chain rule is a separate step)
+    substitutions = []
+    mapping = {}
+    constant_symbol = sympy.Symbol('a')
+    for arg in func.args:
+        if symbol in arg.free_symbols:
+            mapping[symbol] = arg
+            substitutions.append(symbol)
+        else:
+            mapping[constant_symbol] = arg
+            substitutions.append(constant_symbol)
+
+    rule = func.func(*substitutions).diff(symbol)
+    return rule.subs(mapping)
+
+@evaluates(TrigRule)
+def eval_default_trig(*args):
+    return sympy.trigsimp(eval_default(*args))
+
+@evaluates(RewriteRule)
+def eval_rewrite(rewritten, substep, expr, symbol):
+    return diff(substep)
+
+@evaluates(AlternativeRule)
+def eval_alternative(alternatives, expr, symbol):
+    return diff(alternatives[1])
+
+def _make_diff(stepfunction):
+    def _diff_steps(expr, symbol):
+        deriv = DerivativeInfo(expr, symbol, _diff_steps)
+
+        def key(deriv):
+            expr = deriv.expr
+            if isinstance(expr, TrigonometricFunction):
+                return TrigonometricFunction
+            elif isinstance(expr, AppliedUndef):
+                return AppliedUndef
+            elif expr.is_constant(symbol):
+                return 'constant'
+            else:
+                return expr.func
+
+        return switch(key, {
+            sympy.Pow: stepfunction(power_rule),
+            sympy.Symbol: stepfunction(power_rule),
+            sympy.Add: stepfunction(add_rule),
+            sympy.Mul: stepfunction(mul_rule),
+            TrigonometricFunction: stepfunction(trig_rule),
+            sympy.exp: stepfunction(exp_rule),
+            sympy.log: stepfunction(log_rule),
+            AppliedUndef: stepfunction(function_rule),
+            'constant': stepfunction(constant_rule)
+        })(deriv)
+    return _diff_steps
+
+diff_steps = _make_diff(identity)
+diff = _make_diff(do)
+
+def diff(rule):
+    return evaluators[rule.__class__](*rule)
 
 class DiffPrinter(object):
     def __init__(self, rule):
@@ -180,7 +260,7 @@ class DiffPrinter(object):
             self.print_Power(rule)
         elif isinstance(rule, ChainRule):
             self.print_Chain(rule)
-        elif isinstance(rule, NumberRule):
+        elif isinstance(rule, ConstantRule):
             self.print_Number(rule)
         elif isinstance(rule, ConstantTimesRule):
             self.print_ConstantTimes(rule)
@@ -209,10 +289,9 @@ class DiffPrinter(object):
 
     def print_Power(self, rule):
         with self.new_step():
-            base, exp = rule.f.as_base_exp()
             self.append("Apply the power rule: {0} goes to {1}".format(
-                self.format_math(rule.f),
-                self.format_math(diffmanually(rule))))
+                self.format_math(rule.context),
+                self.format_math(diff(rule))))
 
     def print_Number(self, rule):
         with self.new_step():
@@ -226,7 +305,7 @@ class DiffPrinter(object):
             with self.new_level():
                 self.print_rule(rule.substep)
             self.append("So, the result is: {}".format(
-                self.format_math(diffmanually(rule))))
+                self.format_math(diff(rule))))
 
     def print_Add(self, rule):
         with self.new_step():
@@ -236,7 +315,7 @@ class DiffPrinter(object):
                 for substep in rule.substeps:
                     self.print_rule(substep)
             self.append("The result is: {}".format(
-                self.format_math(diffmanually(rule))))
+                self.format_math(diff(rule))))
 
     def print_Mul(self, rule):
         with self.new_step():
@@ -269,7 +348,7 @@ class DiffPrinter(object):
                 with self.new_level():
                     self.print_rule(substep)
 
-            self.append("The result is: " + self.format_math(diffmanually(rule)))
+            self.append("The result is: " + self.format_math(diff(rule)))
 
     def print_Div(self, rule):
         with self.new_step():
@@ -293,7 +372,7 @@ class DiffPrinter(object):
             with self.new_level():
                 self.print_rule(rule.denomstep)
             self.append("Now plug in to the quotient rule:")
-            self.append(self.format_math(diffmanually(rule)))
+            self.append(self.format_math(diff(rule)))
 
     def print_Chain(self, rule):
         self.print_rule(rule.substep)
@@ -303,7 +382,7 @@ class DiffPrinter(object):
                     "Then, apply the chain rule. Multiply by {}:".format(
                         self.format_math(
                             sympy.Derivative(rule.inner, rule.symbol))))
-                self.append(self.format_math_display(diffmanually(rule)))
+                self.append(self.format_math_display(diff(rule)))
             else:
                 self.append(
                     "Then, apply the chain rule. Multiply by {}:".format(
@@ -311,8 +390,8 @@ class DiffPrinter(object):
                             sympy.Derivative(rule.inner, rule.symbol))))
                 with self.new_level():
                     self.print_rule(rule.innerstep)
-                    self.append("The result of the chain rule is:")
-                    self.append(self.format_math_display(diffmanually(rule)))
+                self.append("The result of the chain rule is:")
+                self.append(self.format_math_display(diff(rule)))
 
     def print_Trig(self, rule):
         with self.new_step():
@@ -323,7 +402,7 @@ class DiffPrinter(object):
             self.append("{}".format(
                 self.format_math_display(Equals(
                     sympy.Derivative(rule.f, rule.symbol),
-                    diffmanually(rule)))))
+                    diff(rule)))))
 
     def print_Exp(self, rule):
         with self.new_step():
@@ -336,14 +415,14 @@ class DiffPrinter(object):
                     self.format_math(rule.base ** rule.symbol * sympy.ln(rule.base))))
                 self.append("So {}".format(
                     self.format_math(Equals(sympy.Derivative(rule.f, rule.symbol),
-                                            diffmanually(rule)))))
+                                            diff(rule)))))
 
     def print_Log(self, rule):
         with self.new_step():
             if rule.base == sympy.E:
                 self.append("The derivative of {} is {}.".format(
                     self.format_math(rule.context),
-                    self.format_math(diffmanually(rule))
+                    self.format_math(diff(rule))
                 ))
             else:
                 # This case shouldn't come up often, seeing as SymPy
@@ -355,7 +434,7 @@ class DiffPrinter(object):
                 self.append("So {}".format(
                     self.format_math(Equals(
                         sympy.Derivative(rule.context, rule.symbol),
-                        diffmanually(rule)))))
+                        diff(rule)))))
 
     def print_Alternative(self, rule):
         with self.new_step():
@@ -376,39 +455,46 @@ class DiffPrinter(object):
             self.append("Trivial:")
             self.append(self.format_math_display(
                 Equals(sympy.Derivative(rule.context, rule.symbol),
-                       diffmanually(rule))))
+                       diff(rule))))
 
     def print_DontKnow(self, rule):
         with self.new_step():
             self.append("Don't know the steps in finding this derivative.")
             self.append("But the derivative is")
-            self.append(self.format_math_display(diffmanually(rule)))
+            self.append(self.format_math_display(diff(rule)))
 
 class HTMLPrinter(DiffPrinter, stepprinter.HTMLPrinter):
     def __init__(self, rule):
+        self.alternative_functions_printed = set()
         stepprinter.HTMLPrinter.__init__(self)
         DiffPrinter.__init__(self, rule)
 
     def print_Alternative(self, rule):
-        with self.new_step():
-            self.append("There are multiple ways to do this derivative.")
-            for index, r in enumerate(rule.alternatives):
-                with self.new_collapsible():
-                    self.append_header("Method #{}".format(index + 1))
-                    with self.new_level():
-                        self.print_rule(r)
+        if rule.context.func in self.alternative_functions_printed:
+            self.print_rule(rule.alternatives[0])
+        elif len(rule.alternatives) == 2:
+            self.print_rule(rule.alternatives[1])
+        else:
+            self.alternative_functions_printed.add(rule.context.func)
+            with self.new_step():
+                self.append("There are multiple ways to do this derivative.")
+                for index, r in enumerate(rule.alternatives[1:]):
+                    with self.new_collapsible():
+                        self.append_header("Method #{}".format(index + 1))
+                        with self.new_level():
+                            self.print_rule(r)
 
     def finalize(self):
-        answer = diffmanually(self.rule)
-        # if answer:
-        #     simp = sympy.simplify(answer)
-        #     if simp != answer:
-        #         with self.new_step():
-        #             self.append("Now simplify:")
-        #             self.append(self.format_math_display(simp))
+        answer = diff(self.rule)
+        if answer:
+            simp = sympy.simplify(answer)
+            if simp != answer:
+                with self.new_step():
+                    self.append("Now simplify:")
+                    self.append(self.format_math_display(simp))
         self.lines.append('</ol>')
         return '\n'.join(self.lines)
 
 def print_html_steps(function, symbol):
-    a = HTMLPrinter(diffsteps(function, symbol))
+    a = HTMLPrinter(diff_steps(function, symbol))
     return a.finalize()
