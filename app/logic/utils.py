@@ -140,49 +140,10 @@ def removeSymPy(string):
     except IndexError:
         return string
 
-from sympy.parsing.sympy_parser import AppliedFunction, ParenthesisGroup,\
-    _apply_functions, _split_symbols, _function_exponents,\
-    _implicit_application, OP, NAME, _flatten
-
-
-def _group_parentheses(tokens, local_dict, global_dict):
-    """Group tokens between parentheses with ParenthesisGroup.
-
-    Also processes those tokens recursively.
-
-    """
-    result = []
-    stacks = []
-    stacklevel = 0
-    for token in tokens:
-        if token[0] == OP:
-            if token[1] == '(':
-                stacks.append(ParenthesisGroup([]))
-                stacklevel += 1
-            elif token[1] == ')':
-                stacks[-1].append(token)
-                stack = stacks.pop()
-
-                if len(stacks) > 0:
-                    # We don't recurse here since the upper-level stack
-                    # would reprocess these tokens
-                    stacks[-1].extend(stack)
-                else:
-                    # Recurse here to handle nested parentheses
-                    # Strip off the outer parentheses to avoid an infinite loop
-                    inner = stack[1:-1]
-                    inner = custom_implicit_transformation(inner,
-                                                           local_dict,
-                                                           global_dict)
-                    parenGroup = [stack[0]] + inner + [stack[-1]]
-                    result.append(ParenthesisGroup(parenGroup))
-                stacklevel -= 1
-                continue
-        if stacklevel:
-            stacks[-1].append(token)
-        else:
-            result.append(token)
-    return result
+from sympy.parsing.sympy_parser import (
+    AppliedFunction, implicit_multiplication, split_symbols,
+    function_exponentiation, implicit_application, OP, NAME,
+    _group_parentheses, _apply_functions, _flatten)
 
 def _implicit_multiplication(tokens, local_dict, global_dict):
     result = []
@@ -215,14 +176,52 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
     result.append(tokens[-1])
     return result
 
-def custom_implicit_transformation(result, local_dict, global_dict):
-    for step in (_group_parentheses,
+def implicit_multiplication(result, local_dict, global_dict):
+    """Makes the multiplication operator optional in most cases.
+
+    Use this before :func:`implicit_application`, otherwise expressions like
+    ``sin 2x`` will be parsed as ``x * sin(2)`` rather than ``sin(2*x)``.
+
+    Example:
+
+    >>> from sympy.parsing.sympy_parser import (parse_expr,
+    ... standard_transformations, implicit_multiplication)
+    >>> transformations = standard_transformations + (implicit_multiplication,)
+    >>> parse_expr('3 x y', transformations=transformations)
+    3*x*y
+    """
+    for step in (_group_parentheses(implicit_multiplication),
                  _apply_functions,
-                 _split_symbols,
-                 _function_exponents,
-                 _implicit_application,
                  _implicit_multiplication):
         result = step(result, local_dict, global_dict)
 
     result = _flatten(result)
+    return result
+
+def custom_implicit_transformation(result, local_dict, global_dict):
+    """Allows a slightly relaxed syntax.
+
+    - Parentheses for single-argument method calls are optional.
+
+    - Multiplication is implicit.
+
+    - Symbol names can be split (i.e. spaces are not needed between
+      symbols).
+
+    - Functions can be exponentiated.
+
+    Example:
+
+    >>> from sympy.parsing.sympy_parser import (parse_expr,
+    ... standard_transformations, implicit_multiplication_application)
+    >>> parse_expr("10sin**2 x**2 + 3xyz + tan theta",
+    ... transformations=(standard_transformations +
+    ... (implicit_multiplication_application,)))
+    3*x*y*z + 10*sin(x**2)**2 + tan(theta)
+
+    """
+    for step in (split_symbols, implicit_multiplication,
+                 implicit_application, function_exponentiation):
+        result = step(result, local_dict, global_dict)
+
     return result
