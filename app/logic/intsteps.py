@@ -3,6 +3,7 @@ import collections
 import stepprinter
 from stepprinter import functionnames, Equals
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
+from sympy.strategies.core import switch, identity, do_one, null_safe
 
 def Rule(name, props=""):
     return collections.namedtuple(name, props + " context symbol")
@@ -19,6 +20,37 @@ ArctanRule = Rule("ArctanRule")
 AlternativeRule = Rule("AlternativeRule", "alternatives")
 DontKnowRule = Rule("DontKnowRule")
 RewriteRule = Rule("RewriteRule", "rewritten substep")
+
+class IntegralInfo(collections.namedtuple('IntegralInfo', 'integrand symbol')):
+    def __new__(cls, *args, **kwargs):
+        u_var = kwargs['u_var']
+        del kwargs['u_var']
+        self = super(IntegralInfo, cls).__new__(cls, *args, **kwargs)
+        self.u_var = u_var
+        return self
+
+    @staticmethod
+    def new_u_var(var):
+        if len(var.name) == 3:
+            num = int(var.name[2]) + 1
+            name = var.name[0] + str(num)
+        else:
+            name = 'u_1'
+        return sympy.Symbol(name)
+
+def do(rule):
+    def _do(integral):
+        r = rule(integral)
+        return evaluators[r.__class__](integral, *r)
+    return _do
+
+evaluators = {}
+def evaluates(rule):
+    def _evaluates(func):
+        func.rule = rule
+        evaluators[rule] = func
+        return func
+    return _evaluates
 
 # Method based on that on SIN, described in "Symbolic Integration: The
 # Stormy Decade"
@@ -58,125 +90,168 @@ def find_substitutions(integrand, symbol):
 
     return results
 
-def intsteps(integrand, symbol, **options):
-    u_var = options.setdefault('u_var', sympy.Symbol('u'))
-    func = integrand.func
+def constant_rule(integral):
+    integrand, symbol = integral
+    return ConstantRule(integral.integrand, *integral)
 
-    if integrand.is_constant(symbol):
-        return ConstantRule(integrand, func, symbol)
+def power_rule(integral):
+    integrand, symbol = integral
+    base, exp = integrand.as_base_exp()
 
-    elif func == sympy.Symbol:
-        return PowerRule(integrand, 1, integrand, symbol)
-
-    elif func == sympy.Pow:
-        base, exp = integrand.as_base_exp()
-        if exp.is_constant(symbol) and base.func == sympy.Symbol:
-            if sympy.simplify(exp + 1) == 0:
-                return LogRule(base, integrand, symbol)
-            return PowerRule(base, exp, integrand, symbol)
-
-        # arctan case
+    if exp.is_constant(symbol) and base.func == sympy.Symbol:
         if sympy.simplify(exp + 1) == 0:
-            a = sympy.Wild('a', exclude=[symbol])
-            b = sympy.Wild('b', exclude=[symbol])
-            match = base.match(a + b*symbol**2)
-            if match:
-                a, b = match[a], match[b]
+            return LogRule(base, integrand, symbol)
+        return PowerRule(base, exp, integrand, symbol)
 
-                if a != 1 or b != 1:
-                    rewritten = sympy.Rational(1, a) * (base / a) ** (-1)
-                    u_func = sympy.sqrt(sympy.Rational(b, a)) * symbol
-                    constant = 1 / sympy.sqrt(sympy.Rational(b, a))
-                    options['u_var'] = sympy.Symbol(u_var.name + '_1')
-                    substituted = rewritten.subs(u_func, u_var)
+def arctan_rule(integral):
+    integrand, symbol = integral
+    base, exp = integrand.as_base_exp()
 
-                    if a == b:
-                        substep = ArctanRule(integrand, symbol)
-                    else:
-                        substep = URule(u_var, u_func, constant,
-                                        ArctanRule(substituted, u_var),
-                                        integrand, symbol)
+    if sympy.simplify(exp + 1) == 0:
+        a = sympy.Wild('a', exclude=[symbol])
+        b = sympy.Wild('b', exclude=[symbol])
+        match = base.match(a + b*symbol**2)
+        if match:
+            a, b = match[a], match[b]
 
-                    if a != 1:
-                        other = (base / a) ** (-1)
-                        return ConstantTimesRule(
-                            sympy.Rational(1, a), other,
-                            substep, integrand, symbol)
-                    return substep
-                return ArctanRule(integrand, symbol)
+            if a != 1 or b != 1:
+                u_var = integral.u_var
+                rewritten = sympy.Rational(1, a) * (base / a) ** (-1)
+                u_func = sympy.sqrt(sympy.Rational(b, a)) * symbol
+                constant = 1 / sympy.sqrt(sympy.Rational(b, a))
+                substituted = rewritten.subs(u_func, u_var)
 
-    elif func == sympy.Add:
-        return AddRule(
-            [intsteps(g, symbol) for g in integrand.as_ordered_terms()],
-            integrand, symbol)
+                if a == b:
+                    substep = ArctanRule(integrand, symbol)
+                else:
+                    substep = URule(u_var, u_func, constant,
+                                    ArctanRule(substituted, u_var),
+                                    integrand, symbol)
 
-    elif func == sympy.Mul:
-        args = integrand.args
+                if a != 1:
+                    other = (base / a) ** (-1)
+                    return ConstantTimesRule(
+                        sympy.Rational(1, a), other,
+                        substep, integrand, symbol)
+                return substep
+            return ArctanRule(integrand, symbol)
 
-        if len(args) == 2:
-            if integrand.args[0].is_constant(symbol):
-                return ConstantTimesRule(args[0], args[1],
-                                         intsteps(args[1], symbol),
-                                         integrand, symbol)
-            elif integrand.args[1].is_constant(symbol):
-                return ConstantTimesRule(args[1], args[0],
-                                         intsteps(args[0], symbol),
-                                         integrand, symbol)
+def add_rule(integral):
+    integrand, symbol = integral
+    return AddRule(
+        [integral_steps(g, symbol) for g in integrand.as_ordered_terms()],
+        integrand, symbol)
 
-    if isinstance(integrand, TrigonometricFunction):
-        if func in (sympy.sin, sympy.cos):
-            if not integrand.args:
-                arg = symbol
-            else:
-                arg = integrand.args[0]
+def mul_rule(integral):
+    integrand, symbol = integral
+    args = integrand.args
 
-            if type(arg) != sympy.Symbol:
-                return DontKnowRule(integrand, symbol)
+    if len(args) == 2:
+        if integrand.args[0].is_constant(symbol):
+            return ConstantTimesRule(args[0], args[1],
+                                     integral_steps(args[1], symbol),
+                                     integrand, symbol)
+        elif integrand.args[1].is_constant(symbol):
+            return ConstantTimesRule(args[1], args[0],
+                                     integral_steps(args[0], symbol),
+                                     integrand, symbol)
 
-            return TrigRule(func, arg, integrand, symbol)
+    # TODO: integration by parts case
 
-        if func == sympy.tan:
-            rewritten = sympy.sin(*integrand.args) / sympy.cos(*integrand.args)
-        elif func == sympy.cot:
-            rewritten = sympy.cos(*integrand.args) / sympy.sin(*integrand.args)
-        return RewriteRule(
-            rewritten,
-            intsteps(rewritten, symbol, **options),
-            integrand, symbol
-        )
+def trig_rule(integral):
+    integrand, symbol = integral
+    func = integrand.func
+    if func in (sympy.sin, sympy.cos):
+        arg = integrand.args[0]
+
+        if type(arg) != sympy.Symbol:
+            return DontKnowRule(integrand, symbol)
+
+        return TrigRule(func, arg, integrand, symbol)
+
+    if func == sympy.tan:
+        rewritten = sympy.sin(*integrand.args) / sympy.cos(*integrand.args)
+    elif func == sympy.cot:
+        rewritten = sympy.cos(*integrand.args) / sympy.sin(*integrand.args)
+    return RewriteRule(
+        rewritten,
+        integral_steps(rewritten, symbol, u_var=integral.u_var),
+        integrand, symbol
+    )
+
+def substitution_rule(integral):
+    integrand, symbol = integral
 
     substitutions = find_substitutions(integrand, symbol)
     if substitutions:
         ways = []
+        u_var = integral.u_var
+        new_u = integral.new_u_var(u_var)
         for substitution in substitutions:
             c, u_func = substitution
             substituted = integrand / u_func.diff(symbol) / c
             substituted = substituted.subs(u_func, u_var)
-            options['u_var'] = sympy.Symbol(u_var.name + '_1')
             ways.append(URule(u_var, u_func, c,
-                              intsteps(substituted, u_var, **options),
+                              integral_steps(substituted, u_var, u_var=new_u),
                               integrand, symbol))
 
         if len(ways) > 1:
             return AlternativeRule(ways, integrand, symbol)
-        if ways:
+        elif ways:
             return ways[0]
 
-    if integrand.has(sympy.exp):
-        options['u_var'] = sympy.Symbol(u_var.name + '_1')
+    elif integrand.has(sympy.exp):
+        u_var = integral.u_var
         u_func = sympy.exp(symbol)
         c = 1
         substituted = integrand / u_func.diff(symbol)
         substituted = substituted.subs(u_func, u_var)
-        return URule(u_var, u_func, c, intsteps(substituted, u_var, **options),
+        new_u = integral.new_u_var(u_var)
+        return URule(u_var, u_func, c,
+                     integral_steps(substituted, u_var, u_var=new_u),
                      integrand, symbol)
+
+def partial_fractions_rule(integral):
+    integrand, symbol = integral
 
     if integrand.is_rational_function():
         rewritten = sympy.apart(integrand)
-        return RewriteRule(rewritten, intsteps(rewritten, symbol), integrand, symbol)
+        return RewriteRule(
+            rewritten,
+            integral_steps(rewritten, symbol),
+            integrand, symbol)
 
-    return DontKnowRule(integrand, symbol)
+def fallback_rule(integral):
+    return DontKnowRule(*integral)
 
+def integral_steps(integrand, symbol, **options):
+    u_var = options.get('u_var', sympy.Symbol('u'))
+    integral = IntegralInfo(integrand, symbol, u_var=u_var)
+
+    def key(integral):
+        integrand = integral.integrand
+        if isinstance(integrand, TrigonometricFunction):
+            return TrigonometricFunction
+        elif integrand.is_constant(symbol):
+            return 'constant'
+        else:
+            return integrand.func
+
+    return do_one(
+        null_safe(switch(key, {
+            sympy.Pow: power_rule,
+            sympy.Symbol: power_rule,
+            sympy.Add: add_rule,
+            sympy.Mul: do_one(mul_rule, arctan_rule),
+            TrigonometricFunction: trig_rule,
+            'constant': constant_rule
+        })),
+        null_safe(substitution_rule),
+        null_safe(partial_fractions_rule),
+        fallback_rule)(integral)
+
+def integral(rule):
+    return evaluators[rule.__class__](*rule)
 
 def intmanually(rule):
     if isinstance(rule, ConstantRule):
@@ -293,10 +368,11 @@ class IntegralPrinter(object):
         with self.new_step():
             u = rule.u_var
             du = sympy.Symbol('d' + u.name)
+            dx = sympy.Symbol('d' + rule.symbol.name)
             self.append("Let {}.".format(
                 self.format_math(Equals(u, rule.u_func))))
             self.append("Then let {} and substitute {}.".format(
-                self.format_math(Equals(du, rule.u_func.diff(rule.symbol))),
+                self.format_math(Equals(du, rule.u_func.diff(rule.symbol) * dx)),
                 self.format_math(rule.constant * du)
             ))
 
@@ -376,5 +452,6 @@ class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
         return '\n'.join(self.lines)
 
 def print_html_steps(function, symbol):
-    a = HTMLPrinter(intsteps(function, symbol))
+    rule = integral_steps(function, symbol)
+    a = HTMLPrinter(rule)
     return a.finalize()
