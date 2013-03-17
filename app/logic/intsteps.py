@@ -435,17 +435,25 @@ class IntegralPrinter(object):
 
 class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
     def __init__(self, rule):
+        self.alternative_functions_printed = set()
         stepprinter.HTMLPrinter.__init__(self)
         IntegralPrinter.__init__(self, rule)
 
     def print_Alternative(self, rule):
-        with self.new_step():
-            self.append("There are multiple ways to do this derivative.")
-            for index, r in enumerate(rule.alternatives):
-                with self.new_collapsible():
-                    self.append_header("Method #{}".format(index + 1))
-                    with self.new_level():
-                        self.print_rule(r)
+        if rule.context.func in self.alternative_functions_printed:
+            self.print_rule(rule.alternatives[0])
+        elif len(rule.alternatives) == 2:
+            self.alternative_functions_printed.add(rule.context.func)
+            self.print_rule(rule.alternatives[1])
+        else:
+            self.alternative_functions_printed.add(rule.context.func)
+            with self.new_step():
+                self.append("There are multiple ways to do this derivative.")
+                for index, r in enumerate(rule.alternatives[1:]):
+                    with self.new_collapsible():
+                        self.append_header("Method #{}".format(index + 1))
+                        with self.new_level():
+                            self.print_rule(r)
 
     def finalize(self):
         answer = integrate(self.rule)

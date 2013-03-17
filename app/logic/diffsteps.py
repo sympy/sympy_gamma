@@ -108,6 +108,20 @@ def trig_rule(derivative):
             default,
             RewriteRule(f_r, diff_steps(f_r, symbol), expr, symbol)
         ], expr, symbol)
+    elif function == sympy.csc:
+        f_r = 1 / sympy.sin(arg)
+
+        return AlternativeRule([
+            default,
+            RewriteRule(f_r, diff_steps(f_r, symbol), expr, symbol)
+        ], expr, symbol)
+    elif function == sympy.sec:
+        f_r = 1 / sympy.cos(arg)
+
+        return AlternativeRule([
+            default,
+            RewriteRule(f_r, diff_steps(f_r, symbol), expr, symbol)
+        ], expr, symbol)
     elif function == sympy.cot:
         f_r_1 = 1 / sympy.tan(arg)
         f_r_2 = sympy.cos(arg) / sympy.sin(arg)
@@ -383,6 +397,10 @@ class DiffPrinter(object):
                 self.append("The derivative of sine is cosine:")
             elif type(rule.f) == sympy.cos:
                 self.append("The derivative of cosine is negative sine:")
+            elif type(rule.f) == sympy.sec:
+                self.append("The derivative of secant is secant times tangent:")
+            elif type(rule.f) == sympy.csc:
+                self.append("The derivative of cosecant is negative cosecant times cotangent:")
             self.append("{}".format(
                 self.format_math_display(Equals(
                     sympy.Derivative(rule.f, rule.symbol),
@@ -457,6 +475,7 @@ class HTMLPrinter(DiffPrinter, stepprinter.HTMLPrinter):
         if rule.context.func in self.alternative_functions_printed:
             self.print_rule(rule.alternatives[0])
         elif len(rule.alternatives) == 2:
+            self.alternative_functions_printed.add(rule.context.func)
             self.print_rule(rule.alternatives[1])
         else:
             self.alternative_functions_printed.add(rule.context.func)
