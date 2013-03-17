@@ -45,12 +45,6 @@ class IntegralInfo(collections.namedtuple('IntegralInfo', 'integrand symbol')):
             name = 'u_1'
         return sympy.Symbol(name)
 
-def do(rule):
-    def _do(integral):
-        r = rule(integral)
-        return evaluators[r.__class__](integral, *r)
-    return _do
-
 evaluators = {}
 def evaluates(rule):
     def _evaluates(func):
@@ -257,42 +251,52 @@ def integral_steps(integrand, symbol, **options):
         null_safe(partial_fractions_rule),
         fallback_rule)(integral)
 
-def integral(rule):
+@evaluates(ConstantRule)
+def eval_constant(constant, integrand, symbol):
+    return constant * symbol
+
+@evaluates(ConstantTimesRule)
+def eval_constanttimes(constant, other, substep, integrand, symbol):
+    return constant * integrate(substep)
+
+@evaluates(PowerRule)
+def eval_power(base, exp, integrand, symbol):
+    return (base ** (exp + 1)) / (exp + 1)
+
+@evaluates(AddRule)
+def eval_add(substeps, integrand, symbol):
+    return sum(map(integrate, substeps))
+
+@evaluates(URule)
+def eval_u(u_var, u_func, constant, substep, integrand, symbol):
+    result = constant * integrate(substep)
+    return result.subs(u_var, u_func)
+
+@evaluates(TrigRule)
+def eval_trig(func, arg, integrand, symbol):
+    if func == sympy.sin:
+        return -sympy.cos(arg)
+    elif func == sympy.cos:
+        return sympy.sin(arg)
+
+@evaluates(LogRule)
+def eval_log(func, integrand, symbol):
+    return sympy.ln(sympy.Abs(func))
+
+@evaluates(ArctanRule)
+def eval_arctan(integrand, symbol):
+    return sympy.atan(symbol)
+
+@evaluates(AlternativeRule)
+def eval_alternative(alternatives, integrand, symbol):
+    return integrate(alternatives[0])
+
+@evaluates(RewriteRule)
+def eval_rewrite(rewritten, substep, integrand, symbol):
+    return integrate(substep)
+
+def integrate(rule):
     return evaluators[rule.__class__](*rule)
-
-def intmanually(rule):
-    if isinstance(rule, ConstantRule):
-        return rule.constant * rule.symbol
-
-    elif isinstance(rule, PowerRule):
-        return (rule.base ** (rule.exp + 1)) / (rule.exp + 1)
-
-    elif isinstance(rule, AddRule):
-        return sum(map(intmanually, rule.substeps))
-
-    elif isinstance(rule, ConstantTimesRule):
-        return rule.constant * intmanually(rule.substep)
-
-    elif isinstance(rule, URule):
-        result = rule.constant * intmanually(rule.substep)
-        return result.subs(rule.u_var, rule.u_func)
-
-    elif isinstance(rule, TrigRule):
-        if rule.func == sympy.sin:
-            return -sympy.cos(rule.arg)
-        elif rule.func == sympy.cos:
-            return sympy.sin(rule.arg)
-
-    elif isinstance(rule, LogRule):
-        return sympy.ln(sympy.Abs(rule.func))
-
-    elif isinstance(rule, ArctanRule):
-        return sympy.atan(rule.symbol)
-
-    elif isinstance(rule, RewriteRule):
-        return intmanually(rule.substep)
-
-    return None
 
 class IntegralPrinter(object):
     def __init__(self, rule):
@@ -334,7 +338,7 @@ class IntegralPrinter(object):
             self.append(
                 self.format_math_display(
                     Equals(sympy.Integral(rule.constant, rule.symbol),
-                           intmanually(rule))))
+                           integrate(rule))))
 
     def print_ConstantTimes(self, rule):
         with self.new_step():
@@ -348,7 +352,7 @@ class IntegralPrinter(object):
             with self.new_level():
                 self.print_rule(rule.substep)
             self.append("So, the result is: {}".format(
-                self.format_math(intmanually(rule))))
+                self.format_math(integrate(rule))))
 
     def print_Power(self, rule):
         with self.new_step():
@@ -360,7 +364,7 @@ class IntegralPrinter(object):
             self.append(
                 self.format_math_display(
                     Equals(sympy.Integral(rule.context, rule.symbol),
-                           intmanually(rule))))
+                           integrate(rule))))
 
     def print_Add(self, rule):
         with self.new_step():
@@ -369,7 +373,7 @@ class IntegralPrinter(object):
                 with self.new_level():
                     self.print_rule(substep)
             self.append("The result is: {}".format(
-                self.format_math(intmanually(rule))))
+                self.format_math(integrate(rule))))
 
     def print_U(self, rule):
         with self.new_step():
@@ -389,7 +393,7 @@ class IntegralPrinter(object):
             self.append("Now substitute {} back in:".format(
                 self.format_math(u)))
 
-            self.append(self.format_math_display(intmanually(rule)))
+            self.append(self.format_math_display(integrate(rule)))
 
     def print_Trig(self, rule):
         with self.new_step():
@@ -399,20 +403,20 @@ class IntegralPrinter(object):
                 self.append("The integral of cosine is sine:")
             self.append(self.format_math_display(
                 Equals(sympy.Integral(rule.context, rule.symbol),
-                       intmanually(rule))))
+                       integrate(rule))))
 
     def print_Log(self, rule):
         with self.new_step():
             self.append("The integral of {} is {}.".format(
                 self.format_math(1 / rule.func),
-                self.format_math(intmanually(rule))
+                self.format_math(integrate(rule))
             ))
 
     def print_Arctan(self, rule):
         with self.new_step():
             self.append("The integral of {} is {}.".format(
                 self.format_math(1 / (1 + rule.symbol ** 2)),
-                self.format_math(intmanually(rule))
+                self.format_math(integrate(rule))
             ))
 
     def print_Rewrite(self, rule):
@@ -444,7 +448,7 @@ class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
                         self.print_rule(r)
 
     def finalize(self):
-        answer = intmanually(self.rule)
+        answer = integrate(self.rule)
         if answer:
             simp = sympy.simplify(sympy.trigsimp(answer))
             if simp != answer:
