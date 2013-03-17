@@ -6,7 +6,14 @@ from sympy.functions.elementary.trigonometric import TrigonometricFunction
 from sympy.strategies.core import switch, identity, do_one, null_safe
 
 def Rule(name, props=""):
-    return collections.namedtuple(name, props + " context symbol")
+    # GOTCHA: namedtuple class name not considered!
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and tuple.__eq__(self, other)
+    __neq__ = lambda self, other: not __eq__(self, other)
+    cls = collections.namedtuple(name, props + " context symbol")
+    cls.__eq__ = __eq__
+    cls.__ne__ = __neq__
+    return cls
 
 ConstantRule = Rule("ConstantRule", "constant")
 ConstantTimesRule = Rule("ConstantTimesRule", "constant other substep")
@@ -134,6 +141,7 @@ def arctan_rule(integral):
                         sympy.Rational(1, a), other,
                         substep, integrand, symbol)
                 return substep
+
             return ArctanRule(integrand, symbol)
 
 def add_rule(integral):
@@ -213,13 +221,13 @@ def substitution_rule(integral):
 
 def partial_fractions_rule(integral):
     integrand, symbol = integral
-
     if integrand.is_rational_function():
         rewritten = sympy.apart(integrand)
-        return RewriteRule(
-            rewritten,
-            integral_steps(rewritten, symbol),
-            integrand, symbol)
+        if rewritten != integrand:
+            return RewriteRule(
+                rewritten,
+                integral_steps(rewritten, symbol),
+                integrand, symbol)
 
 def fallback_rule(integral):
     return DontKnowRule(*integral)
@@ -236,13 +244,12 @@ def integral_steps(integrand, symbol, **options):
             return 'constant'
         else:
             return integrand.func
-
     return do_one(
         null_safe(switch(key, {
-            sympy.Pow: power_rule,
+            sympy.Pow: do_one(null_safe(power_rule), null_safe(arctan_rule)),
             sympy.Symbol: power_rule,
             sympy.Add: add_rule,
-            sympy.Mul: do_one(mul_rule, arctan_rule),
+            sympy.Mul: mul_rule,
             TrigonometricFunction: trig_rule,
             'constant': constant_rule
         })),
