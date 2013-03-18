@@ -1,19 +1,10 @@
 import sympy
 import collections
 import stepprinter
-from stepprinter import functionnames, Equals
+from stepprinter import functionnames, Equals, Rule
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
-from sympy.strategies.core import switch, identity, do_one, null_safe
-
-def Rule(name, props=""):
-    # GOTCHA: namedtuple class name not considered!
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and tuple.__eq__(self, other)
-    __neq__ = lambda self, other: not __eq__(self, other)
-    cls = collections.namedtuple(name, props + " context symbol")
-    cls.__eq__ = __eq__
-    cls.__ne__ = __neq__
-    return cls
+from sympy.simplify import fraction
+from sympy.strategies.core import switch, identity, do_one, null_safe, condition
 
 ConstantRule = Rule("ConstantRule", "constant")
 ConstantTimesRule = Rule("ConstantTimesRule", "constant other substep")
@@ -55,11 +46,15 @@ def evaluates(rule):
 
 # Method based on that on SIN, described in "Symbolic Integration: The
 # Stormy Decade"
-def find_substitutions(integrand, symbol):
+
+def find_substitutions(integrand, symbol, u_var):
     results = []
 
-    def subterm_constant(func, u_diff):
-        quotient = sympy.simplify(integrand / (func * u_diff))
+    def splice(l, index, item):
+        return list(l[:index]) + [item] + list(l[index+1:])
+
+    def test_subterm(replaced_integrand, u_diff):
+        quotient = sympy.trigsimp(sympy.simplify(replaced_integrand / u_diff), deep=True)
         if quotient.is_constant(symbol):
             return quotient
         return None
@@ -68,28 +63,60 @@ def find_substitutions(integrand, symbol):
         if term.func in (sympy.sin, sympy.cos, sympy.tan,
                          sympy.asin, sympy.acos, sympy.atan,
                          sympy.exp, sympy.log):
-            return [(term, arg) for arg in term.args]
+            return [(term.args[0], term.func(u_var))]
         elif term.func == sympy.Mul:
-            return [(arg, arg) for arg in term.args]
-        elif term.func == sympy.Pow:
-            if term.args[1].is_constant(symbol):
-                return [(term, term.args[0])]
-            elif term.args[0].is_constant(symbol):
-                return [(term, term.args[1])]
+            r = []
+            for i, u in enumerate(term.args):
+                numer, denom = fraction(u)
+                if numer == 1:
+                    r.append((denom, sympy.Mul(*splice(term.args, i, 1/u_var))))
+                else:
+                    r.append((u, sympy.Mul(*splice(term.args, i, u_var))))
+            for i, term in enumerate(term.args):
+                for u, replaced in possible_subterms(term):
+                    r.append((u, integrand.func(*splice(integrand.args, i, replaced))))
+            return r
+        # elif term.func == sympy.Pow:
+        #     if term.args[1].is_constant(symbol):
+        #         return [(term, term.args[0])]
+        #     elif term.args[0].is_constant(symbol):
+        #         return [(term, term.args[1])]
         return []
 
-    for func, term in possible_subterms(integrand):
-        c = subterm_constant(func, term.diff(symbol))
-        if c is not None:
-            results.append((c, term))
-
-        subterms = possible_subterms(term)
-        for func, subterm in subterms:
-            c = subterm_constant(func, subterm.diff(symbol))
-            if c is not None:
-                results.append((c, subterm))
+    for u, replaced in possible_subterms(integrand):
+        new_integrand = test_subterm(replaced.rewrite('sincos'), u.rewrite('sincos').diff(symbol))
+        if new_integrand is not None:
+            constant = new_integrand.as_coeff_mul()[0]
+            results.append((u, constant, new_integrand))
 
     return results
+
+def rewriter(condition, rewrite):
+    """Strategy that rewrites an integrand."""
+    def _rewriter(integral):
+        integrand, symbol = integral
+        if condition(*integral):
+            rewritten = rewrite(*integral)
+            if rewritten != integrand:
+                return RewriteRule(
+                    rewritten,
+                    integral_steps(rewritten, symbol),
+                    integrand, symbol)
+    return _rewriter
+
+def alternatives(*rules):
+    """Strategy that makes an AlternativeRule out of multiple possible results."""
+    def _alternatives(integral):
+        alts = []
+        for rule in rules:
+            result = rule(integral)
+            if result and not isinstance(result, DontKnowRule) and result != integral:
+                alts.append(result)
+        if len(alts) == 1:
+            return alts[0]
+        elif len(alts) > 1:
+            return AlternativeRule(alts, *integral)
+    return _alternatives
 
 def constant_rule(integral):
     integrand, symbol = integral
@@ -103,6 +130,13 @@ def power_rule(integral):
         if sympy.simplify(exp + 1) == 0:
             return LogRule(base, integrand, symbol)
         return PowerRule(base, exp, integrand, symbol)
+    elif base.is_constant(symbol) and exp.func == sympy.Symbol:
+        return ExpRule(base, exp, integrand, symbol)
+
+def exp_rule(integral):
+    integrand, symbol = integral
+    if integrand.args[0].func == sympy.Symbol:
+        return ExpRule(sympy.E, integrand.args[0], integrand, symbol)
 
 def arctan_rule(integral):
     integrand, symbol = integral
@@ -175,6 +209,18 @@ def trig_rule(integral):
         rewritten = sympy.sin(*integrand.args) / sympy.cos(*integrand.args)
     elif func == sympy.cot:
         rewritten = sympy.cos(*integrand.args) / sympy.sin(*integrand.args)
+    elif func == sympy.sec:
+        rewritten = sympy.Mul(
+            integrand,
+            sympy.sec(*integrand.args) + sympy.tan(*integrand.args),
+            1 / (sympy.sec(*integrand.args) + sympy.tan(*integrand.args)),
+            evaluate=False)
+    elif func == sympy.csc:
+        rewritten = sympy.Mul(
+            integrand,
+            sympy.csc(*integrand.args) + sympy.cot(*integrand.args),
+            1 / (sympy.csc(*integrand.args) + sympy.cot(*integrand.args)),
+            evaluate=False)
     return RewriteRule(
         rewritten,
         integral_steps(rewritten, symbol, u_var=integral.u_var),
@@ -184,15 +230,12 @@ def trig_rule(integral):
 def substitution_rule(integral):
     integrand, symbol = integral
 
-    substitutions = find_substitutions(integrand, symbol)
+    u_var = integral.u_var
+    substitutions = find_substitutions(integrand, symbol, u_var)
     if substitutions:
         ways = []
-        u_var = integral.u_var
         new_u = integral.new_u_var(u_var)
-        for substitution in substitutions:
-            c, u_func = substitution
-            substituted = integrand / u_func.diff(symbol) / c
-            substituted = substituted.subs(u_func, u_var)
+        for u_func, c, substituted in substitutions:
             ways.append(URule(u_var, u_func, c,
                               integral_steps(substituted, u_var, u_var=new_u),
                               integrand, symbol))
@@ -203,7 +246,6 @@ def substitution_rule(integral):
             return ways[0]
 
     elif integrand.has(sympy.exp):
-        u_var = integral.u_var
         u_func = sympy.exp(symbol)
         c = 1
         substituted = integrand / u_func.diff(symbol)
@@ -213,15 +255,15 @@ def substitution_rule(integral):
                      integral_steps(substituted, u_var, u_var=new_u),
                      integrand, symbol)
 
-def partial_fractions_rule(integral):
-    integrand, symbol = integral
-    if integrand.is_rational_function():
-        rewritten = sympy.apart(integrand)
-        if rewritten != integrand:
-            return RewriteRule(
-                rewritten,
-                integral_steps(rewritten, symbol),
-                integrand, symbol)
+partial_fractions_rule = rewriter(
+    lambda integrand, symbol: integrand.is_rational_function(),
+    lambda integrand, symbol: integrand.apart(symbol))
+
+distribute_expand_rule = rewriter(
+    lambda integrand, symbol: (
+        all(arg.is_Pow or arg.is_polynomial(symbol) for arg in integrand.args)
+        or integrand.func == sympy.Pow),
+    lambda integrand, symbol: integrand.expand())
 
 def fallback_rule(integral):
     return DontKnowRule(*integral)
@@ -238,17 +280,24 @@ def integral_steps(integrand, symbol, **options):
             return 'constant'
         else:
             return integrand.func
+
     return do_one(
         null_safe(switch(key, {
             sympy.Pow: do_one(null_safe(power_rule), null_safe(arctan_rule)),
             sympy.Symbol: power_rule,
+            sympy.exp: exp_rule,
             sympy.Add: add_rule,
             sympy.Mul: mul_rule,
             TrigonometricFunction: trig_rule,
             'constant': constant_rule
         })),
-        null_safe(substitution_rule),
-        null_safe(partial_fractions_rule),
+        null_safe(
+            alternatives(
+                substitution_rule,
+                condition(lambda integral: key(integral) == sympy.Mul,
+                          partial_fractions_rule),
+                condition(lambda integral: key(integral) in (sympy.Mul, sympy.Pow),
+                          distribute_expand_rule))),
         fallback_rule)(integral)
 
 @evaluates(ConstantRule)
@@ -262,6 +311,10 @@ def eval_constanttimes(constant, other, substep, integrand, symbol):
 @evaluates(PowerRule)
 def eval_power(base, exp, integrand, symbol):
     return (base ** (exp + 1)) / (exp + 1)
+
+@evaluates(ExpRule)
+def eval_exp(base, exp, integrand, symbol):
+    return integrand / sympy.ln(base)
 
 @evaluates(AddRule)
 def eval_add(substeps, integrand, symbol):
@@ -294,6 +347,10 @@ def eval_alternative(alternatives, integrand, symbol):
 @evaluates(RewriteRule)
 def eval_rewrite(rewritten, substep, integrand, symbol):
     return integrate(substep)
+
+@evaluates(DontKnowRule)
+def eval_dontknow(integrand, symbol):
+    return sympy.integrate(integrand, symbol)
 
 def integrate(rule):
     return evaluators[rule.__class__](*rule)
@@ -379,7 +436,8 @@ class IntegralPrinter(object):
         with self.new_step():
             u = rule.u_var
             du = sympy.Symbol('d' + u.name)
-            dx = sympy.Symbol('d' + rule.symbol.name)
+            # commutative always puts the symbol at the end when printed
+            dx = sympy.Symbol('d' + rule.symbol.name, commutative=0)
             self.append("Let {}.".format(
                 self.format_math(Equals(u, rule.u_func))))
             self.append("Then let {} and substitute {}.".format(
@@ -401,6 +459,17 @@ class IntegralPrinter(object):
                 self.append("The integral of sine is negative cosine:")
             elif rule.func == sympy.cos:
                 self.append("The integral of cosine is sine:")
+            self.append(self.format_math_display(
+                Equals(sympy.Integral(rule.context, rule.symbol),
+                       integrate(rule))))
+
+    def print_Exp(self, rule):
+        with self.new_step():
+            if rule.base == sympy.E:
+                self.append("The integral of the exponential function is itself.")
+            else:
+                self.append("The integral of an exponential function is itself"
+                            " divided by the natural logarithm of the base.")
             self.append(self.format_math_display(
                 Equals(sympy.Integral(rule.context, rule.symbol),
                        integrate(rule))))
@@ -440,16 +509,14 @@ class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
         IntegralPrinter.__init__(self, rule)
 
     def print_Alternative(self, rule):
+        # TODO: make more robust
         if rule.context.func in self.alternative_functions_printed:
             self.print_rule(rule.alternatives[0])
-        elif len(rule.alternatives) == 2:
-            self.alternative_functions_printed.add(rule.context.func)
-            self.print_rule(rule.alternatives[1])
         else:
             self.alternative_functions_printed.add(rule.context.func)
             with self.new_step():
                 self.append("There are multiple ways to do this derivative.")
-                for index, r in enumerate(rule.alternatives[1:]):
+                for index, r in enumerate(rule.alternatives):
                     with self.new_collapsible():
                         self.append_header("Method #{}".format(index + 1))
                         with self.new_level():

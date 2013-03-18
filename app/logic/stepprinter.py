@@ -1,7 +1,18 @@
 import sympy
+import collections
 from contextlib import contextmanager
 
 from latexprinter import latex
+
+def Rule(name, props=""):
+    # GOTCHA: namedtuple class name not considered!
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and tuple.__eq__(self, other)
+    __neq__ = lambda self, other: not __eq__(self, other)
+    cls = collections.namedtuple(name, props + " context symbol")
+    cls.__eq__ = __eq__
+    cls.__ne__ = __neq__
+    return cls
 
 def functionnames(numterms):
     if numterms == 2:
