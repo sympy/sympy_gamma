@@ -46,7 +46,7 @@ class QueryLinkNode(template.Node):
         if isinstance(self.query, unicode) or isinstance(self.query, str):
             q = self.query[1:-1]
         else:
-            q = self.query.resolve(self.context)
+            q = self.query.resolve(context)
 
         link = '<a href="/input/?i={0}">{1}</a>'.format(urllib.quote(q), q)
         return link
