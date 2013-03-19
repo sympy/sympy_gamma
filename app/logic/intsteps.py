@@ -274,9 +274,11 @@ def integral_steps(integrand, symbol, **options):
 
     def key(integral):
         integrand = integral.integrand
+
         if isinstance(integrand, TrigonometricFunction):
             return TrigonometricFunction
-        elif integrand.is_constant(symbol):
+        elif integrand.rewrite('sincos').is_constant(symbol):
+            # XXX rewrite as sin/cos to get around issue 3608
             return 'constant'
         else:
             return integrand.func
@@ -322,7 +324,9 @@ def eval_add(substeps, integrand, symbol):
 
 @evaluates(URule)
 def eval_u(u_var, u_func, constant, substep, integrand, symbol):
-    result = constant * integrate(substep)
+    # Don't multiply by constant here as a ConstantTimesRule should have
+    # taken care of doing that
+    result = integrate(substep)
     return result.subs(u_var, u_func)
 
 @evaluates(TrigRule)
