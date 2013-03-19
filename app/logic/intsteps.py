@@ -76,11 +76,11 @@ def find_substitutions(integrand, symbol, u_var):
                 for u, replaced in possible_subterms(term):
                     r.append((u, integrand.func(*splice(integrand.args, i, replaced))))
             return r
-        # elif term.func == sympy.Pow:
-        #     if term.args[1].is_constant(symbol):
-        #         return [(term, term.args[0])]
-        #     elif term.args[0].is_constant(symbol):
-        #         return [(term, term.args[1])]
+        elif term.func == sympy.Pow:
+            if term.args[1].is_constant(symbol):
+                return [(term.args[0], u_var ** term.args[1])]
+            elif term.args[0].is_constant(symbol):
+                return [(term.args[1], term.args[0] ** u_var)]
         return []
 
     for u, replaced in possible_subterms(integrand):
