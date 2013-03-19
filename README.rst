@@ -213,4 +213,5 @@ Original info
 
 Originally realized by Ondřej Čertík (a core SymPy developer) as an online
 Python notebook and Wolfram|Alpha clone for the Google App Engine that would
-showcase SymPy.
+showcase SymPy. The notebook was eventually removed in favor of using SymPy
+Live.
