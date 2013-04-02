@@ -1,10 +1,11 @@
 SymPy Gamma
 ===========
 
-SymPy Gamma (sympy_gamma) is a simple web application based on Google App
-Engine that executes and displays the results of SymPy expressions as well
-as additional related computations. For instance, entering an integer will
-display prime factors, digits in the base-10 expansion, and a factorization
+`SymPy Gamma <http://gamma.sympy.org>` is a simple web application based on
+Google App Engine that executes and displays the results of SymPy
+expressions as well as additional related computations, in a fashion similar
+to that of Wolfram|Alpha. For instance, entering an integer will display
+prime factors, digits in the base-10 expansion, and a factorization
 diagram. Entering a function will give its docstring; in general, entering
 an arbitrary expression will provide the derivative, integral, series
 expansion, plot, and roots.
@@ -54,7 +55,7 @@ Now you are ready to run development web server::
 
 On the Mac, just run::
 
-    $ dev_appserver .
+    $ dev_appserver.py .
 
 (make sure you installed the symlinks as described above).
 
