@@ -95,6 +95,9 @@ class LatexVisitor(ast.NodeVisitor):
                 buffer.pop()
 
             self.latex = ''.join(buffer)
+        elif fname == 'limit' and len(node.args) >= 3:
+            self.latex = sympy.latex(sympy.Limit(*list(map(self.eval_node, node.args))))
+            return
         elif fname[0].lower() == fname[0]:
             buffer.append("\\mathrm{%s}" % fname.replace('_', '\\_'))
             buffer.append('(')
