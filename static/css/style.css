@@ -329,7 +329,7 @@ h1 a img {
 }
 
 .example-group .contents {
-  padding: 0.5em 0.25em;
+  padding: 0.5em 0.5em;
 }
 
 .example-group h4 {
@@ -707,6 +707,14 @@ svg {
   }
   
   .col {
+    width: 360px;
+  }
+
+  .col.example {
+    width: 720px;
+  }
+
+  .col.recent+.col.example {
     width: 360px;
   }
 
