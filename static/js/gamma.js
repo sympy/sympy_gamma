@@ -175,8 +175,14 @@ function setupPreview() {
                     hasMath = false;
                 }
             }
-        });
-    });
+        }).focus(function() {
+            $('#live-preview').slideDown(200);
+            MathJax.Hub.Queue(["Text", preview, $(this).val()]);
+        }).blur(function() {
+            $('#live-preview').slideUp(200);
+        });;
+    })
+
     $('.main .col').hover(
         function() {
             showColumns();

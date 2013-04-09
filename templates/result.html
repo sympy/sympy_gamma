@@ -15,6 +15,9 @@
             </form>
         </div>
         <div class="result">
+            <div id="live-preview">
+                $$ $$
+            </div>
             {% for cell in result %}
                 <div class="result_card{% if cell.error or cell.exception_info %} result_card_error{%endif%}">
                     <div class="card_title">
