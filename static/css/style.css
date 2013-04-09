@@ -64,6 +64,17 @@ h1 a img {
   text-decoration: none;
 }
 
+/* Live input preview */
+
+#live-preview {
+  margin: auto;
+  text-align: center;
+  font-size: 2em;
+  display: none;
+}
+
+/* Result cards */
+
 .result_card {
   margin: 10px;
   padding: 10px;
@@ -276,29 +287,54 @@ h1 a img {
   display: block;
 }
 
+.col.example {
+}
+
 .example-group {
+  /* padding: 0.5em 0; */
+  background: #FFF;
   margin: 0.5em 0;
+  box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .example-group h3 {
   font-weight: normal;
   padding: 0;
-  border-bottom: 1px solid #777;
   cursor: pointer;
   font-size: 100%;
+  padding: 0.5em 0.25em;
+}
+
+.example-group h3.shown {
+  border-bottom: 1px solid #777;
+}
+
+.example-group h3:before {
+  background-image: url('/static/images/arrow.png');
+  background-size: 12px;
+  background-position: 6px 50%;
+  background-repeat: no-repeat;
+  content: "";
+  width: 24px;
+  height: 1em;
+  display: inline-block;
+}
+
+.example-group h3.shown:before {
+  -moz-transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.example-group .contents {
+  padding: 0.5em 0.25em;
 }
 
 .example-group h4 {
   font-weight: normal;
-  margin-top: 0.5em;
-}
-
-.example-group h3:before {
-  content: "▸ ";
-}
-
-.example-group h3.shown:before {
-  content: "▾ ";
+  text-transform: uppercase;
 }
 
 .example-group li {
@@ -614,6 +650,12 @@ svg {
   .col.example .example-group li > span:after {
     content: ":";
   }
+
+  .example-group {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border: 1px solid #CCC;
+  }
   
   .input form {
     margin: 0 auto;
@@ -712,6 +754,14 @@ svg {
   }
 
   .col {
+    width: 390px;
+  }
+
+  .col.example {
+    width: 600px;
+  }
+
+  .col.recent+.col.example {
     width: 390px;
   }
 
