@@ -128,6 +128,67 @@ function evaluateCards() {
     return deferred;
 }
 
+function setupPreview() {
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+
+    var shown = true;
+    var hasMath = false;
+
+    var hideColumns = function() {
+        if (shown) {
+            $('.main .col').animate({
+                opacity: 0.5,
+                marginTop: '50px'
+            }, 200);
+            shown = false;
+        }
+    };
+
+    var showColumns = function() {
+        if (!shown) {
+            $('.main .col').clearQueue().animate({
+                opacity: 1,
+                marginTop: 0
+            }, 200);
+            shown = true;
+        }
+    };
+
+    MathJax.Hub.Queue(function() {
+        var preview = MathJax.Hub.getAllJax('live-preview')[0];
+
+        $('.input').find("input[type='text']").keyup(function() {
+            var input = $(this).val();
+
+            MathJax.Hub.Queue(["Text", preview, input]);
+            if (input.length != 0) {
+                if (!hasMath) {
+                    $('#live-preview').slideDown(200);
+                    hasMath = true;
+                }
+                hideColumns();
+            }
+            else {
+                if (hasMath) {
+                    $('#live-preview').slideUp(200);
+                    showColumns();
+                    hasMath = false;
+                }
+            }
+        });
+    });
+    $('.main .col').hover(
+        function() {
+            showColumns();
+        },
+        function() {
+            if (hasMath) {
+                hideColumns();
+            }
+        }
+    );
+}
+
 $(document).ready(function() {
     evaluateCards().done(function() {
         setupGraphs();
@@ -141,6 +202,8 @@ $(document).ready(function() {
 
         // TODO: finish integration with Sphinx
         // setupDocumentation();
+
+        setupPreview();
     });
 
     if (screen.width <= 1024) {
