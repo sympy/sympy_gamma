@@ -135,7 +135,7 @@ function setupPreview() {
     var hasMath = false;
 
     var hideColumns = function() {
-        if (shown) {
+        if (shown && screen.width > 1024) {
             $('.main .col').animate({
                 opacity: 0.5,
                 marginTop: '50px'
@@ -145,7 +145,7 @@ function setupPreview() {
     };
 
     var showColumns = function() {
-        if (!shown) {
+        if (!shown && screen.width > 1024) {
             $('.main .col').clearQueue().animate({
                 opacity: 1,
                 marginTop: 0
