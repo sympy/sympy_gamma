@@ -4,6 +4,8 @@ import sympy
 from sympy.core.function import FunctionClass
 import docutils.core
 from operator import itemgetter
+import diffsteps
+import intsteps
 
 
 class FakeSymPyFunction(object):
@@ -308,6 +310,9 @@ def default_variable(input_evaluated, variable):
 def format_nothing(arg, formatter):
     return arg
 
+def format_steps(arg, formatter):
+    return '<div class="steps">{}</div>'.format(arg)
+
 def format_long_integer(line, integer, variable):
     intstr = str(integer)
     if len(intstr) > 100:
@@ -447,6 +452,22 @@ def eval_factorization_diagram(evaluator, variable, parameters=None):
 def eval_integral(evaluator, variable, parameters=None):
     return sympy.integrate(evaluator.get("input_evaluated"), *variable)
 
+def eval_diffsteps(evaluator, variable, paramters=None):
+    return diffsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
+
+def eval_intsteps(evaluator, variable, paramters=None):
+    if len(variable) != 1:
+        raise ValueError("Can only give steps for single integrals")
+    variable = variable[0]
+
+    try:
+        # For definite integrals
+        variable = variable[0]
+    except TypeError:
+        pass
+
+    return intsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
+
 # http://www.python.org/dev/peps/pep-0257/
 def trim(docstring):
     if not docstring:
@@ -504,6 +525,21 @@ all_cards = {
     'diff': ResultCard("Derivative",
                        "diff(%s, {_var})",
                        sympy.Derivative),
+
+    'diffsteps': FakeResultCard(
+        "Derivative Steps",
+        "diff(%s, {_var})",
+        no_pre_output,
+        format_output_function=format_steps,
+        eval_method=eval_diffsteps),
+
+    'intsteps': FakeResultCard(
+        "Integral Steps",
+        "integrate(%s, {_var})",
+        no_pre_output,
+        format_output_function=format_steps,
+        eval_method=eval_intsteps,
+        format_input_function=format_integral),
 
     'series': ResultCard(
         "Series expansion around 0",
@@ -625,8 +661,8 @@ all_cards['trig_alternate'] = MultiResultCard(
 
 
 result_sets = [
-    (is_integral, extract_integrand, ['integral_fake']),
-    (is_derivative, extract_derivative, ['diff', 'graph']),
+    (is_integral, extract_integrand, ['integral_fake', 'intsteps']),
+    (is_derivative, extract_derivative, ['diff', 'diffsteps', 'graph']),
     (is_fake_function('series'), extract_series, ['series_fake']),
     (is_fake_function('solve'), extract_solve, ['solve_fake']),
     (is_fake_function('solve_poly_system'), extract_solve_poly_system,
