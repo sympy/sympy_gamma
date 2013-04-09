@@ -60,6 +60,10 @@ class IntegralPrinter(object):
             self.print_Add(rule)
         elif isinstance(rule, URule):
             self.print_U(rule)
+        elif isinstance(rule, PartsRule):
+            self.print_Parts(rule)
+        elif isinstance(rule, CyclicPartsRule):
+            self.print_CyclicParts(rule)
         elif isinstance(rule, TrigRule):
             self.print_Trig(rule)
         elif isinstance(rule, ExpRule):
@@ -129,7 +133,7 @@ class IntegralPrinter(object):
                 self.append("Let {}.".format(
                     self.format_math(Equals(u, rule.u_func))))
                 self.append("Then let {} and substitute {}:".format(
-                    self.format_math(Equals(du, rule.u_func.diff(rule.symbol) * dx)),
+                    self.format_math(Equals(du,rule.u_func.diff(rule.symbol) * dx)),
                     self.format_math(rule.constant * du)
                 ))
 
@@ -145,12 +149,92 @@ class IntegralPrinter(object):
 
                 self.append(self.format_math_display(_manualintegrate(rule)))
 
+    def print_Parts(self, rule):
+        with self.new_step():
+            self.append("Use integration by parts:")
+
+            u, v, du, dv = map(lambda f: sympy.Function(f)(rule.symbol), 'u v du dv'.split())
+            self.append(self.format_math_display(
+                Equals(sympy.Integral(u * dv), u * v - sympy.Integral(v * du))
+            ))
+
+            self.append("Let {} and let {}.".format(
+                self.format_math(Equals(u, rule.u)),
+                self.format_math(Equals(dv, rule.dv))
+            ))
+            self.append("Then {}.".format(
+                self.format_math(Equals(du, rule.u.diff(rule.symbol)))
+            ))
+
+            self.append("To find {}:".format(self.format_math(v)))
+
+            with self.new_level():
+                self.print_rule(rule.v_step)
+
+            self.append("Now evaluate the sub-integral.")
+            self.print_rule(rule.second_step)
+
+    def print_CyclicParts(self, rule):
+        with self.new_step():
+            self.append("Use integration by parts, noting that the integrand"
+                        " eventually repeats itself.")
+
+            u, v, du, dv = map(lambda f: sympy.Function(f)(rule.symbol), 'u v du dv'.split())
+            current_integrand = rule.context
+            total_result = sympy.S.Zero
+            with self.new_level():
+
+                sign = 1
+                for rl in rule.parts_rules:
+                    with self.new_step():
+                        self.append("For the integrand {}:".format(self.format_math(current_integrand)))
+                        self.append("Let {} and let {}.".format(
+                            self.format_math(Equals(u, rl.u)),
+                            self.format_math(Equals(dv, rl.dv))
+                        ))
+
+                        v_f, du_f = _manualintegrate(rl.v_step), rl.u.diff(rule.symbol)
+
+                        total_result += sign * rl.u * v_f
+                        current_integrand = v_f * du_f
+
+                        self.append("Then {}.".format(
+                            self.format_math(
+                                Equals(
+                                    sympy.Integral(rule.context, rule.symbol),
+                                    total_result - sign * sympy.Integral(current_integrand, rule.symbol)))
+                        ))
+                        sign *= -1
+                with self.new_step():
+                    self.append("Notice that the integrand has repeated itself, so "
+                                "move it to one side:")
+                    self.append("{}".format(
+                        self.format_math_display(Equals(
+                            (1 - rule.coefficient) * sympy.Integral(rule.context, rule.symbol),
+                            total_result
+                        ))
+                    ))
+                    self.append("Therefore,")
+                    self.append("{}".format(
+                        self.format_math_display(Equals(
+                            sympy.Integral(rule.context, rule.symbol),
+                            _manualintegrate(rule)
+                        ))
+                    ))
+
+
     def print_Trig(self, rule):
         with self.new_step():
-            if rule.func == sympy.sin:
-                self.append("The integral of sine is negative cosine:")
-            elif rule.func == sympy.cos:
-                self.append("The integral of cosine is sine:")
+            text = {
+                'sin': "The integral of sine is negative cosine:",
+                'cos': "The integral of cosine is sine:",
+                'sec*tan': "The integral of secant times tangent is secant:",
+                'csc*cot': "The integral of cosecant times cotangent is cosecant:",
+            }.get(rule.func)
+
+            if text:
+                self.append(text)
+
             self.append(self.format_math_display(
                 Equals(sympy.Integral(rule.context, rule.symbol),
                        _manualintegrate(rule))))
