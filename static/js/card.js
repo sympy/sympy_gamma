@@ -16,12 +16,10 @@ var Card = (function() {
         this.parameterValues = {};
 
         if (this.parameters.indexOf('digits') !== -1) {
-            var moreDigits =
-                $('<button>More Digits</button>').addClass('card_options_toggle');
+            this.addOptionsSection();
+            var moreDigits = this.addOptionsButton('More Digits');
+
             this.parameter('digits', 15);
-            this.output.parent().append(
-                $("<div/>").addClass('card_options').append(moreDigits)
-            );
             moreDigits.click($.proxy(function() {
                 var delta = 10;
                 if (this.parameter('digits') <= 15) {
@@ -33,14 +31,20 @@ var Card = (function() {
         }
 
         if (this.card_name === 'integral') {
-            var seeSteps =
-                $('<button>See Steps</button>').addClass('card_options_toggle');
-            this.output.parent().append(
-                $("<div/>").addClass('card_options').append(seeSteps)
-            );
+            this.addOptionsSection();
+            var seeSteps = this.addOptionsButton('See Steps');
 
             seeSteps.click($.proxy(function() {
                 window.location = window.location.origin + '/input/?i=' + 'integrate(' + this.expr + ')';
+            }, this));
+        }
+
+        else if (this.card_name === 'diff') {
+            this.addOptionsSection();
+            var seeSteps = this.addOptionsButton('See Steps');
+
+            seeSteps.click($.proxy(function() {
+                window.location = window.location.origin + '/input/?i=' + 'diff(' + this.expr + ')';
             }, this));
         }
     }
@@ -96,6 +100,21 @@ var Card = (function() {
         this.output.append($("<div/>").html("Error occurred"));
         this.output.children('.loader').fadeOut(500);
     };
+
+    Card.prototype.addOptionsSection = function() {
+        this._optionsSection = $("<div/>").addClass('card_options');
+        this.output.parent().append(this._optionsSection);
+    }
+
+    Card.prototype.addToOptionsSection = function(el) {
+        this._optionsSection.append(el);
+    }
+
+    Card.prototype.addOptionsButton = function(text) {
+        var button = $('<button/>').addClass('card_options_toggle').html(text);
+        this.addToOptionsSection(button);
+        return button;
+    }
 
     return Card;
 })();
