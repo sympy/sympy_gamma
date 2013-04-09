@@ -16,12 +16,11 @@ var Card = (function() {
         this.parameterValues = {};
 
         if (this.parameters.indexOf('digits') !== -1) {
-            var moreDigits = $('<a href="#">More digits…</a>');
+            var moreDigits =
+                $('<button>More Digits</button>').addClass('card_options_toggle');
             this.parameter('digits', 15);
             this.output.parent().append(
-                $("<div/>").addClass('card_options').append(
-                    $('<button/>').append(moreDigits).addClass('card_options_toggle')
-                )
+                $("<div/>").addClass('card_options').append(moreDigits)
             );
             moreDigits.click($.proxy(function() {
                 var delta = 10;
@@ -30,6 +29,18 @@ var Card = (function() {
                 }
                 this.parameter('digits', this.parameter('digits') + delta);
                 this.evaluate();
+            }, this));
+        }
+
+        if (this.card_name === 'integral') {
+            var seeSteps =
+                $('<button>See Steps</button>').addClass('card_options_toggle');
+            this.output.parent().append(
+                $("<div/>").addClass('card_options').append(seeSteps)
+            );
+
+            seeSteps.click($.proxy(function() {
+                window.location = window.location.origin + '/input/?i=' + 'integrate(' + this.expr + ')';
             }, this));
         }
     }
