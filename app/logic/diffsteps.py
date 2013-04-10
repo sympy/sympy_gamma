@@ -2,7 +2,7 @@ import sympy
 import collections
 
 import stepprinter
-from stepprinter import functionnames, Equals
+from stepprinter import functionnames, Equals, replace_u_var
 
 from sympy.core.function import AppliedUndef
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
@@ -16,7 +16,7 @@ PowerRule = Rule("PowerRule", "base exp")
 AddRule = Rule("AddRule", "substeps")
 MulRule = Rule("MulRule", "terms substeps")
 DivRule = Rule("DivRule", "numerator denominator numerstep denomstep")
-ChainRule = Rule("ChainRule", "substep inner innerstep")
+ChainRule = Rule("ChainRule", "substep inner u_var innerstep")
 TrigRule = Rule("TrigRule", "f")
 ExpRule = Rule("ExpRule", "f base")
 LogRule = Rule("LogRule", "arg base")
@@ -40,16 +40,31 @@ def power_rule(derivative):
     base, exp = expr.as_base_exp()
 
     if base.is_constant(symbol):
-        r = ExpRule(expr, base, expr, symbol)
-        chain = exp
+        if isinstance(exp, sympy.Symbol):
+            return ExpRule(expr, base, expr, symbol)
+        else:
+            u = sympy.Dummy()
+            f = base ** u
+            return ChainRule(
+                ExpRule(f, base, f, u),
+                exp, u,
+                diff_steps(exp, symbol),
+                expr, symbol
+            )
+    elif exp.is_constant(symbol):
+        if isinstance(base, sympy.Symbol):
+            return PowerRule(base, exp, expr, symbol)
+        else:
+            u = sympy.Dummy()
+            f = u ** exp
+            return ChainRule(
+                PowerRule(u, exp, f, u),
+                base, u,
+                diff_steps(base, symbol),
+                expr, symbol
+            )
     else:
-        r = PowerRule(base, exp, expr, symbol)
-        chain = base
-
-    if chain.func != sympy.Symbol:
-        return ChainRule(r, chain, diff_steps(chain, symbol), expr, symbol)
-    else:
-        return r
+        return DontKnowRule(expr, symbol)
 
 def add_rule(derivative):
     expr, symbol = derivative.expr, derivative.symbol
@@ -95,9 +110,12 @@ def trig_rule(derivative):
     arg = expr.args[0]
 
     default = TrigRule(expr, expr, symbol)
-    if type(arg) != sympy.Symbol:
-        default = ChainRule(default, arg, diff_steps(arg, symbol),
-                            expr, symbol)
+    if not isinstance(arg, sympy.Symbol):
+        u = sympy.Dummy()
+        default = ChainRule(
+            TrigRule(function(u), function(u), u),
+            arg, u, diff_steps(arg, symbol),
+            expr, symbol)
 
     if function in (sympy.sin, sympy.cos):
         return default
@@ -136,10 +154,12 @@ def trig_rule(derivative):
 def exp_rule(derivative):
     expr, symbol = derivative
     exp = expr.args[0]
-    if type(exp) == sympy.Symbol:
+    if isinstance(exp, sympy.Symbol):
         return ExpRule(expr, sympy.E, expr, symbol)
-    return ChainRule(ExpRule(expr, sympy.E, expr, symbol),
-                     exp(exp, symbol), expr, symbol)
+    else:
+        u = sympy.Dummy()
+        return ChainRule(ExpRule(sympy.exp(u), sympy.E, sympy.exp(u), symbol),
+                         exp, u, expr, symbol)
 
 def log_rule(derivative):
     expr, symbol = derivative
@@ -148,10 +168,12 @@ def log_rule(derivative):
         base = expr.args[1]
     else:
         base = sympy.E
-        if type(arg) == sympy.Symbol:
+        if isinstance(arg, sympy.Symbol):
             return LogRule(arg, base, expr, symbol)
-        return ChainRule(LogRule(arg, base, expr, symbol),
-                         arg(arg, symbol), expr, symbol)
+        else:
+            u = sympy.Dummy()
+            return ChainRule(LogRule(u, base, sympy.log(u, base), symbol),
+                             arg, u, expr, symbol)
 
 def function_rule(derivative):
     return FunctionRule(derivative.expr, derivative.symbol)
@@ -176,8 +198,8 @@ def eval_div(numer, denom, numerstep, denomstep, expr, symbol):
     return (denom * d_numer - numer * d_denom) / (denom **2)
 
 @evaluates(ChainRule)
-def eval_chain(substep, inner, innerstep, expr, symbol):
-    return diff(substep) * diff(innerstep)
+def eval_chain(substep, inner, u_var, innerstep, expr, symbol):
+    return diff(substep).subs(u_var, inner) * diff(innerstep)
 
 @evaluates(PowerRule)
 @evaluates(MulRule)
@@ -236,6 +258,7 @@ def diff_steps(expr, symbol):
     return switch(key, {
         sympy.Pow: power_rule,
         sympy.Symbol: power_rule,
+        sympy.Dummy: power_rule,
         sympy.Add: add_rule,
         sympy.Mul: mul_rule,
         TrigonometricFunction: trig_rule,
@@ -373,7 +396,9 @@ class DiffPrinter(object):
             self.append(self.format_math(diff(rule)))
 
     def print_Chain(self, rule):
-        self.print_rule(rule.substep)
+        with self.new_step(), self.new_u_vars() as (u, du):
+            self.append("Let {}.".format(self.format_math(Equals(u, rule.inner))))
+            self.print_rule(replace_u_var(rule.substep, rule.u_var, u))
         with self.new_step():
             if isinstance(rule.innerstep, FunctionRule):
                 self.append(
@@ -412,12 +437,9 @@ class DiffPrinter(object):
                 self.append("The derivative of {} is itself.".format(
                     self.format_math(sympy.exp(rule.symbol))))
             else:
-                self.append("The derivative of {} is {}.".format(
-                    self.format_math(rule.base ** rule.symbol),
-                    self.format_math(rule.base ** rule.symbol * sympy.ln(rule.base))))
-                self.append("So {}".format(
+                self.append(
                     self.format_math(Equals(sympy.Derivative(rule.f, rule.symbol),
-                                            diff(rule)))))
+                                            diff(rule))))
 
     def print_Log(self, rule):
         with self.new_step():
@@ -496,6 +518,10 @@ class HTMLPrinter(DiffPrinter, stepprinter.HTMLPrinter):
                     self.append("Now simplify:")
                     self.append(self.format_math_display(simp))
         self.lines.append('</ol>')
+        self.lines.append('<hr/>')
+        self.level = 0
+        self.append('The answer is:')
+        self.append(self.format_math_display(answer))
         return '\n'.join(self.lines)
 
 def print_html_steps(function, symbol):
