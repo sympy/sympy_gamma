@@ -2,7 +2,7 @@ import sympy
 import collections
 from contextlib import contextmanager
 
-from latexprinter import latex
+from sympy import latex
 
 def Rule(name, props=""):
     # GOTCHA: namedtuple class name not considered!
@@ -21,6 +21,15 @@ def functionnames(numterms):
         return ["f", "g", "h"]
     else:
         return ["f_{}".format(i) for i in range(numterms)]
+
+def replace_u_var(rule, old_u, new_u):
+    d = rule._asdict()
+    for field, val in d.items():
+        if isinstance(val, sympy.Basic):
+            d[field] = val.subs(old_u, new_u)
+        elif isinstance(val, tuple):
+            d[field] = replace_u_var(val, old_u, new_u)
+    return rule.__class__(**d)
 
 class Equals(sympy.Basic):
     def __init__(self, left, right):
@@ -82,25 +91,30 @@ class HTMLPrinter(LaTeXPrinter):
     @contextmanager
     def new_level(self):
         self.level += 1
-        self.lines.append(self.level * '    ' + '<ol>')
+        self.lines.append(' ' * 4 * self.level + '<ol>')
         yield
-        self.lines.append(self.level * '    ' + '</ol>')
+        self.lines.append(' ' * 4 * self.level + '</ol>')
         self.level -= 1
 
     @contextmanager
     def new_step(self):
-        self.lines.append(self.level * '    ' + '<li>')
+        self.lines.append(' ' * 4 * self.level + '<li>')
         yield self.level
-        self.lines.append(self.level * '    ' + '</li>')
+        self.lines.append(' ' * 4 * self.level + '</li>')
 
     @contextmanager
     def new_collapsible(self):
-        self.lines.append(self.level * '    ' + '<div class="collapsible">')
+        self.lines.append(' ' * 4 * self.level + '<div class="collapsible">')
         yield self.level
-        self.lines.append(self.level * '    ' + '</div>')
+        self.lines.append(' ' * 4 * self.level + '</div>')
+
+    @contextmanager
+    def new_u_vars(self):
+        self.u, self.du = sympy.Symbol('u'), sympy.Symbol('du')
+        yield self.u, self.du
 
     def append(self, text):
-        self.lines.append((self.level + 1) * '    ' + '<p>{}</p>'.format(text))
+        self.lines.append(' ' * 4 * (self.level + 1) + '<p>{}</p>'.format(text))
 
     def append_header(self, text):
-        self.lines.append((self.level + 1) * '    ' + '<h2>{}</h2>'.format(text))
+        self.lines.append(' ' * 4 * (self.level + 1) + '<h2>{}</h2>'.format(text))

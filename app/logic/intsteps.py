@@ -2,19 +2,14 @@ import sympy
 import collections
 from contextlib import contextmanager
 import stepprinter
-from stepprinter import functionnames, Equals, Rule
+from stepprinter import functionnames, Equals, Rule, replace_u_var
 
-from sympy.integrals.manualintegrate import *
-from sympy.integrals.manualintegrate import _manualintegrate
-
-def replace_u_var(rule, old_u, new_u):
-    d = rule._asdict()
-    for field, val in d.items():
-        if isinstance(val, sympy.Basic):
-            d[field] = val.subs(old_u, new_u)
-        elif isinstance(val, tuple):
-            d[field] = replace_u_var(val, old_u, new_u)
-    return rule.__class__(**d)
+from sympy.integrals.manualintegrate import (
+    manualintegrate, _manualintegrate, integral_steps,
+    ConstantRule, ConstantTimesRule, PowerRule, AddRule, URule,
+    PartsRule, CyclicPartsRule, TrigRule, ExpRule, LogRule, ArctanRule,
+    AlternativeRule, DontKnowRule, RewriteRule
+)
 
 def contains_dont_know(rule):
     if isinstance(rule, DontKnowRule):
@@ -43,11 +38,6 @@ class IntegralPrinter(object):
         self.print_rule(rule)
         self.u_name = 'u'
         self.u = self.du = None
-
-    @contextmanager
-    def new_u_vars(self):
-        self.u, self.du = sympy.Symbol('u'), sympy.Symbol('du')
-        yield self.u, self.du
 
     def print_rule(self, rule):
         if isinstance(rule, ConstantRule):
@@ -126,28 +116,27 @@ class IntegralPrinter(object):
                 self.format_math(_manualintegrate(rule))))
 
     def print_U(self, rule):
-        with self.new_step():
-            with self.new_u_vars() as (u, du):
-                # commutative always puts the symbol at the end when printed
-                dx = sympy.Symbol('d' + rule.symbol.name, commutative=0)
-                self.append("Let {}.".format(
-                    self.format_math(Equals(u, rule.u_func))))
-                self.append("Then let {} and substitute {}:".format(
-                    self.format_math(Equals(du,rule.u_func.diff(rule.symbol) * dx)),
-                    self.format_math(rule.constant * du)
-                ))
+        with self.new_step(), self.new_u_vars() as (u, du):
+            # commutative always puts the symbol at the end when printed
+            dx = sympy.Symbol('d' + rule.symbol.name, commutative=0)
+            self.append("Let {}.".format(
+                self.format_math(Equals(u, rule.u_func))))
+            self.append("Then let {} and substitute {}:".format(
+                self.format_math(Equals(du,rule.u_func.diff(rule.symbol) * dx)),
+                self.format_math(rule.constant * du)
+            ))
 
-                integrand = rule.substep.context.subs(rule.u_var, u)
-                self.append(self.format_math_display(
-                    sympy.Integral(integrand, u)))
+            integrand = rule.substep.context.subs(rule.u_var, u)
+            self.append(self.format_math_display(
+                sympy.Integral(integrand, u)))
 
-                with self.new_level():
-                    self.print_rule(replace_u_var(rule.substep, rule.u_var, u))
+            with self.new_level():
+                self.print_rule(replace_u_var(rule.substep, rule.u_var, u))
 
-                self.append("Now substitute {} back in:".format(
-                    self.format_math(u)))
+            self.append("Now substitute {} back in:".format(
+                self.format_math(u)))
 
-                self.append(self.format_math_display(_manualintegrate(rule)))
+            self.append(self.format_math_display(_manualintegrate(rule)))
 
     def print_Parts(self, rule):
         with self.new_step():
@@ -318,6 +307,10 @@ class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
                 self.append("Add the constant of integration:")
                 self.append(self.format_math_display(answer + sympy.Symbol('constant')))
         self.lines.append('</ol>')
+        self.lines.append('<hr/>')
+        self.level = 0
+        self.append('The answer is:')
+        self.append(self.format_math_display(answer + sympy.Symbol('constant')))
         return '\n'.join(self.lines)
 
 def print_html_steps(function, symbol):
