@@ -79,30 +79,19 @@ def mul_rule(derivative):
     expr, symbol = derivative
     terms = expr.args
     is_div = 1 / sympy.Wild("denominator")
-    if len(terms) == 2:
-        if terms[0].is_constant(symbol):
-            return ConstantTimesRule(terms[0], terms[1],
-                                     diff_steps(terms[1], symbol), expr, symbol)
-        elif terms[1].is_constant(symbol):
-            return ConstantTimesRule(terms[1], terms[0],
-                                     diff_steps(terms[0], symbol), expr, symbol)
-        elif (terms[1].match(is_div) and
-            type(terms[1]) == sympy.Pow and terms[1].args[1] == -1):
-            numerator = terms[0]
-            denominator = terms[1].args[0]
-        elif (terms[0].match(is_div) and
-              type(terms[0]) == sympy.Pow and terms[0].args[1] == -1):
-            numerator = terms[1]
-            denominator = terms[0].args[0]
-        else:
-            return MulRule(terms, [diff_steps(g, symbol) for g in terms],
-                           expr, symbol)
 
+    coeff, f = expr.as_independent(symbol)
+
+    if coeff != 1:
+        return ConstantTimesRule(coeff, f, diff_steps(f, symbol), expr, symbol)
+
+    numerator, denominator = expr.as_numer_denom()
+    if denominator != 1:
         return DivRule(numerator, denominator,
                        diff_steps(numerator, symbol),
                        diff_steps(denominator, symbol), expr, symbol)
-    else:
-        return MulRule(terms, [diff_steps(g, symbol) for g in terms], expr, symbol)
+
+    return MulRule(terms, [diff_steps(g, symbol) for g in terms], expr, symbol)
 
 def trig_rule(derivative):
     expr, symbol = derivative
@@ -158,8 +147,9 @@ def exp_rule(derivative):
         return ExpRule(expr, sympy.E, expr, symbol)
     else:
         u = sympy.Dummy()
-        return ChainRule(ExpRule(sympy.exp(u), sympy.E, sympy.exp(u), symbol),
-                         exp, u, expr, symbol)
+        f = sympy.exp(u)
+        return ChainRule(ExpRule(f, sympy.E, f, u),
+                         exp, u, diff_steps(exp, symbol), expr, symbol)
 
 def log_rule(derivative):
     expr, symbol = derivative
@@ -202,7 +192,6 @@ def eval_chain(substep, inner, u_var, innerstep, expr, symbol):
     return diff(substep).subs(u_var, inner) * diff(innerstep)
 
 @evaluates(PowerRule)
-@evaluates(MulRule)
 @evaluates(ExpRule)
 @evaluates(LogRule)
 @evaluates(DontKnowRule)
@@ -210,14 +199,14 @@ def eval_chain(substep, inner, u_var, innerstep, expr, symbol):
 def eval_default(*args):
     func, symbol = args[-2], args[-1]
 
-    if func.func == sympy.Symbol:
+    if isinstance(func, sympy.Symbol):
         func = sympy.Pow(func, 1, evaluate=False)
 
     # Automatically derive and apply the rule (don't use diff() directly as
     # chain rule is a separate step)
     substitutions = []
     mapping = {}
-    constant_symbol = sympy.Symbol('a')
+    constant_symbol = sympy.Dummy()
     for arg in func.args:
         if symbol in arg.free_symbols:
             mapping[symbol] = arg
@@ -228,6 +217,19 @@ def eval_default(*args):
 
     rule = func.func(*substitutions).diff(symbol)
     return rule.subs(mapping)
+
+@evaluates(MulRule)
+def eval_mul(terms, substeps, expr, symbol):
+    diffs = map(diff, substeps)
+
+    result = sympy.S.Zero
+    for i in range(len(terms)):
+        subresult = diffs[i]
+        for index, term in enumerate(terms):
+            if index != i:
+                subresult *= term
+        result += subresult
+    return result
 
 @evaluates(TrigRule)
 def eval_default_trig(*args):
@@ -514,6 +516,7 @@ class HTMLPrinter(DiffPrinter, stepprinter.HTMLPrinter):
         if answer:
             simp = sympy.simplify(answer)
             if simp != answer:
+                answer = simp
                 with self.new_step():
                     self.append("Now simplify:")
                     self.append(self.format_math_display(simp))
