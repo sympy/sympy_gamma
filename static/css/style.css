@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,600);
 @import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
 @import url(http://fonts.googleapis.com/css?family=Gentium+Basic&text=SymPy%20Gamma);
 
@@ -81,6 +81,11 @@ h1 a img {
   background: #FFF;
   -webkit-box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
   box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+  /* padding-bottom: 0px; */
+}
+
+.result_card.no_actions {
+  /* padding-bottom: 10px; */
 }
 
 .result_card.result_card_error {
@@ -143,6 +148,8 @@ h1 a img {
 .result_card .card_options {
   border-top: 1px solid #777;
   font-size: 1em;
+  font-family: 'Open Sans', sans-serif;
+  text-align: left;
 }
 
 .result_card .card_options h2 {
@@ -153,6 +160,24 @@ h1 a img {
 
 .result_card .card_options label {
   margin-left: 0.25em;
+}
+
+.card_actions {
+  display: none;
+  list-style-type: none;
+  font-size: 0.75em;
+  /* color: #81B953; */
+}
+
+.card_actions li {
+  display: inline-block;
+  border-bottom: 2px solid #CCC;
+/*   background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(61,61,61,0) 76%, rgba(15,15,15,0.2) 94%, rgba(0,0,0,0.3) 100%); /\* FF3.6+ *\/ */
+/* background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0)), color-stop(76%,rgba(61,61,61,0)), color-stop(94%,rgba(15,15,15,0.2)), color-stop(100%,rgba(0,0,0,0.3))); /\* Chrome,Safari4+ *\/ */
+/* background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* Chrome10+,Safari5.1+ *\/ */
+/* background: -o-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* Opera 11.10+ *\/ */
+/* background: -ms-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* IE10+ *\/ */
+/* background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* W3C *\/ */
 }
 
 .input {
@@ -291,7 +316,6 @@ h1 a img {
 }
 
 .example-group {
-  /* padding: 0.5em 0; */
   background: #FFF;
   margin: 0.5em 0;
   box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.2);
@@ -333,8 +357,7 @@ h1 a img {
 }
 
 .example-group h4 {
-  font-weight: normal;
-  text-transform: uppercase;
+  font-weight: 600;
 }
 
 .example-group li {
