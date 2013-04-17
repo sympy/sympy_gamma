@@ -110,7 +110,8 @@ function evaluateCards() {
     var requests = [];
 
     $('.result_card').each(function() {
-        var card = new Card($(this));
+        var card = Card.fromCardEl($(this));
+        card.initSpecificFunctionality();
 
         $(this).data('card', card);
 

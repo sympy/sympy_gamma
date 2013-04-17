@@ -1,52 +1,14 @@
 var Card = (function() {
-    function Card(card_el) {
-        this.card = card_el;
-        this.output = card_el.find('.cell_output');
-        this.card_name = this.output.data('card-name');
+    function Card(card_name, variable, expr, parameters) {
+        this.card_name = card_name;
 
         if (typeof this.card_name === "undefined") {
             return;
         }
-
-        this.result = $("<div/>");
-        this.output.append(this.result);
-        this.variable = encodeURIComponent(this.output.data('variable'));
-        this.expr = encodeURIComponent(this.output.data('expr'));
-        this.parameters = this.output.data('parameters');
+        this.variable = variable;
+        this.expr = expr;
+        this.parameters = parameters;
         this.parameterValues = {};
-
-        if (this.parameters.indexOf('digits') !== -1) {
-            this.addOptionsSection();
-            var moreDigits = this.addOptionsButton('More Digits');
-
-            this.parameter('digits', 15);
-            moreDigits.click($.proxy(function() {
-                var delta = 10;
-                if (this.parameter('digits') <= 15) {
-                    delta = 35;
-                }
-                this.parameter('digits', this.parameter('digits') + delta);
-                this.evaluate();
-            }, this));
-        }
-
-        if (this.card_name === 'integral') {
-            this.addOptionsSection();
-            var seeSteps = this.addOptionsButton('See Steps');
-
-            seeSteps.click($.proxy(function() {
-                window.location = window.location.origin + '/input/?i=' + 'integrate(' + this.expr + ')';
-            }, this));
-        }
-
-        else if (this.card_name === 'diff') {
-            this.addOptionsSection();
-            var seeSteps = this.addOptionsButton('See Steps');
-
-            seeSteps.click($.proxy(function() {
-                window.location = window.location.origin + '/input/?i=' + 'diff(' + this.expr + ')';
-            }, this));
-        }
     }
 
     Card.prototype.parameter = function(key, val) {
@@ -91,30 +53,131 @@ var Card = (function() {
                 .addClass('cell_output_plain')
                 .html(data.error);
             this.output.append(error);
-            this.card.addClass('result_card_error');
+            this.element.addClass('result_card_error');
         }
         this.output.children('.loader').fadeOut(500);
     };
 
     Card.prototype.evaluateError = function() {
         this.output.append($("<div/>").html("Error occurred"));
+        this.element.addClass('result_card_error');
         this.output.children('.loader').fadeOut(500);
     };
 
     Card.prototype.addOptionsSection = function() {
         this._optionsSection = $("<div/>").addClass('card_options');
-        this.output.parent().append(this._optionsSection);
-    }
+        this.output.append(this._optionsSection);
+    };
 
     Card.prototype.addToOptionsSection = function(el) {
         this._optionsSection.append(el);
-    }
+    };
 
     Card.prototype.addOptionsButton = function(text) {
         var button = $('<button/>').addClass('card_options_toggle').html(text);
         this.addToOptionsSection(button);
         return button;
-    }
+    };
+
+    Card.prototype.initSpecificFunctionality = function() {
+        if (typeof this.card_name !== "undefined") {
+            if (this.parameters.indexOf('digits') !== -1) {
+                this.addOptionsSection();
+                var moreDigits = this.addOptionsButton('More Digits');
+
+                this.parameter('digits', 15);
+                moreDigits.click($.proxy(function() {
+                    var delta = 10;
+                    if (this.parameter('digits') <= 15) {
+                        delta = 35;
+                    }
+                    this.parameter('digits', this.parameter('digits') + delta);
+                    this.evaluate();
+                }, card));
+            }
+
+            if (this.card_name === 'integral' || this.card_name === 'diff') {
+                this.addOptionsSection();
+                var seeSteps = this.addOptionsButton('See Steps');
+
+                if (this.card_name === 'integral') {
+                    var title = "Integral steps:";
+                    var card_name = 'intsteps';
+                }
+                else if (this.card_name === 'diff') {
+                    var title = "Derivative steps:";
+                    var card_name = 'diffsteps';
+                }
+
+                seeSteps.click($.proxy(function() {
+                    new_card = this.cloneEl();
+                    new_card.find('.card_title').html(title);
+                    new_card.find('.cell_output') .data('card-name', card_name);
+                    new_card.hide();
+
+                    this.element.after(new_card);
+                    Card.loadNewCard(new_card);
+                    seeSteps.remove();
+                }, this));
+            }
+
+            else if (this.card_name === 'graph') {
+                this.addOptionsSection();
+            }
+        }
+        else {
+            this.element.addClass('no_actions');
+        }
+    };
+
+    Card.prototype.setElement = function(el) {
+        this.element = el;
+        this.output = el.find('.cell_output');
+        this.result = $("<div/>");
+        this.output.append(this.result);
+
+        if (typeof this.card_name !== "undefined") {
+            this.element.append($("<ul/>").append([
+                $("<li>Simplify</li>")
+            ]).addClass('card_actions'));
+        }
+    };
+
+    Card.prototype.clone = function() {
+        var new_card = $.extend(true, {}, this);
+        new_card.setElement(this.cloneEl());
+        return new_card;
+    };
+
+    Card.prototype.cloneEl = function() {
+        var el = this.element.clone();
+        el.find('.cell_output').html("");
+        el.find('.card_options').remove();
+        el.find('.card_actions').remove();
+        return el;
+    };
+
+    Card.fromCardEl = function(el) {
+        var output = el.find('.cell_output');
+        var card_name = output.data('card-name');
+        var variable = encodeURIComponent(output.data('variable'));
+        var expr = encodeURIComponent(output.data('expr'));
+        var parameters = output.data('parameters');
+        var card = new Card(card_name, variable, expr, parameters);
+        card.setElement(el);
+        return card;
+    };
+
+    Card.loadNewCard = function(el) {
+        var card = Card.fromCardEl(el);
+        var loader = $("<div/>").addClass('loader');
+        el.before(loader);
+        card.evaluate().always(function() {
+            el.slideDown(500);
+            loader.slideUp(200);
+        });
+        return card;
+    };
 
     return Card;
 })();

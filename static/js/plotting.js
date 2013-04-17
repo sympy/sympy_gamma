@@ -682,7 +682,7 @@ function setupGraphs() {
 
         var moreButton = $('<button>More...</button>')
             .addClass('card_options_toggle');
-        var moreContent = $('<div/>').addClass('card_options');
+        var moreContent = $('<div/>');
 
         var options = $.map(['grid', 'axes', 'points', 'path'], function(opt) {
             var opt = opt;
@@ -751,10 +751,11 @@ function setupGraphs() {
         moreButton.click(function() {
             moreContent.slideToggle();
         });
-        $(this).parents('.result_card').append([
+        var options = $(this).parents('.result_card').find('.card_options');
+        options.append([
             $('<p>Drag plot to pan, (shift-)double-click to zoom, drag edges to resize</p>')
                 .addClass('help')
         ]);
-        $(this).parents('.result_card').append(moreButton).append(moreContent);
+        options.append(moreButton).append(moreContent);
     });
 }
