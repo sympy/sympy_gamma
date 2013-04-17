@@ -39,7 +39,7 @@ def power_rule(derivative):
     expr, symbol = derivative.expr, derivative.symbol
     base, exp = expr.as_base_exp()
 
-    if base.is_constant(symbol):
+    if not base.has(symbol):
         if isinstance(exp, sympy.Symbol):
             return ExpRule(expr, base, expr, symbol)
         else:
@@ -51,7 +51,7 @@ def power_rule(derivative):
                 diff_steps(exp, symbol),
                 expr, symbol
             )
-    elif exp.is_constant(symbol):
+    elif not exp.has(symbol):
         if isinstance(base, sympy.Symbol):
             return PowerRule(base, exp, expr, symbol)
         else:
@@ -95,41 +95,40 @@ def mul_rule(derivative):
 
 def trig_rule(derivative):
     expr, symbol = derivative
-    function = expr.func
     arg = expr.args[0]
 
     default = TrigRule(expr, expr, symbol)
     if not isinstance(arg, sympy.Symbol):
         u = sympy.Dummy()
         default = ChainRule(
-            TrigRule(function(u), function(u), u),
+            TrigRule(expr.func(u), expr.func(u), u),
             arg, u, diff_steps(arg, symbol),
             expr, symbol)
 
-    if function in (sympy.sin, sympy.cos):
+    if isinstance(expr, (sympy.sin, sympy.cos)):
         return default
-    elif function == sympy.tan:
+    elif isinstance(expr, sympy.tan):
         f_r = sympy.sin(arg) / sympy.cos(arg)
 
         return AlternativeRule([
             default,
             RewriteRule(f_r, diff_steps(f_r, symbol), expr, symbol)
         ], expr, symbol)
-    elif function == sympy.csc:
+    elif isinstance(expr, sympy.csc):
         f_r = 1 / sympy.sin(arg)
 
         return AlternativeRule([
             default,
             RewriteRule(f_r, diff_steps(f_r, symbol), expr, symbol)
         ], expr, symbol)
-    elif function == sympy.sec:
+    elif isinstance(expr, sympy.sec):
         f_r = 1 / sympy.cos(arg)
 
         return AlternativeRule([
             default,
             RewriteRule(f_r, diff_steps(f_r, symbol), expr, symbol)
         ], expr, symbol)
-    elif function == sympy.cot:
+    elif isinstance(expr, sympy.cot):
         f_r_1 = 1 / sympy.tan(arg)
         f_r_2 = sympy.cos(arg) / sympy.sin(arg)
         return AlternativeRule([
@@ -252,7 +251,7 @@ def diff_steps(expr, symbol):
             return TrigonometricFunction
         elif isinstance(expr, AppliedUndef):
             return AppliedUndef
-        elif expr.is_constant(symbol):
+        elif not expr.has(symbol):
             return 'constant'
         else:
             return expr.func
@@ -420,13 +419,13 @@ class DiffPrinter(object):
 
     def print_Trig(self, rule):
         with self.new_step():
-            if type(rule.f) == sympy.sin:
+            if isinstance(rule.f, sympy.sin):
                 self.append("The derivative of sine is cosine:")
-            elif type(rule.f) == sympy.cos:
+            elif isinstance(rule.f, sympy.cos):
                 self.append("The derivative of cosine is negative sine:")
-            elif type(rule.f) == sympy.sec:
+            elif isinstance(rule.f, sympy.sec):
                 self.append("The derivative of secant is secant times tangent:")
-            elif type(rule.f) == sympy.csc:
+            elif isinstance(rule.f, sympy.csc):
                 self.append("The derivative of cosecant is negative cosecant times cotangent:")
             self.append("{}".format(
                 self.format_math_display(Equals(
