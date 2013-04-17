@@ -5,11 +5,25 @@ import stepprinter
 from stepprinter import functionnames, Equals, Rule, replace_u_var
 
 from sympy.integrals.manualintegrate import (
-    manualintegrate, _manualintegrate, integral_steps,
+    manualintegrate, _manualintegrate, integral_steps, evaluates,
     ConstantRule, ConstantTimesRule, PowerRule, AddRule, URule,
     PartsRule, CyclicPartsRule, TrigRule, ExpRule, LogRule, ArctanRule,
     AlternativeRule, DontKnowRule, RewriteRule
 )
+
+# Need this to break loops
+# TODO: add manualintegrate flag to integrate
+_evaluating = None
+@evaluates(DontKnowRule)
+def eval_dontknow(context, symbol):
+    global _evaluating
+    if _evaluating == context:
+        return None
+    _evaluating = context
+    result = sympy.integrate(context, symbol)
+    _evaluating = None
+    return result
+
 
 def contains_dont_know(rule):
     if isinstance(rule, DontKnowRule):
@@ -305,12 +319,14 @@ class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
                     self.append(self.format_math_display(simp))
             with self.new_step():
                 self.append("Add the constant of integration:")
-                self.append(self.format_math_display(answer + sympy.Symbol('constant')))
+                self.append(self.format_math_display(
+                    answer + sympy.Symbol('constant', commutative=0)))
         self.lines.append('</ol>')
         self.lines.append('<hr/>')
         self.level = 0
         self.append('The answer is:')
-        self.append(self.format_math_display(answer + sympy.Symbol('constant')))
+        self.append(self.format_math_display(
+            answer + sympy.Symbol('constant', commutative=0)))
         return '\n'.join(self.lines)
 
 def print_html_steps(function, symbol):
