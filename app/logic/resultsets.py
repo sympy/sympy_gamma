@@ -456,15 +456,16 @@ def eval_diffsteps(evaluator, variable, paramters=None):
     return diffsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
 
 def eval_intsteps(evaluator, variable, paramters=None):
-    if len(variable) != 1:
-        raise ValueError("Can only give steps for single integrals")
-    variable = variable[0]
-
-    try:
-        # For definite integrals
+    if not isinstance(variable, sympy.Symbol):
+        if len(variable) != 1:
+            raise ValueError("Can only give steps for single integrals")
         variable = variable[0]
-    except TypeError:
-        pass
+
+        try:
+            # For definite integrals
+            variable = variable[0]
+        except TypeError:
+            pass
 
     return intsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
 
