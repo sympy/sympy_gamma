@@ -20,9 +20,11 @@
                     <div class="card_title">
                         {{ cell.title }}:
                     </div>
+                    {% if cell.input %}
                     <div class="cell_input">
                         <pre>{{ cell.input|safe }}</pre>
                     </div>
+                    {% endif %}
                     {% if cell.output %}
                         <div class="cell_output">
                             {% if cell.pre_output %}

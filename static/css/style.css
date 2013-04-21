@@ -107,11 +107,12 @@ h1 a img {
   margin: 0.25em 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid #777;
+  text-align: left;
 }
 
 .cell_output {
   color: black;
-  border-top: 1px solid  #777;
   padding: 0.25em 0;
   overflow-x: auto;
   overflow-y: visible;
