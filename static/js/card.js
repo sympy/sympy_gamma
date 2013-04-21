@@ -96,11 +96,11 @@ var Card = (function() {
                 }, card));
             }
 
-            if (this.card_name === 'integral' || this.card_name === 'diff') {
+            if (this.card_name === 'integral_alternate' || this.card_name === 'diff') {
                 this.addOptionsSection();
                 var seeSteps = this.addOptionsButton('See Steps');
 
-                if (this.card_name === 'integral') {
+                if (this.card_name === 'integral_alternate') {
                     var title = "Integral steps:";
                     var card_name = 'intsteps';
                 }
