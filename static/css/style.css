@@ -379,6 +379,13 @@ h1 a img {
   font-size: 90%;
 }
 
+#footer {
+  margin: auto;
+  font-size: 0.75em;
+  clear: both;
+  padding: 2em 0;
+}
+
 /* General styling */
 
 h2 {
@@ -698,7 +705,7 @@ svg {
     border-radius: 0;
   }
 
-  .result {
+  .result, #footer {
     width: 100%;
     margin: 10px auto;
   }
@@ -716,7 +723,7 @@ svg {
 
 /* Tablets and base for desktops */
 @media screen and (min-device-width: 768px) {
-  .result {
+  .result, #footer {
     width: 600px;
     margin: 10px auto;
   }

@@ -2,6 +2,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 from django.utils import simplejson
 from django import forms
+import django
 
 from google.appengine.api import users
 
@@ -13,11 +14,11 @@ from logic.resultsets import get_card, fake_sympy_function, find_result_set
 import settings
 import models
 
-import logging
-import cgi
+import os
 import random
 import json
 import urllib2
+import datetime
 
 LIVE_URL = '<a href="http://live.sympy.org">SymPy Live</a>'
 LIVE_PROMOTION_MESSAGES = [
@@ -49,9 +50,21 @@ def authenticate(view):
         else:
             params['auth_url'] = users.create_login_url("/")
             params['auth_message'] = "Login"
+        return template, params
+    return _wrapper
+
+def app_version(view):
+    def _wrapper(request, **kwargs):
+        template, params = view(request, **kwargs)
+        version, deployed = os.environ['CURRENT_VERSION_ID'].split('.')
+        deployed = datetime.datetime.fromtimestamp(long(deployed) / pow(2, 28))
+        deployed = deployed.strftime("%d/%m/%y %X")
+        params['app_version'] = version
+        params['app_deployed'] = deployed
         return render_to_response(template, params)
     return _wrapper
 
+@app_version
 @authenticate
 def index(request, user):
     form = SearchForm()
@@ -69,6 +82,7 @@ def index(request, user):
         "history": history
         })
 
+@app_version
 @authenticate
 def input(request, user):
     if request.method == "GET":
@@ -97,6 +111,7 @@ def input(request, user):
                 "promote_live": random.choice(LIVE_PROMOTION_MESSAGES)
                 })
 
+@app_version
 @authenticate
 def about(request, user):
     return ("about.html", {
@@ -155,3 +170,11 @@ def remove_query(request, qid):
         }
 
     return HttpResponse(json.dumps(response), mimetype='application/json')
+
+@app_version
+def view_404(request):
+    return ("404.html", {})
+
+@app_version
+def view_500(request):
+    return ("500.html", {})
