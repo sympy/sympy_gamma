@@ -31,6 +31,19 @@ def replace_u_var(rule, old_u, new_u):
             d[field] = replace_u_var(val, old_u, new_u)
     return rule.__class__(**d)
 
+# def replace_all_u_vars(rule, replacements=None):
+#     if replacements is None:
+#         replacements = []
+
+#     d = rule._asdict()
+#     for field, val in d.items():
+#         if isinstance(val, sympy.Basic):
+#             for dummy in val.find(sympy.Dummy):
+#                 replacements.append((dummy, ))
+#         elif isinstance(val, tuple):
+#             pass
+#     return rule.__class__(**d)
+
 class Equals(sympy.Basic):
     def __init__(self, left, right):
         self.left = left

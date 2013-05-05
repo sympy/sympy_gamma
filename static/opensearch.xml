@@ -2,5 +2,5 @@
                        xmlns:moz="http://www.mozilla.org/2006/browser/search/">
    <ShortName>SymPy Gamma</ShortName>
    <Description>Query SymPy Gamma</Description>
-   <Url type="text/html" template="http://gamma.sympy.org/input/?i={searchTerms}"/>
+   <Url type="text/html" template="http://www.sympygamma.com/input/?i={searchTerms}"/>
 </OpenSearchDescription>
