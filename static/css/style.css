@@ -64,15 +64,6 @@ h1 a img {
   text-decoration: none;
 }
 
-/* Live input preview */
-
-#live-preview {
-  margin: auto;
-  text-align: center;
-  font-size: 2em;
-  display: none;
-}
-
 /* Result cards */
 
 .result_card {
@@ -100,6 +91,11 @@ h1 a img {
 
 .card_title {
   font-size: 12pt;
+}
+
+.card_title a:link, .card_title a:visited, .card_title a:hover, .card_title a:active {
+  color: inherit;
+  text-decoration: none;
 }
 
 .cell_input {
