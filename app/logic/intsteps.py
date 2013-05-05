@@ -307,6 +307,10 @@ class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
                         with self.new_level():
                             self.print_rule(r)
 
+    def format_math_constant(self, math):
+        return '<script type="math/tex; mode=display">{}</script>'.format(
+            sympy.latex(math) + r'+ \mathrm{constant}')
+
     def finalize(self):
         rule = filter_unknown_alternatives(self.rule)
         answer = _manualintegrate(rule)
@@ -319,14 +323,12 @@ class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
                     self.append(self.format_math_display(simp))
             with self.new_step():
                 self.append("Add the constant of integration:")
-                self.append(self.format_math_display(
-                    answer + sympy.Symbol('constant', commutative=0)))
+                self.append(self.format_math_constant(answer))
         self.lines.append('</ol>')
         self.lines.append('<hr/>')
         self.level = 0
         self.append('The answer is:')
-        self.append(self.format_math_display(
-            answer + sympy.Symbol('constant', commutative=0)))
+        self.append(self.format_math_constant(answer))
         return '\n'.join(self.lines)
 
 def print_html_steps(function, symbol):
