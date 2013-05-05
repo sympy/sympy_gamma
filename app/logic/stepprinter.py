@@ -85,8 +85,10 @@ class HTMLPrinter(LaTeXPrinter):
             latex(math))
 
     def format_math_display(self, math):
+        if not isinstance(math, basestring):
+            math = latex(math)
         return '<script type="math/tex; mode=display">{}</script>'.format(
-            latex(math))
+            math)
 
     @contextmanager
     def new_level(self):
