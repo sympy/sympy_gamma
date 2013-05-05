@@ -270,7 +270,10 @@ def diff_steps(expr, symbol):
     })(deriv)
 
 def diff(rule):
-    return evaluators[rule.__class__](*rule)
+    try:
+        return evaluators[rule.__class__](*rule)
+    except KeyError:
+        raise ValueError("Cannot evaluate derivative")
 
 class DiffPrinter(object):
     def __init__(self, rule):

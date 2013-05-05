@@ -174,9 +174,10 @@ class MultiResultCard(ResultCard):
                 result = card.eval(evaluator, variable, parameters)
             except ValueError:
                 continue
-            if result != None and result != original and result not in results:
-                self.cards_used.append(card)
-                results.append((card, result))
+            if result != None and result != original:
+                if not any(result == r[1] for r in results):
+                    self.cards_used.append(card)
+                    results.append((card, result))
         if results:
             self.variable = variable
             self.input_repr = original

@@ -331,5 +331,7 @@ class HTMLPrinter(IntegralPrinter, stepprinter.HTMLPrinter):
 
 def print_html_steps(function, symbol):
     rule = integral_steps(function, symbol)
+    if isinstance(rule, DontKnowRule):
+        raise ValueError("Cannot evaluate integral")
     a = HTMLPrinter(rule)
     return a.finalize()

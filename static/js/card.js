@@ -9,6 +9,8 @@ var Card = (function() {
         this.expr = expr;
         this.parameters = parameters;
         this.parameterValues = {};
+
+        this._evaluateCallbacks = [];
     }
 
     Card.prototype.parameter = function(key, val) {
@@ -56,7 +58,15 @@ var Card = (function() {
             this.element.addClass('result_card_error');
         }
         this.output.children('.loader').fadeOut(500);
+
+        $.each(this._evaluateCallbacks, $.proxy(function(i, f) {
+            f(this);
+        }, this));
     };
+
+    Card.prototype.onEvaluate = function(callback) {
+        this._evaluateCallbacks.push(callback);
+    }
 
     Card.prototype.evaluateError = function() {
         this.output.append($("<div/>").html("Error occurred"));
@@ -112,7 +122,8 @@ var Card = (function() {
                 seeSteps.click($.proxy(function() {
                     new_card = this.cloneEl();
                     new_card.find('.card_title').html(title);
-                    new_card.find('.cell_output') .data('card-name', card_name);
+                    new_card.find('.cell_output').data('card-name', card_name);
+                    new_card.find('.cell_input').remove();
                     new_card.hide();
 
                     this.element.after(new_card);
@@ -120,9 +131,16 @@ var Card = (function() {
                     seeSteps.remove();
                 }, this));
             }
-
             else if (this.card_name === 'graph') {
                 this.addOptionsSection();
+            }
+            else if (this.card_name === 'intsteps' || this.card_name === 'diffsteps') {
+                this.element.hide();
+                this.onEvaluate(function(card) {
+                    if (!card.element.hasClass('result_card_error')) {
+                        card.element.delay(1000).slideDown(1000);
+                    }
+                });
             }
         }
         else {
