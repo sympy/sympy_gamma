@@ -29,6 +29,14 @@ def replace_u_var(rule, old_u, new_u):
             d[field] = val.subs(old_u, new_u)
         elif isinstance(val, tuple):
             d[field] = replace_u_var(val, old_u, new_u)
+        elif isinstance(val, list):
+            result = []
+            for item in val:
+                if isinstance(item, tuple):
+                    result.append(replace_u_var(item, old_u, new_u))
+                else:
+                    result.append(item)
+            d[field] = result
     return rule.__class__(**d)
 
 # def replace_all_u_vars(rule, replacements=None):
