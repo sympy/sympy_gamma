@@ -103,7 +103,7 @@ var Card = (function() {
                     }
                     this.parameter('digits', this.parameter('digits') + delta);
                     this.evaluate();
-                }, card));
+                }, this));
             }
 
             if (this.card_name === 'integral_alternate' || this.card_name === 'diff') {
