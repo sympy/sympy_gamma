@@ -5,6 +5,7 @@ from django import forms
 import django
 
 from google.appengine.api import users
+from google.appengine.runtime import DeadlineExceededError
 
 import sympy
 from logic import Eval, SymPyGamma
@@ -145,6 +146,16 @@ def eval_card(request, card_name):
         except ValueError as e:
             return HttpResponse(json.dumps({
                 'error': e.message
+            }), mimetype="application/json")
+        except DeadlineExceededError:
+            return HttpResponse(json.dumps({
+                'error': 'Computation timed out.'
+            }), mimetype="application/json")
+        except:
+            trace = traceback.format_exc(5)
+            return HttpResponse(json.dumps({
+                'error': ('There was an error in Gamma. For reference'
+                          'the last five traceback entries are: ' + trace)
             }), mimetype="application/json")
 
         result = {
