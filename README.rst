@@ -1,8 +1,8 @@
 SymPy Gamma
 ===========
 
-`SymPy Gamma <http://gamma.sympy.org>`_ is a simple web application based on
-Google App Engine that executes and displays the results of SymPy
+`SymPy Gamma <http://www.sympygamma.com>`_ is a simple web application based
+on Google App Engine that executes and displays the results of SymPy
 expressions as well as additional related computations, in a fashion similar
 to that of Wolfram|Alpha. For instance, entering an integer will display
 prime factors, digits in the base-10 expansion, and a factorization

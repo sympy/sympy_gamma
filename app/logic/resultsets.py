@@ -4,6 +4,8 @@ import sympy
 from sympy.core.function import FunctionClass
 import docutils.core
 from operator import itemgetter
+import diffsteps
+import intsteps
 
 
 class FakeSymPyFunction(object):
@@ -131,6 +133,9 @@ class ResultCard(object):
                 kwargs.setdefault(arg, '')
         return kwargs
 
+    def __repr__(self):
+        return "<ResultCard '{}'>".format(self.title)
+
 
 class FakeResultCard(ResultCard):
     """ResultCard whose displayed expression != actual code.
@@ -161,28 +166,34 @@ class MultiResultCard(ResultCard):
         self.cards_used = []
         original = sympy.sympify(evaluator.eval("input_evaluated"))
         results = []
+
+        # TODO Implicit state is bad, come up with better API
+        # in particular a way to store variable, cards used
         for card in self.cards:
-            result = card.eval(evaluator, variable, parameters)
-            if result != None and result != original and result not in results:
-                # TODO Implicit state is bad, come up with better API
-                self.cards_used.append(card)
-                results.append((card, result))
+            try:
+                result = card.eval(evaluator, variable, parameters)
+            except ValueError:
+                continue
+            if result != None and result != original:
+                if not any(result == r[1] for r in results):
+                    self.cards_used.append(card)
+                    results.append((card, result))
         if results:
+            self.variable = variable
+            self.input_repr = original
             return results
         return "None"
 
     def format_input(self, input_repr, variable):
-        html = ["<ul>"]
-        html.extend(
-            "<li>" + str(c.format_input(input_repr, variable)) + "</li>"
-            for c in self.cards_used)
-        html.append("</ul>")
-        return "\n".join(html)
+        return None
 
     def format_output(self, output, formatter):
         html = ["<ul>"]
         for card, result in output:
             html.append("<li>")
+            html.append('<div class="cell_input">')
+            html.append(card.format_input(self.input_repr, self.variable))
+            html.append('</div>')
             html.append(card.format_output(result, formatter))
             html.append("</li>")
         html.append("</ul>")
@@ -250,8 +261,8 @@ def extract_integrand(input_evaluated, variable):
     assert isinstance(input_evaluated, sympy.Integral)
     if len(input_evaluated.limits[0]) > 1:  # if there are limits
         variable = input_evaluated.limits
-    elif len(input_evaluated.variables) == 1:
-        variable = (input_evaluated.variables[0],)
+    else:
+        variable = input_evaluated.variables
     return input_evaluated.function, variable
 
 def extract_derivative(input_evaluated, variable):
@@ -308,6 +319,9 @@ def default_variable(input_evaluated, variable):
 def format_nothing(arg, formatter):
     return arg
 
+def format_steps(arg, formatter):
+    return '<div class="steps">{}</div>'.format(arg)
+
 def format_long_integer(line, integer, variable):
     intstr = str(integer)
     if len(intstr) > 100:
@@ -316,7 +330,11 @@ def format_long_integer(line, integer, variable):
     return line % intstr
 
 def format_integral(line, integrand, limits):
-    return line.format(_var=', '.join(map(repr, limits))) % integrand
+    try:
+        limits = ', '.join(map(repr, limits))
+    except TypeError:
+        limits = repr(limits)
+    return line.format(_var=limits) % integrand
 
 def format_dict_title(*title):
     def _format_dict(dictionary, formatter):
@@ -447,6 +465,30 @@ def eval_factorization_diagram(evaluator, variable, parameters=None):
 def eval_integral(evaluator, variable, parameters=None):
     return sympy.integrate(evaluator.get("input_evaluated"), *variable)
 
+def _extract_variable_manualintegrate(variable):
+    if not isinstance(variable, sympy.Symbol):
+        if len(variable) != 1:
+            raise ValueError("Only supports single integrals")
+        variable = variable[0]
+
+        try:
+            # For definite integrals
+            variable = variable[0]
+        except TypeError:
+            pass
+    return variable
+
+def eval_integral_manual(evaluator, variable, parameters=None):
+    variable = _extract_variable_manualintegrate(variable)
+    return sympy.integrals.manualintegrate(evaluator.get("input_evaluated"), variable)
+
+def eval_diffsteps(evaluator, variable, paramters=None):
+    return diffsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
+
+def eval_intsteps(evaluator, variable, paramters=None):
+    variable = _extract_variable_manualintegrate(variable)
+    return intsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
+
 # http://www.python.org/dev/peps/pep-0257/
 def trim(docstring):
     if not docstring:
@@ -501,9 +543,37 @@ all_cards = {
         format_input_function=format_integral
     ),
 
+    'integral_manual': ResultCard(
+        "Integral",
+        "sympy.integrals.manualintegrate(%s, {_var})",
+        sympy.Integral),
+
+    'integral_manual_fake': FakeResultCard(
+        "Integral",
+        "sympy.integrals.manualintegrate(%s, {_var})",
+        lambda i, var: sympy.Integral(i, *var),
+        eval_method=eval_integral_manual,
+        format_input_function=format_integral
+    ),
+
     'diff': ResultCard("Derivative",
                        "diff(%s, {_var})",
                        sympy.Derivative),
+
+    'diffsteps': FakeResultCard(
+        "Derivative Steps",
+        "diff(%s, {_var})",
+        no_pre_output,
+        format_output_function=format_steps,
+        eval_method=eval_diffsteps),
+
+    'intsteps': FakeResultCard(
+        "Integral Steps",
+        "integrate(%s, {_var})",
+        no_pre_output,
+        format_output_function=format_steps,
+        eval_method=eval_intsteps,
+        format_input_function=format_integral),
 
     'series': ResultCard(
         "Series expansion around 0",
@@ -616,17 +686,29 @@ def get_card(name):
     return all_cards.get(name, None)
 
 all_cards['trig_alternate'] = MultiResultCard(
-    "Alternate form",
+    "Alternate forms",
     get_card('trigexpand'),
     get_card('trigsimp'),
     get_card('trigsincos'),
     get_card('trigexp')
 )
 
+all_cards['integral_alternate'] = MultiResultCard(
+    "Antiderivative forms",
+    get_card('integral'),
+    get_card('integral_manual')
+)
+
+all_cards['integral_alternate_fake'] = MultiResultCard(
+    "Antiderivative forms",
+    get_card('integral_fake'),
+    get_card('integral_manual_fake')
+)
+
 
 result_sets = [
-    (is_integral, extract_integrand, ['integral_fake']),
-    (is_derivative, extract_derivative, ['diff', 'graph']),
+    (is_integral, extract_integrand, ['integral_alternate_fake', 'intsteps']),
+    (is_derivative, extract_derivative, ['diff', 'diffsteps', 'graph']),
     (is_fake_function('series'), extract_series, ['series_fake']),
     (is_fake_function('solve'), extract_solve, ['solve_fake']),
     (is_fake_function('solve_poly_system'), extract_solve_poly_system,
@@ -642,7 +724,7 @@ result_sets = [
      ['absolute_value', 'polar_angle', 'conjugate']),
     (is_trig, do_nothing, ['trig_alternate']),
     (is_uncalled_function, default_variable, ['function_docs']),
-    (lambda x: True, do_nothing, ['graph', 'roots', 'diff', 'integral', 'series'])
+    (lambda x: True, do_nothing, ['graph', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
 
 def find_result_set(input_evaluated):
