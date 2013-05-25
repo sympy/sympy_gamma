@@ -28,3 +28,6 @@ urlpatterns = patterns(
     # Uncomment the next line to enable the admin:
     # (r'^admin/(.*)', admin.site.root),
 )
+
+handler404 = 'app.views.view_404'
+handler500 = 'app.views.view_500'

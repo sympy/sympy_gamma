@@ -141,6 +141,18 @@ SymPy Gamma
                             <span>…as well as the quotient rule</span>
                             {% make_query_link 'diff(f(x)/g(x))' %}
                         </li>
+                        <li>
+                            <span>Get steps for derivatives</span>
+                            {% make_query_link 'diff((sin(x) * x^2) / (1 + tan(cot(x))))' %}
+                        </li>
+                        <li>
+                            <span>Multiple ways to derive functions</span>
+                            {% make_query_link 'diff(cot(xy), y)' %}
+                        </li>
+                        <li>
+                            <span>Implicit derivatives, too</span>
+                            {% make_query_link 'diff(y(x)^2 - 5sin(x), x)' %}
+                        </li>
                     </ul>
                 </div>
 
@@ -159,6 +171,15 @@ SymPy Gamma
                         <li><span>Exact answers</span>
                             {% make_query_link 'integrate(1/(x**2 + 1), (x, 0, oo))' %}
                             </li>
+                        <li><span>Get steps for integrals</span>
+                            {% make_query_link 'integrate(exp(x) / (1 + exp(2x)))' %}
+                        </li>
+                        <li>
+                            {% make_query_link 'integrate(1 /((x+1)(x+3)(x+5)))' %}
+                        </li>
+                        <li>
+                            {% make_query_link 'integrate((2x+3)**7)' %}
+                        </li>
                     </ul>
                 </div>
 

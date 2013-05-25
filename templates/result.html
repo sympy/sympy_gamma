@@ -18,11 +18,13 @@
             {% for cell in result %}
                 <div class="result_card{% if cell.error or cell.exception_info %} result_card_error{%endif%}">
                     <div class="card_title">
-                        {{ cell.title }}:
+                        <a {% if cell.card %} href="#{{ cell.card }}" title="Link to {{ cell.title }} card" id="{{ cell.card }}" {% endif %}>{{ cell.title }}:</a>
                     </div>
+                    {% if cell.input %}
                     <div class="cell_input">
                         <pre>{{ cell.input|safe }}</pre>
                     </div>
+                    {% endif %}
                     {% if cell.output %}
                         <div class="cell_output">
                             {% if cell.pre_output %}

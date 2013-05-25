@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,600);
 @import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
 @import url(http://fonts.googleapis.com/css?family=Gentium+Basic&text=SymPy%20Gamma);
 
@@ -64,12 +64,19 @@ h1 a img {
   text-decoration: none;
 }
 
+/* Result cards */
+
 .result_card {
   margin: 10px;
   padding: 10px;
   background: #FFF;
   -webkit-box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
   box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
+  /* padding-bottom: 0px; */
+}
+
+.result_card.no_actions {
+  /* padding-bottom: 10px; */
 }
 
 .result_card.result_card_error {
@@ -86,16 +93,22 @@ h1 a img {
   font-size: 12pt;
 }
 
+.card_title a:link, .card_title a:visited, .card_title a:hover, .card_title a:active {
+  color: inherit;
+  text-decoration: none;
+}
+
 .cell_input {
   color: black;
   margin: 0.25em 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid #777;
+  text-align: left;
 }
 
 .cell_output {
   color: black;
-  border-top: 1px solid  #777;
   padding: 0.25em 0;
   overflow-x: auto;
   overflow-y: visible;
@@ -124,10 +137,6 @@ h1 a img {
 }
 
 .result_card .card_options_toggle {
-  background: none;
-  border: none;
-  color: blue;
-  text-decoration: underline;
   cursor: pointer;
   font-family: 'Open Sans', sans-serif;
   font-size: smaller;
@@ -136,6 +145,8 @@ h1 a img {
 .result_card .card_options {
   border-top: 1px solid #777;
   font-size: 1em;
+  font-family: 'Open Sans', sans-serif;
+  text-align: left;
 }
 
 .result_card .card_options h2 {
@@ -146,6 +157,24 @@ h1 a img {
 
 .result_card .card_options label {
   margin-left: 0.25em;
+}
+
+.card_actions {
+  display: none;
+  list-style-type: none;
+  font-size: 0.75em;
+  /* color: #81B953; */
+}
+
+.card_actions li {
+  display: inline-block;
+  border-bottom: 2px solid #CCC;
+/*   background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(61,61,61,0) 76%, rgba(15,15,15,0.2) 94%, rgba(0,0,0,0.3) 100%); /\* FF3.6+ *\/ */
+/* background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0)), color-stop(76%,rgba(61,61,61,0)), color-stop(94%,rgba(15,15,15,0.2)), color-stop(100%,rgba(0,0,0,0.3))); /\* Chrome,Safari4+ *\/ */
+/* background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* Chrome10+,Safari5.1+ *\/ */
+/* background: -o-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* Opera 11.10+ *\/ */
+/* background: -ms-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* IE10+ *\/ */
+/* background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* W3C *\/ */
 }
 
 .input {
@@ -280,29 +309,52 @@ h1 a img {
   display: block;
 }
 
+.col.example {
+}
+
 .example-group {
+  background: #FFF;
   margin: 0.5em 0;
+  box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .example-group h3 {
   font-weight: normal;
   padding: 0;
-  border-bottom: 1px solid #777;
   cursor: pointer;
   font-size: 100%;
+  padding: 0.5em 0.25em;
 }
 
-.example-group h4 {
-  font-weight: normal;
-  margin-top: 0.5em;
+.example-group h3.shown {
+  border-bottom: 1px solid #777;
 }
 
 .example-group h3:before {
-  content: "▸ ";
+  background-image: url('/static/images/arrow.png');
+  background-size: 12px;
+  background-position: 6px 50%;
+  background-repeat: no-repeat;
+  content: "";
+  width: 24px;
+  height: 1em;
+  display: inline-block;
 }
 
 .example-group h3.shown:before {
-  content: "▾ ";
+  -moz-transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.example-group .contents {
+  padding: 0.5em 0.5em;
+}
+
+.example-group h4 {
+  font-weight: 600;
 }
 
 .example-group li {
@@ -327,6 +379,13 @@ h1 a img {
   font-size: 90%;
 }
 
+#footer {
+  margin: auto;
+  font-size: 0.75em;
+  clear: both;
+  padding: 2em 0;
+}
+
 /* General styling */
 
 h2 {
@@ -344,6 +403,29 @@ p {
 button {
   display: block;
   font-family: 'Open Sans', sans-serif;
+  border: 1px solid #552634;
+  color: #FFF;
+  padding: 0.25em;
+  margin: 0.5em 0.25em 0.5em 0;
+  background-color: #552634;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #40252D), color-stop(100%, #370C19));
+  background-image: -webkit-linear-gradient(top, #40252D, #370C19);
+  background-image: -moz-linear-gradient(top, #40252D, #370C19);
+  background-image: -ms-linear-gradient(top, #40252D, #370C19);
+  background-image: -o-linear-gradient(top, #40252D, #370C19);
+  background-image: linear-gradient(top, #40252D, #370C19);
+  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#40252D, endColorstr=#370C19);
+}
+
+button:hover {
+  background-color: #552634;
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #552634), color-stop(100%, #40252D));
+  background-image: -webkit-linear-gradient(top, #552634, #40252D);
+  background-image: -moz-linear-gradient(top, #552634, #40252D);
+  background-image: -ms-linear-gradient(top, #552634, #40252D);
+  background-image: -o-linear-gradient(top, #552634, #40252D);
+  background-image: linear-gradient(top, #552634, #40252D);
+  filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#552634, endColorstr=#40252D);
 }
 
 /* Graphs */
@@ -368,7 +450,7 @@ svg {
   margin: 0;
   padding: 0;
   font-size: smaller;
-  color: #777;
+  color: #555;
 }
 
 /* Factorization diagrams */
@@ -431,6 +513,88 @@ svg {
 .sympy-live-eval-button:hover {
   color: #81B953;
   text-decoration: underline;
+}
+
+/* Derivative/integral steps */
+
+.steps {
+  text-align: left;
+  font-size: 0.9em;
+  font-family: 'Open Sans', Arial, sans-serif;
+  max-width: 1600px;
+  overflow: auto;
+}
+
+.fullscreen {
+  position: absolute;
+  z-index: 1000;
+  background-color: #FFF;
+  opacity: 0.95
+}
+
+.steps li {
+  min-width: 300px;
+}
+
+/* colors from http://gamedev.stackexchange.com/questions/46463 */
+.steps ol {
+  list-style-type: decimal;
+  border-left: 1px solid #FF8080;
+  padding: 0 30px;
+}
+.steps ol h2 {
+  border-bottom: 1px solid #FF8080;
+}
+
+.steps ol ol {
+  list-style-type: upper-alpha;
+  border-left: 1px solid #92D169;
+}
+
+.steps ol ol h2 {
+  border-bottom: 1px solid #92D169;
+}
+
+.steps ol ol ol {
+  list-style-type: upper-roman;
+  border-left: 1px solid #78BEF0;
+}
+
+.steps ol ol ol h2 {
+  border-bottom: 1px solid #78BEF0;
+}
+
+.steps ol ol ol ol {
+  list-style-type: lower-alpha;
+  border-left: 1px solid #CC66C9;
+}
+
+.steps ol ol ol ol h2 {
+  border-bottom: 1px solid #CC66C9;
+}
+
+.steps ol ol ol ol ol {
+  list-style-type: lower-roman;
+  border-left: 1px solid #F2A279;
+}
+
+.steps ol ol ol ol ol h2 {
+  border-bottom: 1px solid #F2A279;
+}
+
+.collapsible > h2 {
+  cursor: pointer;
+  padding: 0;
+  font-size: 1em;
+  margin: 0.25em 0;
+}
+
+.collapsible > h2:before {
+  content: "-";
+}
+
+.collapsible > h2.shown:before {
+  content: "+";
 }
 
 /* Loading PNG */
@@ -513,6 +677,12 @@ svg {
   .col.example .example-group li > span:after {
     content: ":";
   }
+
+  .example-group {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border: 1px solid #CCC;
+  }
   
   .input form {
     margin: 0 auto;
@@ -535,7 +705,7 @@ svg {
     border-radius: 0;
   }
 
-  .result {
+  .result, #footer {
     width: 100%;
     margin: 10px auto;
   }
@@ -547,12 +717,13 @@ svg {
   #mobile-keyboard button {
     width: 2em;
     font-size: 1.25em;
+    margin: 0;
   }
 }
 
 /* Tablets and base for desktops */
 @media screen and (min-device-width: 768px) {
-  .result {
+  .result, #footer {
     width: 600px;
     margin: 10px auto;
   }
@@ -563,6 +734,14 @@ svg {
   }
   
   .col {
+    width: 360px;
+  }
+
+  .col.example {
+    width: 720px;
+  }
+
+  .col.recent+.col.example {
     width: 360px;
   }
 
@@ -613,11 +792,24 @@ svg {
     width: 390px;
   }
 
+  .col.example {
+    width: 600px;
+  }
+
+  .col.recent+.col.example {
+    width: 390px;
+  }
+
   .col.example .example-group li {
     margin: 0;
   }
 
   .col.recent a.remove {
     display: none;
+  }
+
+  .fullscreen .steps {
+    margin: 2em auto;
+    width: 700px;
   }
 }
