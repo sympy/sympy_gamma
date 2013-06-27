@@ -439,7 +439,7 @@ def eval_graph(evaluator, variable, parameters=None):
     }
 
 def eval_factorization(evaluator, variable, parameters=None):
-    number = evaluator.eval("input_evaluated")
+    number = evaluator.get("input_evaluated")
     factors = sympy.ntheory.factorint(number, limit=100)
     smallfactors = {}
     for factor in factors:
