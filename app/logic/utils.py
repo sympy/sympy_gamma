@@ -8,7 +8,6 @@ import sympy
 from sympy.core.relational import Relational
 
 class Eval(object):
-
     def __init__(self, namespace={}):
         self._namespace = namespace
 
@@ -17,6 +16,10 @@ class Eval(object):
 
     def set(self, name, value):
         self._namespace[name] = value
+
+    def eval_node(self, node):
+        tree = ast.fix_missing_locations(ast.Expression(node))
+        return eval(compile(tree, '<string>', 'eval'), self._namespace)
 
     def eval(self, x, use_none_for_exceptions=False, repr_expression=True):
         globals = self._namespace
@@ -66,10 +69,22 @@ class Eval(object):
 
 class LatexVisitor(ast.NodeVisitor):
     EXCEPTIONS = {'integrate': sympy.Integral, 'diff': sympy.Derivative}
+    formatters = {}
 
-    def eval_node(self, node):
-        tree = ast.fix_missing_locations(ast.Expression(node))
-        return eval(compile(tree, '<string>', 'eval'), self.namespace)
+    @staticmethod
+    def formats_function(name):
+        def _formats_function(f):
+            LatexVisitor.formatters[name] = f
+            return f
+        return _formats_function
+
+    def format(self, name, node):
+        formatter = LatexVisitor.formatters.get(name)
+
+        if not formatter:
+            return None
+
+        return formatter(node, self)
 
     def visit_Call(self, node):
         buffer = []
@@ -78,50 +93,109 @@ class LatexVisitor(ast.NodeVisitor):
         # Only apply to lowercase names (i.e. functions, not classes)
         if fname in self.__class__.EXCEPTIONS:
             node.func.id = self.__class__.EXCEPTIONS[fname].__name__
-            self.latex = sympy.latex(self.eval_node(node))
-        elif fname == 'solve':
-            expr = self.eval_node(node.args[0])
-            buffer = ['\\mathrm{solve}\\;', sympy.latex(expr)]
+            self.latex = sympy.latex(self.evaluator.eval_node(node))
+        else:
+            result = self.format(fname, node)
+            if result:
+                self.latex = result
+            elif fname[0].islower():
+                buffer.append("\\mathrm{%s}" % fname.replace('_', '\\_'))
+                buffer.append('(')
 
-            if not isinstance(expr, Relational):
-                buffer.append('=0')
+                latexes = []
+                for arg in node.args:
+                    if isinstance(arg, ast.Call) and arg.func.id[0].lower() == arg.func.id[0]:
+                        latexes.append(self.visit_Call(arg))
+                    else:
+                        latexes.append(sympy.latex(self.evaluator.eval_node(arg)))
 
-            if len(node.args) > 1:
-                buffer.append('\\;\\mathrm{for}\\;')
-            for arg in node.args[1:]:
-                buffer.append(sympy.latex(self.eval_node(arg)))
-                buffer.append(',\\, ')
-            if len(node.args) > 1:
-                buffer.pop()
+                buffer.append(', '.join(latexes))
+                buffer.append(')')
 
-            self.latex = ''.join(buffer)
-        elif fname == 'limit' and len(node.args) >= 3:
-            self.latex = sympy.latex(sympy.Limit(*list(map(self.eval_node, node.args))))
-            return
-        elif fname[0].lower() == fname[0]:
-            buffer.append("\\mathrm{%s}" % fname.replace('_', '\\_'))
-            buffer.append('(')
+                self.latex = ''.join(buffer)
 
-            latexes = []
-            for arg in node.args:
-                if isinstance(arg, ast.Call) and arg.func.id[0].lower() == arg.func.id[0]:
-                    latexes.append(self.visit_Call(arg))
-                else:
-                    latexes.append(sympy.latex(self.eval_node(arg)))
+@LatexVisitor.formats_function('solve')
+def format_solve(node, visitor):
+    expr = visitor.evaluator.eval_node(node.args[0])
+    buffer = [r'\mathrm{solve}\;', sympy.latex(expr)]
 
-            buffer.append(', '.join(latexes))
-            buffer.append(')')
+    if not isinstance(expr, Relational):
+        buffer.append('=0')
 
-            self.latex = ''.join(buffer)
-            return ''.join(buffer)
+    if len(node.args) > 1:
+        buffer.append(r'\;\mathrm{for}\;')
+    for arg in node.args[1:]:
+        buffer.append(sympy.latex(self.evaluator.eval_node(arg)))
+        buffer.append(r',\, ')
+    if len(node.args) > 1:
+        buffer.pop()
+
+    return ''.join(buffer)
+
+@LatexVisitor.formats_function('limit')
+def format_limit(node, visitor):
+    if len(node.args) >= 3:
+        return sympy.latex(
+            sympy.Limit(*[self.evaluator.eval_node(arg) for arg in node.args]))
+
+@LatexVisitor.formats_function('prime')
+def format_prime(node, visitor):
+    number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return ''.join([number,
+                    r'^\mathrm{',
+                    ordinal(int(number)),
+                    r'}\; \mathrm{prime~number}'])
+
+@LatexVisitor.formats_function('isprime')
+def format_isprime(node, visitor):
+    number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return ''.join([r'\mathrm{Is~}', number, r'\mathrm{~prime?}'])
+
+@LatexVisitor.formats_function('nextprime')
+def format_nextprime(node, visitor):
+    number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return r'\mathrm{Least~prime~greater~than~}' + number
+
+@LatexVisitor.formats_function('factorint')
+def format_factorint(node, visitor):
+    number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return r'\mathrm{Prime~factors~of~}' + number
+
+@LatexVisitor.formats_function('solve_poly_system')
+def format_factorint(node, visitor):
+    equations = visitor.evaluator.eval_node(node.args[0])
+    variables = tuple(map(visitor.evaluator.eval_node, node.args[1:]))
+
+    if len(variables) == 1:
+        variables = variables[0]
+
+    return ''.join([r'\mathrm{Solve~} \begin{cases} ',
+                    r'\\'.join(map(sympy.latex, equations)),
+                    r'\end{cases} \mathrm{~for~}',
+                    sympy.latex(variables)])
 
 class TopCallVisitor(ast.NodeVisitor):
+    def __init__(self):
+        super(TopCallVisitor, self).__init__()
+        self.call = None
+
     def visit_Call(self, node):
         self.call = node
 
+    def visit_Name(self, node):
+        if not self.call:
+            self.call = node
+
+# From http://stackoverflow.com/a/739301/262727
+def ordinal(n):
+    if 10 <= n % 100 < 20:
+        return 'th'
+    else:
+       return {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(n % 10, "th")
+
 def latexify(string, evaluator):
     a = LatexVisitor()
-    a.namespace = evaluator._namespace
+    a.evaluator = evaluator
     a.visit(ast.parse(string))
     return a.latex
 
@@ -130,6 +204,39 @@ def topcall(string):
     a.visit(ast.parse(string))
     if hasattr(a, 'call'):
         return getattr(a.call.func, 'id', None)
+    return None
+
+def arguments(string_or_node, evaluator):
+    node = None
+    if not isinstance(string_or_node, ast.Call):
+        a = TopCallVisitor()
+        a.visit(ast.parse(string_or_node))
+
+        if hasattr(a, 'call'):
+            node = a.call
+    else:
+        node = string_or_node
+
+    if node:
+        if isinstance(node, ast.Call):
+            name = getattr(node.func, 'id', None)  # when is it undefined?
+            args, kwargs = None, None
+            if node.args:
+                args = []
+                for n in node.args:
+                    # TODO check if makes call to Basic or not (whitelist Integral, etc)
+                    if isinstance(n, ast.Call) and not getattr(n.func, 'id', ' ')[0].isupper():
+                        args.append(arguments(n, evaluator))
+                    else:
+                        args.append(evaluator.eval_node(n))
+
+            kwargs = node.keywords
+            if kwargs:
+                kwargs = {kwarg.arg: evaluator.eval_node(kwarg.value) for kwarg in kwargs}
+
+            return name, args, kwargs
+        elif isinstance(node, ast.Name):
+            return node.id, None, None
     return None
 
 re_calls = re.compile(r'(Integer|Symbol|Float|Rational)\s*\([\'\"]?([a-zA-Z0-9\.]+)[\'\"]?\s*\)')

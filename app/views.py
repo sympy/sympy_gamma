@@ -10,7 +10,7 @@ from google.appengine.runtime import DeadlineExceededError
 import sympy
 from logic import Eval, SymPyGamma
 from logic.logic import mathjax_latex
-from logic.resultsets import get_card, fake_sympy_function, find_result_set
+from logic.resultsets import get_card, find_result_set
 
 import settings
 import models
@@ -20,6 +20,7 @@ import random
 import json
 import urllib2
 import datetime
+import traceback
 
 LIVE_URL = '<a href="http://live.sympy.org">SymPy Live</a>'
 LIVE_PROMOTION_MESSAGES = [
@@ -121,50 +122,38 @@ def about(request, user):
         })
 
 def eval_card(request, card_name):
-    card = get_card(card_name)
-    if card:
-        variable = request.GET.get('variable')
-        expression = request.GET.get('expression')
-        if not variable or not expression:
-            raise Http404
-
-        variable = urllib2.unquote(variable)
-        expression = urllib2.unquote(expression)
-
-        g = SymPyGamma()
-        _, evaluator, evaluated, _ = g.eval_input(expression)
-        convert_input, _ = find_result_set(evaluated)
-        var = sympy.sympify(variable.encode('utf-8'))
-        evaluated, var = convert_input(evaluated, var)
-        evaluator.set('input_evaluated', evaluated)
-
-        try:
-            parameters = {}
-            for key, val in request.GET.items():
-                parameters[key] = ''.join(val)
-            r = card.eval(evaluator, var, parameters)
-        except ValueError as e:
-            return HttpResponse(json.dumps({
-                'error': e.message
-            }), mimetype="application/json")
-        except DeadlineExceededError:
-            return HttpResponse(json.dumps({
-                'error': 'Computation timed out.'
-            }), mimetype="application/json")
-        except:
-            trace = traceback.format_exc(5)
-            return HttpResponse(json.dumps({
-                'error': ('There was an error in Gamma. For reference'
-                          'the last five traceback entries are: ' + trace)
-            }), mimetype="application/json")
-
-        result = {
-            'value': repr(r),
-            'output': card.format_output(r, mathjax_latex)
-        }
-        return HttpResponse(json.dumps(result), mimetype="application/json")
-    else:
+    variable = request.GET.get('variable')
+    expression = request.GET.get('expression')
+    if not variable or not expression:
         raise Http404
+
+    variable = urllib2.unquote(variable)
+    expression = urllib2.unquote(expression)
+
+    g = SymPyGamma()
+
+    parameters = {}
+    for key, val in request.GET.items():
+        parameters[key] = ''.join(val)
+
+    try:
+        result = g.eval_card(card_name, expression, variable, parameters)
+    except ValueError as e:
+        return HttpResponse(json.dumps({
+            'error': e.message
+        }), mimetype="application/json")
+    except DeadlineExceededError:
+        return HttpResponse(json.dumps({
+            'error': 'Computation timed out.'
+        }), mimetype="application/json")
+    except:
+        trace = traceback.format_exc(5)
+        return HttpResponse(json.dumps({
+            'error': ('There was an error in Gamma. For reference'
+                      'the last five traceback entries are: ' + trace)
+        }), mimetype="application/json")
+
+    return HttpResponse(json.dumps(result), mimetype="application/json")
 
 def remove_query(request, qid):
     user = users.get_current_user()
