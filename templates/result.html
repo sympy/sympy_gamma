@@ -16,6 +16,12 @@
         </div>
         <div class="result">
             {% for cell in result %}
+                {% if cell.ambiguity %}
+                    <div class="result_card did_you_mean">
+                      <p>Did you mean: <a href="/input/?i={{ cell.ambiguity }}">{{ cell.ambiguity }}</a>?</p>
+                      <p>{{ cell.description|safe }}</p>
+                    </div>
+                {% else %}
                 <div class="result_card{% if cell.error or cell.exception_info %} result_card_error{%endif%}">
                     <div class="card_title">
                         <a {% if cell.card %} href="#{{ cell.card }}" title="Link to {{ cell.title }} card" id="{{ cell.card }}" {% endif %}>{{ cell.title }}:</a>
@@ -72,6 +78,7 @@
                         {% endif %}
                     {% endif %}
                 </div>
+            {% endif %}
             {% endfor %}
             <div class="foot">
                 See what <a class="wolfram"

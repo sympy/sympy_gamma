@@ -70,13 +70,12 @@ h1 a img {
   margin: 10px;
   padding: 10px;
   background: #FFF;
-  -webkit-box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
   box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-  /* padding-bottom: 0px; */
 }
 
-.result_card.no_actions {
-  /* padding-bottom: 10px; */
+.did_you_mean {
+  text-align: center;
+  box-shadow: 0px 0px 5px 2px rgba(59, 85, 38, 0.7);
 }
 
 .result_card.result_card_error {

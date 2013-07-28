@@ -56,6 +56,7 @@ var Card = (function() {
                 .html(data.error);
             this.output.append(error);
             this.element.addClass('result_card_error');
+            this.removeOptionsSection();
         }
         this.output.children('.loader').fadeOut(500);
 
@@ -70,6 +71,7 @@ var Card = (function() {
 
     Card.prototype.evaluateError = function() {
         this.output.append($("<div/>").html("Error occurred"));
+        this.removeOptionsSection();
         this.element.addClass('result_card_error');
         this.output.children('.loader').fadeOut(500);
     };
@@ -77,6 +79,10 @@ var Card = (function() {
     Card.prototype.addOptionsSection = function() {
         this._optionsSection = $("<div/>").addClass('card_options');
         this.output.append(this._optionsSection);
+    };
+
+    Card.prototype.removeOptionsSection = function() {
+        this.element.find('.card_options').remove();
     };
 
     Card.prototype.addToOptionsSection = function(el) {
@@ -109,7 +115,14 @@ var Card = (function() {
             if (this.card_name === 'integral_alternate' || this.card_name === 'diff') {
                 if (this.card_name === 'integral_alternate') {
                     // If we're on an integral result page, don't show button
-                    if ($('#intsteps').length !== 0) {
+                    if ($('#intsteps').length) {
+                        return;
+                    }
+                }
+
+                if (this.card_name === 'diff') {
+                    // If we're on an integral result page, don't show button
+                    if ($('#diffsteps').length) {
                         return;
                     }
                 }

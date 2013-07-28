@@ -1,7 +1,7 @@
 import sys
 import collections
 from utils import Eval, latexify, topcall, arguments, removeSymPy, \
-    custom_implicit_transformation
+    custom_implicit_transformation, synonyms
 from resultsets import find_result_set, get_card, format_by_type
 from sympy import latex, series, sympify, solve, Derivative, \
     Integral, Symbol, diff, integrate
@@ -65,6 +65,13 @@ class SymPyGamma(object):
                 {"title": "Error", "input": s, "error": str(e)}
             ]
 
+    def disambiguate(self, arguments):
+        if arguments[0] == 'factor':
+            if arguments.args and isinstance(arguments.args[0], sympy.Number):
+                return ('factorint({})'.format(arguments.args[0]),
+                        "<code>factor</code> factors polynomials, while <code>factorint</code> factors integers.")
+        return None
+
     def eval_input(self, s):
         namespace = {}
         exec PREEXEC in {}, namespace
@@ -73,7 +80,10 @@ class SymPyGamma(object):
         if not len(s):
             return None
 
-        transformations = standard_transformations + (convert_xor, custom_implicit_transformation)
+        transformations = []
+        transformations.append(synonyms)
+        transformations.extend(standard_transformations)
+        transformations.extend((convert_xor, custom_implicit_transformation))
         local_dict = {}
         global_dict = {}
         exec 'from sympy import *' in global_dict
@@ -84,45 +94,64 @@ class SymPyGamma(object):
 
         return parsed, arguments(parsed, evaluator), evaluator, evaluated
 
-    def prepare_cards(self, parsed, arguments, evaluator, evaluated):
-        input_repr = repr(evaluated)
+    def get_cards(self, arguments, evaluator, evaluated):
         first_func_name = arguments[0]
+        # is the top-level function call to a function such as factorint or
+        # simplify?
+        is_function = False
+        # is the top-level function being called?
+        is_applied = arguments.args or arguments.kwargs
 
         if first_func_name:
             first_func = evaluator.get(first_func_name)
-            is_function_not_class = (
+            is_function = (
                 first_func and
                 not isinstance(first_func, FunctionClass) and
                 not isinstance(first_func, sympy.Atom) and
                 first_func_name and first_func_name[0].islower())
-        else:
-            first_func_name = first_func = None
-            is_function_not_class = False
 
-        if is_function_not_class:
+        if is_applied:
+            convert_input, cards, handles_function = find_result_set(arguments[0], evaluated)
+        else:
+            convert_input, cards, handles_function = find_result_set(None, evaluated)
+
+        components = convert_input(arguments, evaluated)
+        if 'input_evaluated' in components:
+            evaluated = components['input_evaluated']
+
+        evaluator.set('input_evaluated', evaluated)
+
+        return components, cards, evaluated, handles_function, is_function and is_applied
+
+    def prepare_cards(self, parsed, arguments, evaluator, evaluated):
+        input_repr = repr(evaluated)
+        components, cards, evaluated, handles_function, is_function = self.get_cards(arguments, evaluator, evaluated)
+
+        if is_function:
             latex_input = ''.join(['<script type="math/tex; mode=display">',
                                    latexify(parsed, evaluator),
                                    '</script>'])
         else:
             latex_input = mathjax_latex(evaluated)
 
-        result = [
-            {"title": "SymPy",
-             "input": removeSymPy(parsed),
-             "output": latex_input},
-        ]
+        result = []
 
-        convert_input, cards, handles_function = find_result_set(arguments[0], evaluated)
-        components = convert_input(arguments, evaluated)
+        ambiguity = self.disambiguate(arguments)
+        if ambiguity:
+            result.append({
+                "ambiguity": ambiguity[0],
+                "description": ambiguity[1]
+            })
 
-        if 'input_evaluated' in components:
-            evaluated = components['input_evaluated']
+        result.append({
+            "title": "SymPy",
+            "input": removeSymPy(parsed),
+            "output": latex_input
+        })
 
-        evaluator.set('input_evaluated', evaluated)
-
-        # Come up with a solution to use all variables if more than 1
-        # is entered.
-        if not cards and not components['variable'] and is_function_not_class:  # See a better way to do this.
+        # If no result cards were found, but the top-level call is to a
+        # function, then add a special result card to show the result
+        if not cards and not components['variable'] and is_function:
             result.append({
                 'title': 'Result',
                 'input': removeSymPy(parsed),
@@ -134,7 +163,7 @@ class SymPyGamma(object):
 
             # If the expression is something like 'lcm(2x, 3x)', display the
             # result of the function before the rest of the cards
-            if is_function_not_class and not handles_function:
+            if is_function and not handles_function:
                 result.append(
                     {"title": "Result", "input": "",
                      "output": mathjax_latex(evaluated)})
@@ -143,12 +172,12 @@ class SymPyGamma(object):
             simplified = evaluator.eval(line,
                                         use_none_for_exceptions=True,
                                         repr_expression=False)
-            if (simplified != "None" and
+            if (simplified != None and
                 simplified != evaluated):
                 result.append(
                     {"title": "Simplification", "input": repr(simplified),
                      "output": mathjax_latex(simplified)})
-            elif first_func_name == 'simplify':
+            elif arguments.function == 'simplify':
                 result.append(
                     {"title": "Simplification", "input": "",
                      "output": mathjax_latex(evaluated)})
@@ -181,14 +210,7 @@ class SymPyGamma(object):
 
         _, arguments, evaluator, evaluated = self.eval_input(expression)
 
-        convert_input, _, _ = find_result_set(arguments[0], evaluated)
-        var = sympy.sympify(variable.encode('utf-8'))
-        components = convert_input(arguments, evaluated)
-
-        if 'input_evaluated' in components:
-            evaluated = components['input_evaluated']
-
-        evaluator.set('input_evaluated', evaluated)
+        components, cards, evaluated,  _, _ = self.get_cards(arguments, evaluator, evaluated)
 
         result = card.eval(evaluator, components, parameters)
 

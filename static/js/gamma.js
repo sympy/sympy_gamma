@@ -129,6 +129,12 @@ function evaluateCards() {
     return deferred;
 }
 
+function setupDidYouMean() {
+    $('.did_you_mean code').each(function() {
+        $(this).wrap($("<a />").attr('href', '/input/?i=' + $(this).text()));
+    });
+}
+
 $(document).ready(function() {
     evaluateCards().done(function() {
         setupGraphs();
@@ -139,6 +145,8 @@ $(document).ready(function() {
         setupFactorization();
 
         setupSteps();
+
+        setupDidYouMean();
 
         // TODO: finish integration with Sphinx
         // setupDocumentation();
