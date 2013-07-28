@@ -388,32 +388,20 @@ def eval_factorization_diagram(evaluator, components, parameters=None):
             raise ValueError("Number too large")
     return smallfactors
 
-def eval_integral(evaluator, components, variable, parameters=None):
+def eval_integral(evaluator, components, parameters=None):
     return sympy.integrate(components['integrand'], *components['limits'])
-
-def _extract_variable_manualintegrate(variable):
-    if not isinstance(variable, sympy.Symbol):
-        if len(variable) != 1:
-            raise ValueError("Only supports single integrals")
-        variable = variable[0]
-
-        try:
-            # For definite integrals
-            variable = variable[0]
-        except TypeError:
-            pass
-    return variable
 
 def eval_integral_manual(evaluator, components, variable, parameters=None):
     return sympy.integrals.manualintegrate(components['integrand'],
                                            components['variable'])
 
-def eval_diffsteps(evaluator, variable, paramters=None):
-    return diffsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
+def eval_diffsteps(evaluator, components, paramters=None):
+    return diffsteps.print_html_steps(evaluator.get("input_evaluated"),
+                                      components['variable'])
 
-def eval_intsteps(evaluator, variable, paramters=None):
-    variable = _extract_variable_manualintegrate(variable)
-    return intsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
+def eval_intsteps(evaluator, components, paramters=None):
+    return intsteps.print_html_steps(components['integrand'],
+                                     components['variable'])
 
 # http://www.python.org/dev/peps/pep-0257/
 def trim(docstring):
@@ -627,7 +615,7 @@ result_sets = [
     (is_constant, None, ['float_approximation']),
     (is_uncalled_function, None, ['function_docs']),
     (is_trig, None, ['trig_alternate']),
-    (is_not_constant_basic, None, ['graph', 'roots', 'diff', 'integral', 'series'])
+    (is_not_constant_basic, None, ['graph', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
 
 def find_result_set(function_name, input_evaluated):

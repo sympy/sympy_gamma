@@ -107,6 +107,13 @@ var Card = (function() {
             }
 
             if (this.card_name === 'integral_alternate' || this.card_name === 'diff') {
+                if (this.card_name === 'integral_alternate') {
+                    // If we're on an integral result page, don't show button
+                    if ($('#intsteps').length !== 0) {
+                        return;
+                    }
+                }
+
                 this.addOptionsSection();
                 var seeSteps = this.addOptionsButton('See Steps');
 
