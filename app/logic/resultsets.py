@@ -226,6 +226,19 @@ def extract_integral(arguments, evaluated):
         'limits': limits
     }
 
+def extract_derivative(arguments, evaluated):
+    variables = arguments[1][1:]
+
+    if not variables:
+        variables = list(arguments[1][0].atoms(sympy.Symbol))
+
+    return {
+        'function': arguments[1][0],
+        'variables': variables,
+        'variable': variables[0],
+        'input_evaluated': arguments[1][0]
+    }
+
 def extract_first(arguments, evaluated):
     result = default_variable(arguments, evaluated)
     result['input_evaluated'] = arguments[1][0]
@@ -395,13 +408,16 @@ def eval_integral_manual(evaluator, components, variable, parameters=None):
     return sympy.integrals.manualintegrate(components['integrand'],
                                            components['variable'])
 
-def eval_diffsteps(evaluator, components, paramters=None):
-    return diffsteps.print_html_steps(evaluator.get("input_evaluated"),
+def eval_diffsteps(evaluator, components, parameters=None):
+    function = parameters.get('function', evaluator.get('input_evaluated'))
+
+    return diffsteps.print_html_steps(function,
                                       components['variable'])
 
-def eval_intsteps(evaluator, components, paramters=None):
-    return intsteps.print_html_steps(components['integrand'],
-                                     components['variable'])
+def eval_intsteps(evaluator, components, parameters=None):
+    integrand = parameters.get('integrand', evaluator.get('input_evaluated'))
+
+    return intsteps.print_html_steps(integrand, components['variable'])
 
 # http://www.python.org/dev/peps/pep-0257/
 def trim(docstring):
@@ -606,6 +622,7 @@ all_cards['integral_alternate_fake'] = MultiResultCard(
 
 result_sets = [
     ('integrate', extract_integral, ['integral_alternate_fake', 'intsteps']),
+    ('diff', extract_derivative, ['diff', 'diffsteps']),
     ('factorint', extract_first, ['factorization', 'factorizationDiagram']),
     (is_integer, None, ['digits', 'factorization', 'factorizationDiagram']),
     (is_complex, None, ['absolute_value', 'polar_angle', 'conjugate']),
