@@ -1,11 +1,16 @@
 from __future__ import division
+import collections
 import traceback
 import sys
 import ast
 import re
 from StringIO import StringIO
 import sympy
+
 from sympy.core.relational import Relational
+from token import NAME
+
+Arguments = collections.namedtuple('Arguments', 'function args kwargs')
 
 class Eval(object):
     def __init__(self, namespace={}):
@@ -159,7 +164,12 @@ def format_nextprime(node, visitor):
 @LatexVisitor.formats_function('factorint')
 def format_factorint(node, visitor):
     number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
-    return r'\mathrm{Prime~factors~of~}' + number
+    return r'\mathrm{Prime~factorization~of~}' + number
+
+@LatexVisitor.formats_function('factor')
+def format_factor(node, visitor):
+    expression = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return r'\mathrm{Factorization~of~}' + expression
 
 @LatexVisitor.formats_function('solve_poly_system')
 def format_factorint(node, visitor):
@@ -234,9 +244,9 @@ def arguments(string_or_node, evaluator):
             if kwargs:
                 kwargs = {kwarg.arg: evaluator.eval_node(kwarg.value) for kwarg in kwargs}
 
-            return name, args, kwargs
+            return Arguments(name, args, kwargs)
         elif isinstance(node, ast.Name):
-            return node.id, None, None
+            return Arguments(node.id, [], {})
     return None
 
 re_calls = re.compile(r'(Integer|Symbol|Float|Rational)\s*\([\'\"]?([a-zA-Z0-9\.]+)[\'\"]?\s*\)')
@@ -334,4 +344,30 @@ def custom_implicit_transformation(result, local_dict, global_dict):
                  implicit_application, function_exponentiation):
         result = step(result, local_dict, global_dict)
 
+    return result
+
+
+SYNONYMS = {
+    u'derivative': 'diff',
+    u'derive': 'diff',
+    u'integral': 'integrate',
+    u'antiderivative': 'integrate',
+    u'factorize': 'factor'
+}
+
+def synonyms(tokens, local_dict, global_dict):
+    """Make some names synonyms for others.
+
+    This is done at the token level so that the "stringified" output that
+    Gamma displays shows the correct function name. Must be applied before
+    auto_symbol.
+    """
+
+    result = []
+    for token in tokens:
+        if token[0] == NAME:
+            if token[1] in SYNONYMS:
+                result.append((NAME, SYNONYMS[token[1]]))
+                continue
+        result.append(token)
     return result
