@@ -227,10 +227,12 @@ def extract_integral(arguments, evaluated):
     }
 
 def extract_derivative(arguments, evaluated):
-    variables = arguments[1][1:]
+    variables = list(sorted(arguments[1][0].atoms(sympy.Symbol)))
 
-    if not variables:
-        variables = list(arguments[1][0].atoms(sympy.Symbol))
+    variable = arguments[1][1:]
+    if variable:
+        variables.remove(variable[0])
+        variables.insert(0, variable[0])
 
     return {
         'function': arguments[1][0],

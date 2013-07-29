@@ -2,6 +2,10 @@ from django import template
 import urllib
 register = template.Library()
 
+@register.inclusion_tag('card.html')
+def show_card(cell, input):
+    return {'cell': cell, 'input': input}
+
 @register.tag(name='make_query')
 def do_make_query(parser, token):
     try:

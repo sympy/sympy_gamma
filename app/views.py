@@ -1,5 +1,6 @@
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
+from django.template.loader import render_to_string
 from django.utils import simplejson
 from django import forms
 import django
@@ -154,6 +155,83 @@ def eval_card(request, card_name):
         }), mimetype="application/json")
 
     return HttpResponse(json.dumps(result), mimetype="application/json")
+
+def get_card_info(request, card_name):
+    variable = request.GET.get('variable')
+    expression = request.GET.get('expression')
+    if not variable or not expression:
+        raise Http404
+
+    variable = urllib2.unquote(variable)
+    expression = urllib2.unquote(expression)
+
+    g = SymPyGamma()
+
+    try:
+        result = g.get_card_info(card_name, expression, variable)
+    except ValueError as e:
+        return HttpResponse(json.dumps({
+            'error': e.message
+        }), mimetype="application/json")
+    except DeadlineExceededError:
+        return HttpResponse(json.dumps({
+            'error': 'Computation timed out.'
+        }), mimetype="application/json")
+    except:
+        trace = traceback.format_exc(5)
+        return HttpResponse(json.dumps({
+            'error': ('There was an error in Gamma. For reference'
+                      'the last five traceback entries are: ' + trace)
+        }), mimetype="application/json")
+
+    return HttpResponse(json.dumps(result), mimetype="application/json")
+
+def get_card_full(request, card_name):
+    variable = request.GET.get('variable')
+    expression = request.GET.get('expression')
+    if not variable or not expression:
+        raise Http404
+
+    variable = urllib2.unquote(variable)
+    expression = urllib2.unquote(expression)
+
+    g = SymPyGamma()
+
+    parameters = {}
+    for key, val in request.GET.items():
+        parameters[key] = ''.join(val)
+
+    try:
+        card_info = g.get_card_info(card_name, expression, variable)
+        result = g.eval_card(card_name, expression, variable, parameters)
+        card_info['card'] = card_name
+        card_info['cell_output'] = result['output']
+
+        html = render_to_string('card.html', {
+            'cell': card_info,
+            'input': expression
+        })
+    except ValueError as e:
+        return HttpResponse(render_to_string('card.html', {
+            'cell': {
+                'card': card_name,
+                'variable': variable,
+                'error': e.message
+            },
+            'input': expression
+        }), mimetype="text/html")
+    except DeadlineExceededError:
+        return HttpResponse(json.dumps({
+            'error': 'Computation timed out.'
+        }), mimetype="application/json")
+    except:
+        trace = traceback.format_exc(5)
+        return HttpResponse(json.dumps({
+            'error': ('There was an error in Gamma. For reference'
+                      'the last five traceback entries are: ' + trace)
+        }), mimetype="application/json")
+
+    return HttpResponse(html, mimetype="text/html")
 
 def remove_query(request, qid):
     user = users.get_current_user()

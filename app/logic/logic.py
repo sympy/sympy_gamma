@@ -146,7 +146,10 @@ class SymPyGamma(object):
         result.append({
             "title": "SymPy",
             "input": removeSymPy(parsed),
-            "output": latex_input
+            "output": latex_input,
+            "num_variables": len(components['variables']),
+            "variables": map(repr, components['variables']),
+            "variable": repr(components['variable'])
         })
 
         # If no result cards were found, but the top-level call is to a
@@ -202,6 +205,24 @@ class SymPyGamma(object):
                     pass
         return result
 
+    def get_card_info(self, card_name, expression, variable):
+        card = get_card(card_name)
+
+        if not card:
+            raise KeyError
+
+        _, arguments, evaluator, evaluated = self.eval_input(expression)
+        variable = sympy.Symbol(variable)
+        components, cards, evaluated,  _, _ = self.get_cards(arguments, evaluator, evaluated)
+        components['variable'] = variable
+
+        return {
+            'var': repr(variable),
+            'title': card.format_title(evaluated),
+            'input': card.format_input(repr(evaluated), components),
+            'pre_output': latex(card.pre_output_function(evaluated, variable))
+        }
+
     def eval_card(self, card_name, expression, variable, parameters):
         card = get_card(card_name)
 
@@ -210,7 +231,11 @@ class SymPyGamma(object):
 
         _, arguments, evaluator, evaluated = self.eval_input(expression)
 
+        variable = sympy.Symbol(variable)
+
         components, cards, evaluated,  _, _ = self.get_cards(arguments, evaluator, evaluated)
+
+        components['variable'] = variable
 
         result = card.eval(evaluator, components, parameters)
 

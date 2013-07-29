@@ -1,0 +1,78 @@
+{% if cell.ambiguity %}
+ <div class="result_card did_you_mean">
+   <p>Did you mean: <a href="/input/?i={{ cell.ambiguity }}">{{ cell.ambiguity }}</a>?</p>
+   <p>{{ cell.description|safe }}</p>
+ </div>
+{% else %}
+ <div class="result_card{% if cell.error or cell.exception_info %} result_card_error{%endif%}">
+   <div class="card_title">
+     <a {% if cell.card %} href="#{{ cell.card }}" title="Link to {{ cell.title }} card" id="{{ cell.card }}" {% endif %}>{{ cell.title }}:</a>
+   </div>
+   {% if cell.input %}
+    <div class="cell_input">
+      <pre>{{ cell.input|safe }}</pre>
+    </div>
+   {% endif %}
+   {% if cell.output %}
+    <div class="cell_output">
+      {% if cell.pre_output %}
+       <div class="cell_pre_output">
+         <script type="math/tex"> {{cell.pre_output|safe }} = </script>
+       </div>
+      {% endif %}
+      {{ cell.output|safe }}
+      {% if cell.num_variables > 1 %}
+       <details class="result_variables">
+         <summary>Variables</summary>
+         <ul data-variable="{{ cell.variable }}">
+           {% for variable in cell.variables %}
+           <li><button{% if variable == cell.variable %} class="active"{%endif%}>{{ variable }}</button></li>
+           {% endfor %}
+         </ul>
+       </details>
+      {% endif %}
+    </div>
+   {% endif %}
+
+   {% if cell.card %}
+    <div class="cell_output"
+         data-card-name="{{ cell.card|safe }}"
+         data-variable="{{ cell.var|escape }}"
+         data-expr="{{ input|escape }}"
+         data-parameters="{{ cell.parameters|safe }}">
+      {% if cell.pre_output %}
+      <div class="cell_pre_output">
+        <script type="math/tex"> {{cell.pre_output|safe }} = </script>
+      </div>
+      {% endif %}
+      {% if cell.cell_output %}
+      <div>
+        {{ cell.cell_output|safe }}
+      </div>
+      {% else %}
+      <div class="loader"></div>
+      {% endif %}
+    </div>
+   {% endif %}
+
+   {% if cell.exception_info %}
+   <div class="cell_output">
+     <div class="cell_output_plain">
+       <span>{{ cell.exception_info.input_start }}</span>
+       <span>{{ cell.exception_info.input_end }}</span>
+     </div>
+     <div class="cell_output_plain">
+       {{ cell.exception_info.offset }}: {{ cell.exception_info.msg }}
+     </div>
+   </div>
+   {% else %}
+   {% if cell.error %}
+   <div class="cell_output">
+     <div class="cell_output_plain">
+       {{ cell.error }}
+     </div>
+   </div>
+   {% endif %}
+   {% endif %}
+ </div>
+{% endif %}
