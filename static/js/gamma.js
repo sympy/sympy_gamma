@@ -130,7 +130,7 @@ function evaluateCards() {
 }
 
 function setupDidYouMean() {
-    $('.did_you_mean code').each(function() {
+    $('.did_you_mean var').each(function() {
         $(this).wrap($("<a />").attr('href', '/input/?i=' + $(this).text()));
     });
 }

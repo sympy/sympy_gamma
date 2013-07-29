@@ -22,14 +22,14 @@
       {% endif %}
       {{ cell.output|safe }}
       {% if cell.num_variables > 1 %}
-       <details class="result_variables">
-         <summary>Variables</summary>
+       <div class="result_variables">
+         <h4>Evaluate with respect to…</h4>
          <ul data-variable="{{ cell.variable }}">
            {% for variable in cell.variables %}
            <li><button{% if variable == cell.variable %} class="active"{%endif%}>{{ variable }}</button></li>
            {% endfor %}
          </ul>
-       </details>
+       </div>
       {% endif %}
     </div>
    {% endif %}

@@ -231,7 +231,11 @@ def get_card_full(request, card_name):
                       'the last five traceback entries are: ' + trace)
         }), mimetype="application/json")
 
-    return HttpResponse(html, mimetype="text/html")
+    response = HttpResponse(html, mimetype="text/html")
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Allow-Headers'] = 'Content-Type, X-Requested-With'
+
+    return response
 
 def remove_query(request, qid):
     user = users.get_current_user()

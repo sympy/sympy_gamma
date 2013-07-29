@@ -69,7 +69,7 @@ class SymPyGamma(object):
         if arguments[0] == 'factor':
             if arguments.args and isinstance(arguments.args[0], sympy.Number):
                 return ('factorint({})'.format(arguments.args[0]),
-                        "<code>factor</code> factors polynomials, while <code>factorint</code> factors integers.")
+                        "<var>factor</var> factors polynomials, while <var>factorint</var> factors integers.")
         return None
 
     def eval_input(self, s):
