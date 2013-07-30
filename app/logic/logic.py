@@ -2,7 +2,8 @@ import sys
 import collections
 from utils import Eval, latexify, topcall, arguments, removeSymPy, \
     custom_implicit_transformation, synonyms
-from resultsets import find_result_set, get_card, format_by_type
+from resultsets import find_result_set, get_card, format_by_type, \
+    is_function_handled
 from sympy import latex, series, sympify, solve, Derivative, \
     Integral, Symbol, diff, integrate
 import sympy
@@ -102,18 +103,17 @@ class SymPyGamma(object):
         # is the top-level function being called?
         is_applied = arguments.args or arguments.kwargs
 
-        if first_func_name:
-            first_func = evaluator.get(first_func_name)
-            is_function = (
-                first_func and
-                not isinstance(first_func, FunctionClass) and
-                not isinstance(first_func, sympy.Atom) and
-                first_func_name and first_func_name[0].islower())
+        first_func = evaluator.get(first_func_name)
+        is_function = (
+            first_func and
+            not isinstance(first_func, FunctionClass) and
+            not isinstance(first_func, sympy.Atom) and
+            first_func_name and first_func_name[0].islower())
 
         if is_applied:
-            convert_input, cards, handles_function = find_result_set(arguments[0], evaluated)
+            convert_input, cards = find_result_set(arguments[0], evaluated)
         else:
-            convert_input, cards, handles_function = find_result_set(None, evaluated)
+            convert_input, cards = find_result_set(None, evaluated)
 
         components = convert_input(arguments, evaluated)
         if 'input_evaluated' in components:
@@ -121,11 +121,10 @@ class SymPyGamma(object):
 
         evaluator.set('input_evaluated', evaluated)
 
-        return components, cards, evaluated, handles_function, is_function and is_applied
+        return components, cards, evaluated, (is_function and is_applied)
 
     def prepare_cards(self, parsed, arguments, evaluator, evaluated):
-        input_repr = repr(evaluated)
-        components, cards, evaluated, handles_function, is_function = self.get_cards(arguments, evaluator, evaluated)
+        components, cards, evaluated, is_function = self.get_cards(arguments, evaluator, evaluated)
 
         if is_function:
             latex_input = ''.join(['<script type="math/tex; mode=display">',
@@ -161,12 +160,11 @@ class SymPyGamma(object):
                 'output': format_by_type(evaluated, mathjax_latex)
             })
         else:
-            input_repr = repr(evaluated)
             var = components['variable']
 
             # If the expression is something like 'lcm(2x, 3x)', display the
             # result of the function before the rest of the cards
-            if is_function and not handles_function:
+            if is_function and not is_function_handled(arguments[0]):
                 result.append(
                     {"title": "Result", "input": "",
                      "output": mathjax_latex(evaluated)})
@@ -196,7 +194,7 @@ class SymPyGamma(object):
                         'card': card_name,
                         'var': repr(var),
                         'title': card.format_title(evaluated),
-                        'input': card.format_input(input_repr, components),
+                        'input': card.format_input(repr(evaluated), components),
                         'pre_output': latex(
                             card.pre_output_function(evaluated, var)),
                         'parameters': card.card_info.get('parameters', [])
@@ -213,7 +211,7 @@ class SymPyGamma(object):
 
         _, arguments, evaluator, evaluated = self.eval_input(expression)
         variable = sympy.Symbol(variable)
-        components, cards, evaluated,  _, _ = self.get_cards(arguments, evaluator, evaluated)
+        components, cards, evaluated, _ = self.get_cards(arguments, evaluator, evaluated)
         components['variable'] = variable
 
         return {
@@ -230,11 +228,8 @@ class SymPyGamma(object):
             raise KeyError
 
         _, arguments, evaluator, evaluated = self.eval_input(expression)
-
         variable = sympy.Symbol(variable)
-
-        components, cards, evaluated,  _, _ = self.get_cards(arguments, evaluator, evaluated)
-
+        components, cards, evaluated, _ = self.get_cards(arguments, evaluator, evaluated)
         components['variable'] = variable
 
         result = card.eval(evaluator, components, parameters)

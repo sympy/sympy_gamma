@@ -637,6 +637,10 @@ result_sets = [
     (is_not_constant_basic, None, ['graph', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
 
+def is_function_handled(function_name):
+    """Do any of the result sets handle this specific function?"""
+    return any(name == function_name for (name, _, _) in result_sets)
+
 def find_result_set(function_name, input_evaluated):
     """
     Finds a set of result cards based on function name and evaluated input.
@@ -654,11 +658,9 @@ def find_result_set(function_name, input_evaluated):
     """
     result = []
     result_converter = default_variable
-    handles_function = False
 
     for predicate, converter, result_cards in result_sets:
         if predicate == function_name:
-            handles_function = True
             if converter:
                 result_converter = converter
             for card in result_cards:
@@ -671,4 +673,4 @@ def find_result_set(function_name, input_evaluated):
                 if card not in result:
                     result.append(card)
 
-    return result_converter, result, handles_function
+    return result_converter, result
