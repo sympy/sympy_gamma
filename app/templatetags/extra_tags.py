@@ -54,3 +54,34 @@ class QueryLinkNode(template.Node):
 
         link = '<a href="/input/?i={0}">{1}</a>'.format(urllib.quote(q), q)
         return link
+
+@register.tag(name='make_example')
+def do_make_example(parser, token):
+    try:
+        tag_name, example = token.split_contents()
+    except ValueError:
+        raise template.TemplateSyntaxError(
+            "%r tag requires a single argument" % token.contents.split()[0])
+
+    return ExampleLinkNode(example)
+
+class ExampleLinkNode(template.Node):
+    def __init__(self, example):
+        self.example = template.Variable(example)
+
+    def render(self, context):
+        example = self.example.resolve(context)
+
+        if isinstance(example, tuple):
+            title, example = example[0], example[1]
+        else:
+            title, example = None, example
+
+        buf = []
+
+        if title:
+            buf.append('<span>{}</span>'.format(title))
+
+        buf.append('<a href="/input/?i={0}">{1}</a>'.format(
+            urllib.quote(example), example))
+        return ' '.join(buf)

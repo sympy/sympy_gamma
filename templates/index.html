@@ -35,202 +35,25 @@ SymPy Gamma
             <h2>Examples</h2>
             <a href="#" id="random-example">Random Example</a>
 
+            {% for category in examples %}
             <div class="example-group">
-                <h3>Arithmetic</h3>
+              <h3>{{ category.0 }}</h3>
 
-                <div class="contents">
-                    <h4>Fractions</h4>
-                    <ul>
-                        <li>
-                            <span>Simplify fractions</span>
-                            {% make_query_link '242/33' %}
-                        </li>
-                        <li>
-                            <span>Rationalize repeating decimals</span>
-                            {% make_query_link '0.[123]' %}
-                        </li>
-                    </ul>
+              <div class="contents">
+                {% for subcategory in category.1 %}
+                  {% if subcategory.0 %}
+                  <h4>{{ subcategory.0 }}</h4>
+                  {% endif %}
+                  <ul>
+                    {% for example in subcategory.1 %}
+                    <li>{% make_example example %}</li>
+                    {% endfor %}
+                  </ul>
+                {% endfor %}
+              </div>
 
-                    <h4>Approximations</h4>
-                    <ul>
-                        <li>{% make_query_link 'pi' %}</li>
-                        <li>{% make_query_link 'E' %}</li>
-                        <li>{% make_query_link 'exp(pi)' %}</li>
-                    </ul>
-                </div>
             </div>
-
-            <div class="example-group">
-                <h3>Algebra</h3>
-
-                <div class="contents">
-                    <ul>
-                        <li>{% make_query_link 'x' %}</li>
-                        <li>{% make_query_link '(x+2)/((x+3)(x-4))' %}</li>
-                        <li>{% make_query_link 'simplify((x**2 - 4)/((x+3)(x-2)))' %}</li>
-                    </ul>
-                </div>
-
-                <div class="contents">
-                    <h4>Polynomial and Rational Functions</h4>
-                    <ul>
-                        <li><span>Polynomial division</span>
-                            {% make_query_link 'div(x**2 - 4 + x, x-2)' %}</li>
-                        <li><span>Greatest common divisor</span>
-                            {% make_query_link 'gcd(2*x**2 + 6*x, 12*x)' %}</li>
-                        <li><span>…and least common multiple</span>
-                            {% make_query_link 'lcm(2*x**2 + 6*x, 12*x)' %}</li>
-                        <li><span>Factorization</span>
-                            {% make_query_link 'factor(x**4/2 + 5*x**3/12 - x**2/3)' %}</li>
-                        <li>
-                            <span>Multivariate factorization</span>
-                            {% make_query_link 'factor(x**2 + 4*x*y + 4*y**2)' %}
-                        </li>
-                        <li>
-                            <span>Symbolic roots</span>
-                            {% make_query_link 'solve(x**2 + 4*x*y + 4*y**2)' %}
-                        </li>
-                        <li>{% make_query_link 'solve(x**2 + 4*x*y + 4*y**2, y)' %}</li>
-                        <li>
-                            <span>Complex roots</span>
-                            {% make_query_link 'solve(x**2 + 4*x + 181, x)' %}
-                        </li>
-                        <li>
-                            <span>Irrational roots</span>
-                            {% make_query_link 'solve(x**3 + 4*x + 181, x)' %}
-                        </li>
-                        <li>
-                            <span>Systems of equations</span>
-                            {% make_query_link 'solve_poly_system([y**2 - x**3 + 1, y*x], x, y)' %}
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="example-group">
-                <h3>Trigonometry</h3>
-
-                <div class="contents">
-                    <ul>
-                        <li>{% make_query_link 'sin(2*x)' %}</li>
-                        <li>{% make_query_link 'tan(1 + x)' %}</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="example-group">
-                <h3>Calculus</h3>
-
-                <div class="contents">
-                    <h4>Limits</h4>
-                    <ul>
-                        <li>{% make_query_link 'limit(tan(x), x, pi/2)' %}</li>
-                        <!-- TODO: sympify() doesn't parse keyword arguments -->
-                        <li>{% make_query_link 'limit(tan(x), x, pi/2, "-")' %}</li>
-                    </ul>
-                </div>
-
-                <div class="contents">
-                    <h4>Derivatives</h4>
-                    <ul>
-                        <li>
-                            <span>Derive the product rule</span>
-                            {% make_query_link 'diff(f(x)*g(x)*h(x))' %}
-                        </li>
-                        <li>
-                            <span>…as well as the quotient rule</span>
-                            {% make_query_link 'diff(f(x)/g(x))' %}
-                        </li>
-                        <li>
-                            <span>Get steps for derivatives</span>
-                            {% make_query_link 'diff((sin(x) * x^2) / (1 + tan(cot(x))))' %}
-                        </li>
-                        <li>
-                            <span>Multiple ways to derive functions</span>
-                            {% make_query_link 'diff(cot(xy), y)' %}
-                        </li>
-                        <li>
-                            <span>Implicit derivatives, too</span>
-                            {% make_query_link 'diff(y(x)^2 - 5sin(x), x)' %}
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="contents">
-                    <h4>Integrals</h4>
-                    <ul>
-                        <li>{% make_query_link 'integrate(tan(x))' %}</li>
-                        <li>
-                            <span>Multiple variables</span>{% make_query_link 'integrate(2*x + y, y)' %}</li>
-                        <li><span>Limits of integration</span> {% make_query_link 'integrate(2*x + y, (x, 1, 3))' %}
-                            </li>
-                        <li>{% make_query_link 'integrate(2*x + y, (x, 1, 3), (y, 2, 4))' %}</li>
-                        <li><span>Improper integrals</span>
-                            {% make_query_link 'integrate(tan(x), (x, 0, pi/2))' %}
-                            </li>
-                        <li><span>Exact answers</span>
-                            {% make_query_link 'integrate(1/(x**2 + 1), (x, 0, oo))' %}
-                            </li>
-                        <li><span>Get steps for integrals</span>
-                            {% make_query_link 'integrate(exp(x) / (1 + exp(2x)))' %}
-                        </li>
-                        <li>
-                            {% make_query_link 'integrate(1 /((x+1)(x+3)(x+5)))' %}
-                        </li>
-                        <li>
-                            {% make_query_link 'integrate((2x+3)**7)' %}
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="contents">
-                    <h4>Series</h4>
-                    <ul>
-                        <li>{% make_query_link 'series(sin(x), x, pi/2)' %}</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="example-group">
-                <h3>Number Theory</h3>
-
-                <div class="contents">
-                    <ul>
-                        <li>{% make_query_link '1006!' %}</li>
-                        <li>{% make_query_link 'factorint(12321)' %}</li>
-                        <li>
-                            <span>
-                                Calculate the 42<sup>nd</sup> prime
-                            </span>
-                            {% make_query_link 'prime(42)' %}</li>
-                        <li>
-                            <span>
-                                Calculate \( \varphi(x) \), the Euler
-                                totient function
-                            </span>
-                            {% make_query_link 'totient(42)' %}
-                        </li>
-                        <li>{% make_query_link 'isprime(42)' %}</li>
-                        <li>
-                            <span>First prime after 42</span>
-                            {% make_query_link 'nextprime(42)' %}
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="example-group">
-                <h3>Miscellaneous</h3>
-
-                <div class="contents">
-                    <ul>
-                        <li><span>Documentation for functions</span>
-                            {% make_query_link 'factorial2' %}</li>
-                        <li>{% make_query_link 'sympify' %}</li>
-                        <li>{% make_query_link 'bernoulli' %}</li>
-                    </ul>
-                </div>
-            </div>
+            {% endfor %}
 
             <p>… and more: see
             the <a href="http://docs.sympy.org">documentation</a> to learn

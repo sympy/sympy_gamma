@@ -1,5 +1,5 @@
 from django.http import HttpResponse, Http404
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.template.loader import render_to_string
 from django.utils import simplejson
 from django import forms
@@ -19,6 +19,7 @@ import models
 import os
 import random
 import json
+import urllib
 import urllib2
 import datetime
 import traceback
@@ -30,6 +31,71 @@ LIVE_PROMOTION_MESSAGES = [
     'Experiment with SymPy at ' + LIVE_URL + '.',
     'Want to compute something more complicated?' +
     ' Try a full Python/SymPy console at ' + LIVE_URL + '.'
+]
+
+EXAMPLES = [
+    ('Arithmetic', [
+        ['Fractions', [('Simplify fractions', '242/33'),
+                       ('Rationalize repeating decimals', '0.[123]')]],
+        ['Approximations', ['pi', 'E', 'exp(pi)']],
+    ]),
+    ('Algebra', [
+        [None, ['x', '(x+2)/((x+3)(x-4))', 'simplify((x**2 - 4)/((x+3)(x-2)))']],
+        ['Polynomial and Rational Functions', [
+            ('Polynomial division', 'div(x**2 - 4 + x, x-2)'),
+            ('Greatest common divisor', 'gcd(2*x**2 + 6*x, 12*x)'),
+            ('&hellip;and least common multiple', 'lcm(2*x**2 + 6*x, 12*x)'),
+            ('Factorization', 'factor(x**4/2 + 5*x**3/12 - x**2/3)'),
+            ('Multivariate factorization', 'factor(x**2 + 4*x*y + 4*y**2)'),
+            ('Symbolic roots', 'solve(x**2 + 4*x*y + 4*y**2)'),
+            'solve(x**2 + 4*x*y + 4*y**2, y)',
+            ('Complex roots', 'solve(x**2 + 4*x + 181, x)'),
+            ('Irrational roots', 'solve(x**3 + 4*x + 181, x)'),
+            ('Systems of equations', 'solve_poly_system([y**2 - x**3 + 1, y*x], x, y)'),
+        ]],
+    ]),
+    ('Trigonometry', [
+        [None, ['sin(2x)', 'tan(1 + x)']],
+    ]),
+    ('Calculus', [
+        ['Limits', ['limit(tan(x), x, pi/2)', 'limit(tan(x), x, pi/2, dir="-")']],
+        ['Derivatives', [
+            ('Derive the product rule', 'diff(f(x)*g(x)*h(x))'),
+            ('&hellip;as well as the quotient rule', 'diff(f(x)/g(x))'),
+            ('Get steps for derivatives', 'diff((sin(x) * x^2) / (1 + tan(cot(x))))'),
+            ('Multiple ways to derive functions', 'diff(cot(xy), y)'),
+            ('Implicit derivatives, too', 'diff(y(x)^2 - 5sin(x), x)'),
+        ]],
+        ['Integrals', [
+            'integrate(tan(x))',
+            ('Multiple variables', 'integrate(2*x + y, y)'),
+            ('Limits of integration', 'integrate(2*x + y, (x, 1, 3))'),
+            'integrate(2*x + y, (x, 1, 3), (y, 2, 4))',
+            ('Improper integrals', 'integrate(tan(x), (x, 0, pi/2))'),
+            ('Exact answers', 'integrate(1/(x**2 + 1), (x, 0, oo))'),
+            ('Get steps for integrals', 'integrate(exp(x) / (1 + exp(2x)))'),
+            'integrate(1 /((x+1)(x+3)(x+5)))',
+            'integrate((2x+3)**7)'
+        ]],
+        ['Series', [
+            'series(sin(x), x, pi/2)',
+        ]],
+    ]),
+    ('Number Theory', [
+        [None, [
+            '1006!',
+            'factorint(12321)',
+            ('Calculate the 42<sup>nd</sup> prime', 'prime(42)'),
+            (r'Calculate \( \varphi(x) \), the Euler totient function', 'totient(42)'),
+            'isprime(12321)',
+            ('First prime greater than 42', 'nextprime(42)'),
+        ]],
+    ]),
+    ('Miscellaneous', [
+        [None, [('Documentation for functions', 'factorial2'),
+                'sympify',
+                'bernoulli']],
+    ]),
 ]
 
 class MobileTextInput(forms.widgets.TextInput):
@@ -82,7 +148,8 @@ def index(request, user):
         "form": form,
         "MEDIA_URL": settings.MEDIA_URL,
         "main_active": "selected",
-        "history": history
+        "history": history,
+        "examples": EXAMPLES
         })
 
 @app_version
@@ -122,7 +189,20 @@ def about(request, user):
         "about_active": "selected",
         })
 
-def eval_card(request, card_name):
+def random_example(request):
+    examples = []
+
+    for category in EXAMPLES:
+        for subcategory in category[1]:
+            for example in subcategory[1]:
+                if isinstance(example, tuple):
+                    examples.append(example[1])
+                else:
+                    examples.append(example)
+
+    return redirect('input/?i=' + urllib.quote(random.choice(examples)))
+
+def _process_card(request, card_name):
     variable = request.GET.get('variable')
     expression = request.GET.get('expression')
     if not variable or not expression:
@@ -136,6 +216,12 @@ def eval_card(request, card_name):
     parameters = {}
     for key, val in request.GET.items():
         parameters[key] = ''.join(val)
+
+    return g, variable, expression, parameters
+
+
+def eval_card(request, card_name):
+    g, variable, expression, parameters = _process_card(request, card_name)
 
     try:
         result = g.eval_card(card_name, expression, variable, parameters)
@@ -157,15 +243,7 @@ def eval_card(request, card_name):
     return HttpResponse(json.dumps(result), mimetype="application/json")
 
 def get_card_info(request, card_name):
-    variable = request.GET.get('variable')
-    expression = request.GET.get('expression')
-    if not variable or not expression:
-        raise Http404
-
-    variable = urllib2.unquote(variable)
-    expression = urllib2.unquote(expression)
-
-    g = SymPyGamma()
+    g, variable, expression, _ = _process_card(request, card_name)
 
     try:
         result = g.get_card_info(card_name, expression, variable)
@@ -187,19 +265,7 @@ def get_card_info(request, card_name):
     return HttpResponse(json.dumps(result), mimetype="application/json")
 
 def get_card_full(request, card_name):
-    variable = request.GET.get('variable')
-    expression = request.GET.get('expression')
-    if not variable or not expression:
-        raise Http404
-
-    variable = urllib2.unquote(variable)
-    expression = urllib2.unquote(expression)
-
-    g = SymPyGamma()
-
-    parameters = {}
-    for key, val in request.GET.items():
-        parameters[key] = ''.join(val)
+    g, variable, expression, parameters = _process_card(request, card_name)
 
     try:
         card_info = g.get_card_info(card_name, expression, variable)
@@ -221,15 +287,18 @@ def get_card_full(request, card_name):
             'input': expression
         }), mimetype="text/html")
     except DeadlineExceededError:
-        return HttpResponse(json.dumps({
-            'error': 'Computation timed out.'
-        }), mimetype="application/json")
+        return HttpResponse('Computation timed out.',
+                            mimetype="text/html")
     except:
         trace = traceback.format_exc(5)
-        return HttpResponse(json.dumps({
-            'error': ('There was an error in Gamma. For reference'
-                      'the last five traceback entries are: ' + trace)
-        }), mimetype="application/json")
+        return HttpResponse(render_to_string('card.html', {
+            'cell': {
+                'card': card_name,
+                'variable': variable,
+                'error': trace
+            },
+            'input': expression
+        }), mimetype="text/html")
 
     response = HttpResponse(html, mimetype="text/html")
     response['Access-Control-Allow-Origin'] = '*'

@@ -15,6 +15,7 @@ urlpatterns = patterns(
 
     (r'^input/', 'app.views.input'),
     (r'^about/$', 'app.views.about'),
+    (r'^random', 'app.views.random_example'),
 
     (r'user/remove/(?P<qid>.*)$', 'app.views.remove_query'),
 
