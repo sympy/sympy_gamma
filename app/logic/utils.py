@@ -118,6 +118,7 @@ class LatexVisitor(ast.NodeVisitor):
                 buffer.append(')')
 
                 self.latex = ''.join(buffer)
+        return self.latex
 
 @LatexVisitor.formats_function('solve')
 def format_solve(node, visitor):
@@ -130,7 +131,7 @@ def format_solve(node, visitor):
     if len(node.args) > 1:
         buffer.append(r'\;\mathrm{for}\;')
     for arg in node.args[1:]:
-        buffer.append(sympy.latex(self.evaluator.eval_node(arg)))
+        buffer.append(sympy.latex(visitor.evaluator.eval_node(arg)))
         buffer.append(r',\, ')
     if len(node.args) > 1:
         buffer.pop()
@@ -141,7 +142,7 @@ def format_solve(node, visitor):
 def format_limit(node, visitor):
     if len(node.args) >= 3:
         return sympy.latex(
-            sympy.Limit(*[self.evaluator.eval_node(arg) for arg in node.args]))
+            sympy.Limit(*[visitor.evaluator.eval_node(arg) for arg in node.args]))
 
 @LatexVisitor.formats_function('prime')
 def format_prime(node, visitor):
