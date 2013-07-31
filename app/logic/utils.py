@@ -185,6 +185,11 @@ def format_factorint(node, visitor):
                     r'\end{cases} \mathrm{~for~}',
                     sympy.latex(variables)])
 
+@LatexVisitor.formats_function('plot')
+def format_plot(node, visitor):
+    function = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return r'\mathrm{Plot~}' + function
+
 class TopCallVisitor(ast.NodeVisitor):
     def __init__(self):
         super(TopCallVisitor, self).__init__()
@@ -353,7 +358,9 @@ SYNONYMS = {
     u'derive': 'diff',
     u'integral': 'integrate',
     u'antiderivative': 'integrate',
-    u'factorize': 'factor'
+    u'factorize': 'factor',
+    u'graph': 'plot',
+    u'draw': 'plot'
 }
 
 def synonyms(tokens, local_dict, global_dict):

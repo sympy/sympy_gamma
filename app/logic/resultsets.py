@@ -217,6 +217,11 @@ def default_variable(arguments, evaluated):
         'variable': variables[0] if variables else None
     }
 
+def extract_first(arguments, evaluated):
+    result = default_variable(arguments, evaluated)
+    result['input_evaluated'] = arguments[1][0]
+    return result
+
 def extract_integral(arguments, evaluated):
     limits = arguments[1][1:]
     variables = []
@@ -253,9 +258,10 @@ def extract_derivative(arguments, evaluated):
         'input_evaluated': arguments[1][0]
     }
 
-def extract_first(arguments, evaluated):
-    result = default_variable(arguments, evaluated)
-    result['input_evaluated'] = arguments[1][0]
+def extract_plot(arguments, evaluated):
+    result = extract_first(arguments, evaluated)
+    result['variables'] = list(arguments.args[0].atoms(sympy.Symbol))
+    result['variable'] = result['variables'][0]
     return result
 
 # Formatting functions
@@ -655,6 +661,7 @@ result_sets = [
     ('integrate', extract_integral, ['integral_alternate_fake', 'intsteps']),
     ('diff', extract_derivative, ['diff', 'diffsteps']),
     ('factorint', extract_first, ['factorization', 'factorizationDiagram']),
+    ('plot', extract_plot, ['graph']),
     (is_root, None, ['float_approximation', 'root_to_polynomial']),
     (is_integer, None, ['digits', 'factorization', 'factorizationDiagram']),
     (is_complex, None, ['absolute_value', 'polar_angle', 'conjugate']),

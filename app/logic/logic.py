@@ -85,7 +85,9 @@ class SymPyGamma(object):
         transformations.append(synonyms)
         transformations.extend(standard_transformations)
         transformations.extend((convert_xor, custom_implicit_transformation))
-        local_dict = {}
+        local_dict = {
+            'plot': lambda *args: None  # prevent textplot from printing stuff
+        }
         global_dict = {}
         exec 'from sympy import *' in global_dict
         parsed = stringify_expr(s, local_dict, global_dict, transformations)
