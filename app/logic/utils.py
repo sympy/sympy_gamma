@@ -273,15 +273,17 @@ from sympy.parsing.sympy_parser import (
 
 def _implicit_multiplication(tokens, local_dict, global_dict):
     result = []
+
     for tok, nextTok in zip(tokens, tokens[1:]):
         result.append(tok)
         if (isinstance(tok, AppliedFunction) and
-                isinstance(nextTok, AppliedFunction)):
+            isinstance(nextTok, AppliedFunction)):
             result.append((OP, '*'))
         elif (isinstance(tok, AppliedFunction) and
               nextTok[0] == OP and nextTok[1] == '('):
             # Applied function followed by an open parenthesis
             if tok.function[1] == 'Symbol' and len(tok.args[1][1]) == 3:
+                # Allow implicit function symbol creation
                 continue
             result.append((OP, '*'))
         elif (tok[0] == OP and tok[1] == ')' and
@@ -296,10 +298,12 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
               and tok[1] == ')' and nextTok[1] == '('):
             # Close parenthesis followed by an open parenthesis
             result.append((OP, '*'))
-        elif (isinstance(tok, AppliedFunction) and nextTok[0] == NAME):
+        elif (isinstance(tok, AppliedFunction) and nextTok[0] == NAME
+              and nextTok[1] not in ('and', 'or', 'not')):
             # Applied function followed by implicitly applied function
             result.append((OP, '*'))
-    result.append(tokens[-1])
+    if tokens:
+        result.append(tokens[-1])
     return result
 
 def implicit_multiplication(result, local_dict, global_dict):
