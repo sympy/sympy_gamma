@@ -41,10 +41,9 @@ class ResultCard(object):
 
         line = self.result_statement.format(_var=variable, **parameters)
         line = line % 'input_evaluated'
-        result = evaluator.eval(line, use_none_for_exceptions=True)
+        result = evaluator.eval(line, use_none_for_exceptions=True,
+                                repr_expression=False)
 
-        if self.card_info.get('sympify') or 'sympify' not in self.card_info:
-            return sympy.sympify(result)
         return result
 
     def format_input(self, input_repr, components, **parameters):
@@ -566,8 +565,7 @@ all_cards = {
         "Floating-point approximation",
         "(%s).evalf({digits})",
         no_pre_output,
-        parameters=['digits'],
-        sympify=False),
+        parameters=['digits']),
 
     'fractional_approximation': ResultCard(
         "Fractional approximation",
