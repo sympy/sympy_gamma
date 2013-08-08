@@ -209,6 +209,7 @@ def ordinal(n):
     else:
        return {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(n % 10, "th")
 
+# TODO: modularize all of this
 def latexify(string, evaluator):
     a = LatexVisitor()
     a.evaluator = evaluator
@@ -238,13 +239,7 @@ def arguments(string_or_node, evaluator):
             name = getattr(node.func, 'id', None)  # when is it undefined?
             args, kwargs = None, None
             if node.args:
-                args = []
-                for n in node.args:
-                    # TODO check if makes call to Basic or not (whitelist Integral, etc)
-                    if isinstance(n, ast.Call) and not getattr(n.func, 'id', ' ')[0].isupper():
-                        args.append(arguments(n, evaluator))
-                    else:
-                        args.append(evaluator.eval_node(n))
+                args = list(map(evaluator.eval_node, node.args))
 
             kwargs = node.keywords
             if kwargs:
