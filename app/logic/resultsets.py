@@ -202,6 +202,9 @@ def is_not_constant_basic(input_evaluated):
 def is_uncalled_function(input_evaluated):
     return hasattr(input_evaluated, '__call__') and not isinstance(input_evaluated, sympy.Basic)
 
+def is_matrix(input_evaluated):
+    return isinstance(input_evaluated, sympy.Matrix)
+
 
 # Functions to convert input and extract variable used
 
@@ -631,6 +634,26 @@ all_cards = {
         no_pre_output,
         eval_method=eval_root_to_polynomial
     ),
+
+    'matrix_inverse': ResultCard(
+        "Inverse of matrix",
+        "(%s).inv()",
+        lambda statement, var, *args: sympy.Pow(statement, -1, evaluate=False)
+    ),
+
+    'matrix_eigenvals': ResultCard(
+        "Eigenvalues",
+        "(%s).eigenvals()",
+        no_pre_output,
+        format_output_function=format_dict_title("Eigenvalue", "Multiplicity")
+    ),
+
+    'matrix_eigenvectors': ResultCard(
+        "Eigenvectors",
+        "(%s).eigenvects()",
+        no_pre_output,
+        format_output_function=format_list
+    ),
 }
 
 def get_card(name):
@@ -670,6 +693,7 @@ result_sets = [
     (is_constant, None, ['float_approximation']),
     (is_uncalled_function, None, ['function_docs']),
     (is_trig, None, ['trig_alternate']),
+    (is_matrix, None, ['matrix_inverse', 'matrix_eigenvals', 'matrix_eigenvectors']),
     (is_not_constant_basic, None, ['graph', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
 

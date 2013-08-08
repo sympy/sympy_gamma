@@ -73,3 +73,15 @@ var __extend = function(parent, child) {
 
     return child;
 }
+
+// Ignores undefined
+// Properly handles nested arrays
+function gammaToString(obj) {
+    if (typeof obj === "undefined") {
+        return "undefined";
+    }
+    else if ($.isArray(obj)) {
+        return "[" + $.map(obj, gammaToString).join(',') + "]";
+    }
+    return obj.toString();
+}

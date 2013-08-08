@@ -199,7 +199,9 @@ var Card = (function() {
         var output = el.find('.cell_output');
         var card_name = output.data('card-name');
         var variable = encodeURIComponent(output.data('variable'));
-        var expr = encodeURIComponent(output.data('expr'));
+        // XXX use custom toString because JS toString doesn't properly
+        // handle nested arrays
+        var expr = encodeURIComponent(gammaToString(output.data('expr')));
         var parameters = output.data('parameters');
         var card = new Card(card_name, variable, expr, parameters);
         card.setElement(el);
