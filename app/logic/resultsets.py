@@ -290,6 +290,7 @@ def format_integral(line, result, components):
         limits = ', '.join(map(repr, components['limits']))
     else:
         limits = ', '.join(map(repr, components['variables']))
+
     return line.format(_var=limits) % components['integrand']
 
 def format_dict_title(*title):
@@ -429,13 +430,13 @@ def eval_integral_manual(evaluator, components, variable, parameters=None):
                                            components['variable'])
 
 def eval_diffsteps(evaluator, components, parameters=None):
-    function = parameters.get('function', evaluator.get('input_evaluated'))
+    function = components.get('function', evaluator.get('input_evaluated'))
 
     return diffsteps.print_html_steps(function,
                                       components['variable'])
 
 def eval_intsteps(evaluator, components, parameters=None):
-    integrand = parameters.get('integrand', evaluator.get('input_evaluated'))
+    integrand = components.get('integrand', evaluator.get('input_evaluated'))
 
     return intsteps.print_html_steps(integrand, components['variable'])
 
