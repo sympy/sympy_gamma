@@ -1,6 +1,7 @@
 import sys
+import traceback
 import collections
-from utils import Eval, latexify, topcall, arguments, removeSymPy, \
+from utils import Eval, latexify, arguments, removeSymPy, \
     custom_implicit_transformation, synonyms
 from resultsets import find_result_set, get_card, format_by_type, \
     is_function_handled
@@ -61,9 +62,10 @@ class SymPyGamma(object):
                 {"title": "Error", "input": s, "exception_info": error}
             ]
         else:
+            trace = traceback.format_exc()
             return [
                 {"title": "Input", "input": s},
-                {"title": "Error", "input": s, "error": str(e)}
+                {"title": "Error", "input": s, "error": trace}
             ]
 
     def disambiguate(self, arguments):
