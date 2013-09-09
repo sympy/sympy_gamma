@@ -13,6 +13,10 @@ handlers:
   static_files: static/images/favicon.ico
   upload: static/images/favicon\.ico
 
+- url: /google5acf6d2992c8237d.html
+  static_files: google5acf6d2992c8237d.html
+  upload: google5acf6d2992c8237d.html
+
 - url: /.*
   script: main.application
 
