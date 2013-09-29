@@ -498,7 +498,8 @@ all_cards = {
     'roots': ResultCard(
         "Roots",
         "solve(%s, {_var})",
-        lambda statement, var, *args: var),
+        lambda statement, var, *args: var,
+        format_output_function=format_list),
 
     'integral': ResultCard(
         "Integral",
