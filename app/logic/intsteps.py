@@ -2,7 +2,7 @@ import sympy
 import collections
 from contextlib import contextmanager
 import stepprinter
-from stepprinter import functionnames, Equals, Rule, replace_u_var
+from stepprinter import functionnames, Rule, replace_u_var
 
 from sympy.integrals.manualintegrate import (
     manualintegrate, _manualintegrate, integral_steps, evaluates,
@@ -91,7 +91,7 @@ class IntegralPrinter(object):
                         "times the variable of integration:")
             self.append(
                 self.format_math_display(
-                    Equals(sympy.Integral(rule.constant, rule.symbol),
+                    sympy.Eq(sympy.Integral(rule.constant, rule.symbol),
                            _manualintegrate(rule))))
 
     def print_ConstantTimes(self, rule):
@@ -99,7 +99,7 @@ class IntegralPrinter(object):
             self.append("The integral of a constant times a function "
                         "is the constant times the integral of the function:")
             self.append(self.format_math_display(
-                Equals(
+                sympy.Eq(
                     sympy.Integral(rule.context, rule.symbol),
                     rule.constant * sympy.Integral(rule.other, rule.symbol))))
 
@@ -117,7 +117,7 @@ class IntegralPrinter(object):
             ))
             self.append(
                 self.format_math_display(
-                    Equals(sympy.Integral(rule.context, rule.symbol),
+                    sympy.Eq(sympy.Integral(rule.context, rule.symbol),
                            _manualintegrate(rule))))
 
     def print_Add(self, rule):
@@ -134,9 +134,9 @@ class IntegralPrinter(object):
             # commutative always puts the symbol at the end when printed
             dx = sympy.Symbol('d' + rule.symbol.name, commutative=0)
             self.append("Let {}.".format(
-                self.format_math(Equals(u, rule.u_func))))
+                self.format_math(sympy.Eq(u, rule.u_func))))
             self.append("Then let {} and substitute {}:".format(
-                self.format_math(Equals(du,rule.u_func.diff(rule.symbol) * dx)),
+                self.format_math(sympy.Eq(du,rule.u_func.diff(rule.symbol) * dx)),
                 self.format_math(rule.constant * du)
             ))
 
@@ -164,11 +164,11 @@ class IntegralPrinter(object):
             ))
 
             self.append("Let {} and let {}.".format(
-                self.format_math(Equals(u, rule.u)),
-                self.format_math(Equals(dv, rule.dv))
+                self.format_math(sympy.Eq(u, rule.u)),
+                self.format_math(sympy.Eq(dv, rule.dv))
             ))
             self.append("Then {}.".format(
-                self.format_math(Equals(du, rule.u.diff(rule.symbol)))
+                self.format_math(sympy.Eq(du, rule.u.diff(rule.symbol)))
             ))
 
             self.append("To find {}:".format(self.format_math(v)))
@@ -194,8 +194,8 @@ class IntegralPrinter(object):
                     with self.new_step():
                         self.append("For the integrand {}:".format(self.format_math(current_integrand)))
                         self.append("Let {} and let {}.".format(
-                            self.format_math(Equals(u, rl.u)),
-                            self.format_math(Equals(dv, rl.dv))
+                            self.format_math(sympy.Eq(u, rl.u)),
+                            self.format_math(sympy.Eq(dv, rl.dv))
                         ))
 
                         v_f, du_f = _manualintegrate(rl.v_step), rl.u.diff(rule.symbol)
@@ -205,7 +205,7 @@ class IntegralPrinter(object):
 
                         self.append("Then {}.".format(
                             self.format_math(
-                                Equals(
+                                sympy.Eq(
                                     sympy.Integral(rule.context, rule.symbol),
                                     total_result - sign * sympy.Integral(current_integrand, rule.symbol)))
                         ))
@@ -214,14 +214,14 @@ class IntegralPrinter(object):
                     self.append("Notice that the integrand has repeated itself, so "
                                 "move it to one side:")
                     self.append("{}".format(
-                        self.format_math_display(Equals(
+                        self.format_math_display(sympy.Eq(
                             (1 - rule.coefficient) * sympy.Integral(rule.context, rule.symbol),
                             total_result
                         ))
                     ))
                     self.append("Therefore,")
                     self.append("{}".format(
-                        self.format_math_display(Equals(
+                        self.format_math_display(sympy.Eq(
                             sympy.Integral(rule.context, rule.symbol),
                             _manualintegrate(rule)
                         ))
@@ -241,7 +241,7 @@ class IntegralPrinter(object):
                 self.append(text)
 
             self.append(self.format_math_display(
-                Equals(sympy.Integral(rule.context, rule.symbol),
+                sympy.Eq(sympy.Integral(rule.context, rule.symbol),
                        _manualintegrate(rule))))
 
     def print_Exp(self, rule):
@@ -252,7 +252,7 @@ class IntegralPrinter(object):
                 self.append("The integral of an exponential function is itself"
                             " divided by the natural logarithm of the base.")
             self.append(self.format_math_display(
-                Equals(sympy.Integral(rule.context, rule.symbol),
+                sympy.Eq(sympy.Integral(rule.context, rule.symbol),
                        _manualintegrate(rule))))
 
     def print_Log(self, rule):
@@ -273,7 +273,7 @@ class IntegralPrinter(object):
         with self.new_step():
             self.append("Rewrite the integrand:")
             self.append(self.format_math_display(
-                Equals(rule.context, rule.rewritten)))
+                sympy.Eq(rule.context, rule.rewritten)))
             self.print_rule(rule.substep)
 
     def print_DontKnow(self, rule):
