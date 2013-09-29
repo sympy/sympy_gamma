@@ -153,7 +153,7 @@ def is_integer(input_evaluated):
     return isinstance(input_evaluated, sympy.Integer)
 
 def is_rational(input_evaluated):
-    return isinstance(input_evaluated, sympy.Rational)
+    return isinstance(input_evaluated, sympy.Rational) and not input_evaluated.is_Integer
 
 def is_float(input_evaluated):
     return isinstance(input_evaluated, sympy.Float)
@@ -178,6 +178,13 @@ def is_constant(input_evaluated):
     # check free_symbols instead
     return (hasattr(input_evaluated, 'free_symbols') and
             not input_evaluated.free_symbols)
+
+def is_approximatable_constant(input_evaluated):
+    # is_constant, but exclude Integer/Float
+    return (hasattr(input_evaluated, 'free_symbols') and
+            not input_evaluated.free_symbols and
+            not input_evaluated.is_Integer and
+            not input_evaluated.is_Float)
 
 def is_complex(input_evaluated):
     try:
@@ -690,7 +697,7 @@ result_sets = [
     (is_rational, None, ['float_approximation']),
     (is_float, None, ['fractional_approximation']),
     (is_numbersymbol, None, ['float_approximation']),
-    (is_constant, None, ['float_approximation']),
+    (is_approximatable_constant, None, ['float_approximation']),
     (is_uncalled_function, None, ['function_docs']),
     (is_trig, None, ['trig_alternate']),
     (is_matrix, None, ['matrix_inverse', 'matrix_eigenvals', 'matrix_eigenvectors']),
