@@ -29,8 +29,9 @@ def mathjax_latex(*args):
             tex_code.append(latex(obj))
 
     obj = args[0]
-    if (len(args) == 1 and isinstance(obj, sympy.Basic)
-        and not obj.free_symbols and not obj.is_Integer and not obj.is_Float):
+    if (len(args) == 1 and isinstance(obj, sympy.Basic) and
+        not obj.free_symbols and not obj.is_Integer and not obj.is_Float and
+        obj.is_finite):
         tag = '<script type="math/tex; mode=display" data-numeric="true" ' \
               'data-output-repr="{}" data-approximation="{}">'.format(repr(obj), latex(obj.evalf(15)))
     else:
