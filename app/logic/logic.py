@@ -20,13 +20,25 @@ k, m, n = symbols('k,m,n', integer=True)
 f, g, h = map(Function, 'fgh')"""
 
 
-def mathjax_latex(obj):
-    if hasattr(obj, 'as_latex'):
-        tex_code = obj.as_latex()
+def mathjax_latex(*args):
+    tex_code = []
+    for obj in args:
+        if hasattr(obj, 'as_latex'):
+            tex_code.append(obj.as_latex())
+        else:
+            tex_code.append(latex(obj))
+
+    obj = args[0]
+    if (len(args) == 1 and isinstance(obj, sympy.Basic)
+        and not obj.free_symbols and not obj.is_Integer and not obj.is_Float):
+        tag = '<script type="math/tex; mode=display" data-numeric="true" ' \
+              'data-output-repr="{}" data-approximation="{}">'.format(repr(obj), latex(obj.evalf(15)))
     else:
-        tex_code = latex(obj)
-    return ''.join(['<script type="math/tex; mode=display">', tex_code,
-                    '</script>'])
+        tag = '<script type="math/tex; mode=display">'
+
+    tex_code = ''.join(tex_code)
+
+    return ''.join([tag, tex_code, '</script>'])
 
 
 class SymPyGamma(object):
