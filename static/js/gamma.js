@@ -33,12 +33,6 @@ function setupExamples() {
         });
         header.toggleClass('shown');
     });
-
-    $('#random-example').click(function(e) {
-        var examples = $('.example-group a');
-        var index = Math.floor(Math.random() * examples.length);
-        window.location = $(examples[index]).attr('href');
-    });
 }
 
 function setupSavedQueries() {
@@ -123,6 +117,45 @@ function evaluateCards() {
     });
 
     $.when.apply($, requests).then(function() {
+        $('script[data-numeric="true"]').each(function() {
+            $(this).html($(this).html() + '\\approx' + $(this).data('approximation'));
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        });
+
+        $('.result_card').slice(1).each(function() {
+            var card = $(this).data('card');
+
+            if (card.element.find('script[data-numeric="true"]').length) {
+                if (card.parameters && card.parameters.indexOf('digits') !== -1) {
+                    return;
+                }
+
+                card.addOptionsSection();
+                var equations = card.element.find('script[data-numeric="true"]');
+                var moreDigits = card.addOptionsButton('More Digits');
+                var approximator = new Card('approximator', 'x', null, ['digits']);
+                approximator.parameter('digits', 15);
+
+                moreDigits.click($.proxy(function() {
+                    var delta = 10;
+                    if (approximator.parameter('digits') <= 15) {
+                        delta = 35;
+                    }
+                    approximator.parameter('digits', approximator.parameter('digits') + delta);
+
+                    equations.each(function() {
+                        approximator.expr = $(this).data('output-repr');
+                        var script = $(this);
+                        approximator.evaluate(function(data) {
+                            if (data.output) {
+                                var equation = MathJax.Hub.getJaxFor(script.get(0));
+                                MathJax.Hub.Queue(["Text", equation, $(data.output).html()]);
+                            }
+                        });
+                    });
+                }, this));
+            }
+        });
         deferred.resolve();
     });
 

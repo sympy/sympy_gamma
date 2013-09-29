@@ -334,6 +334,10 @@ def format_series_fake_title(title, evaluated):
         up_to = 6
     return title.format(about, up_to)
 
+def format_approximator(approximation, formatter):
+    obj, digits = approximation
+    return formatter(obj, r'\approx', obj.evalf(digits))
+
 DIAGRAM_CODE = """
 <div class="factorization-diagram" data-primes="{primes}">
     <div></div>
@@ -489,6 +493,12 @@ def eval_root_to_polynomial(evaluator, components, parameters=None):
         exponent = sympy.lcm(*[power.args[1] for power in root.args])
     root = coeff * root
     return sympy.Symbol('x') ** (1 / exponent) - sympy.simplify(root ** (1 / exponent))
+
+def eval_approximator(evaluator, components, parameters=None):
+    if parameters is None:
+        raise ValueError
+    digits = parameters.get('digits', 10)
+    return (evaluator.get('input_evaluated'), digits)
 
 # Result cards
 
@@ -661,6 +671,14 @@ all_cards = {
         "(%s).eigenvects()",
         no_pre_output,
         format_output_function=format_list
+    ),
+
+    'approximator': FakeResultCard(
+        "Approximator_NOT_USER_VISIBLE",
+        "%s",
+        no_pre_output,
+        eval_method=eval_approximator,
+        format_output_function=format_approximator
     ),
 }
 

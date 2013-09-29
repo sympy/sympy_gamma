@@ -61,7 +61,7 @@ var Card = (function() {
         this.output.children('.loader').fadeOut(500);
 
         $.each(this._evaluateCallbacks, $.proxy(function(i, f) {
-            f(this);
+            f(this, data);
         }, this));
     };
 
@@ -77,8 +77,10 @@ var Card = (function() {
     };
 
     Card.prototype.addOptionsSection = function() {
-        this._optionsSection = $("<div/>").addClass('card_options');
-        this.output.append(this._optionsSection);
+        if (typeof this._optionsSection === "undefined") {
+            this._optionsSection = $("<div/>").addClass('card_options');
+            this.output.append(this._optionsSection);
+        }
     };
 
     Card.prototype.removeOptionsSection = function() {
@@ -156,7 +158,7 @@ var Card = (function() {
             }
             else if (this.card_name === 'intsteps' || this.card_name === 'diffsteps') {
                 this.element.hide();
-                this.onEvaluate(function(card) {
+                this.onEvaluate(function(card, data) {
                     if (!card.element.hasClass('result_card_error')) {
                         card.element.delay(1000).slideDown(1000);
                     }
