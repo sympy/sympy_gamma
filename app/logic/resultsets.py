@@ -141,8 +141,6 @@ class MultiResultCard(ResultCard):
 
 # Decide which result card set to use
 
-TRUE_AND_FIND_MORE = "True, and look for more result sets"
-
 def is_derivative(input_evaluated):
     return isinstance(input_evaluated, sympy.Derivative)
 
@@ -199,10 +197,10 @@ def is_trig(input_evaluated):
             any(input_evaluated.find(func)
                 for func in (sympy.sin, sympy.cos, sympy.tan,
                              sympy.csc, sympy.sec, sympy.cot))):
-            return TRUE_AND_FIND_MORE
-        return False
+            return True
     except AttributeError:
-        return False
+        pass
+    return False
 
 def is_not_constant_basic(input_evaluated):
     return not is_constant(input_evaluated) and isinstance(input_evaluated, sympy.Basic)
