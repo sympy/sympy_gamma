@@ -112,7 +112,13 @@ class SearchForm(forms.Form):
 def authenticate(view):
     def _wrapper(request, **kwargs):
         user = users.get_current_user()
-        template, params = view(request, user, **kwargs)
+        result = view(request, user, **kwargs)
+
+        try:
+            template, params = result
+        except ValueError:
+            return result
+
         if user:
             params['auth_url'] = users.create_logout_url("/")
             params['auth_message'] = "Logout"
@@ -124,13 +130,18 @@ def authenticate(view):
 
 def app_version(view):
     def _wrapper(request, **kwargs):
-        template, params = view(request, **kwargs)
+        result = view(request, **kwargs)
         version, deployed = os.environ['CURRENT_VERSION_ID'].split('.')
         deployed = datetime.datetime.fromtimestamp(long(deployed) / pow(2, 28))
         deployed = deployed.strftime("%d/%m/%y %X")
-        params['app_version'] = version
-        params['app_deployed'] = deployed
-        return render_to_response(template, params)
+
+        try:
+            template, params = result
+            params['app_version'] = version
+            params['app_deployed'] = deployed
+            return render_to_response(template, params)
+        except ValueError:
+            return result
     return _wrapper
 
 @app_version
@@ -159,6 +170,10 @@ def input(request, user):
         form = SearchForm(request.GET)
         if form.is_valid():
             input = form.cleaned_data["i"]
+
+            if input.strip().lower() in ('random', 'example', 'random example'):
+                return redirect('/random')
+
             g = SymPyGamma()
             r = g.eval(input)
 
