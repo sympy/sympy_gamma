@@ -191,8 +191,6 @@ $(document).ready(function() {
 
         setupFactorization();
 
-        setupSteps();
-
         setupDidYouMean();
 
         setupVariableChooser();
