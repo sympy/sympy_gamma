@@ -293,8 +293,11 @@ def get_card_full(request, card_name):
             'input': expression
         })
     except ValueError as e:
+        card_info = g.get_card_info(card_name, expression, variable)
         return HttpResponse(render_to_string('card.html', {
             'cell': {
+                'title': card_info['title'],
+                'input': card_info['input'],
                 'card': card_name,
                 'variable': variable,
                 'error': e.message

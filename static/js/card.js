@@ -45,21 +45,25 @@ var Card = (function() {
         return result;
     };
 
+    // call with no arguments for pre-evaluated cards
+    // (e.g. from Card.loadFullCard)
     Card.prototype.evaluateFinished = function(data) {
-        if (typeof data.output !== "undefined") {
-            this.result.html(data.output);
+        if (data) {
+            if (typeof data.output !== "undefined") {
+                this.result.html(data.output);
 
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+            else {
+                var error = $("<div/>")
+                    .addClass('cell_output_plain')
+                    .html(data.error);
+                this.output.html(error);
+                this.element.addClass('result_card_error');
+                this.removeOptionsSection();
+            }
+            this.output.children('.loader').fadeOut(500);
         }
-        else {
-            var error = $("<div/>")
-                .addClass('cell_output_plain')
-                .html(data.error);
-            this.output.html(error);
-            this.element.addClass('result_card_error');
-            this.removeOptionsSection();
-        }
-        this.output.children('.loader').fadeOut(500);
 
         $.each(this._evaluateCallbacks, $.proxy(function(i, f) {
             f(this, data);
@@ -99,7 +103,6 @@ var Card = (function() {
     };
 
     Card.prototype.initApproximation = function() {
-        console.log('init')
         this.element.find('script[data-numeric="true"]').each(function() {
             $(this).html($(this).html() + '\\approx' + $(this).data('approximation'));
         });
@@ -198,9 +201,70 @@ var Card = (function() {
             }
             else if (this.card_name === 'intsteps' || this.card_name === 'diffsteps') {
                 this.element.hide();
+
                 this.onEvaluate(function(card, data) {
                     if (!card.element.hasClass('result_card_error')) {
-                        card.element.delay(1000).slideDown(1000);
+                        card.element.delay(1000).slideDown(300);
+
+                        card.element.find('.collapsible > h2').click(function() {
+                            $(this).next().slideToggle();
+                            $(this).toggleClass('shown');
+                        });
+
+                        var steps = card.element.find('.steps').parent();
+
+                        var button = $("<button>Fullscreen</button>");
+                        var filler = $('<div/>').hide();
+                        steps.parent().append(filler);
+                        var expanded = false;
+
+                        var originalWidth = steps.parent().outerWidth();
+                        var originalHeight = steps.parent().outerHeight();
+                        var originalTop = steps.offset().top;
+                        var originalScroll = 0;
+                        button.click(function() {
+                            if (!expanded) {
+                                // reset as MathJax rendering changes height
+                                originalHeight = steps.outerHeight();
+                                filler.height(originalHeight).slideDown(300);
+
+                                steps.addClass('fullscreen');
+                                steps.css({
+                                    left: steps.offset().left,
+                                    top: originalTop,
+                                    right: $(window).width() - (steps.offset().left + originalWidth)
+                                });
+                                steps.animate({
+                                    left: 0,
+                                    top: 0,
+                                    right: 0,
+                                    height: $(document).height()
+                                }, 300);
+
+                                originalScroll = $('body').scrollTop();
+                                $('body,html').animate({scrollTop: 0}, 300);
+                                expanded = true;
+                            }
+                            else {
+                                // Use filler's left in case window resized
+                                steps.animate({
+                                    left: filler.offset().left,
+                                    right: $(window).width() -
+                                        (filler.offset().left + originalWidth),
+                                    top: originalTop,
+                                    height: originalHeight
+                                }, 300, function() {
+                                    steps.removeClass('fullscreen');
+                                });
+                                $('body').animate({
+                                    scrollTop: originalScroll
+                                }, 300);
+                                filler.slideUp(300);
+                                expanded = false;
+                            }
+                        });
+
+                        steps.prepend(button);
                     }
                 });
             }
@@ -244,12 +308,14 @@ var Card = (function() {
         var output = el.find('.cell_output');
         var card_name = output.data('card-name');
         var variable = encodeURIComponent(output.data('variable'));
-        // XXX use custom toString because JS toString doesn't properly
+        // XXX uses custom toString because JS toString doesn't properly
         // handle nested arrays
         var expr = encodeURIComponent(gammaToString(output.data('expr')));
         var parameters = output.data('parameters');
         var card = new Card(card_name, variable, expr, parameters);
         card.setElement(el);
+        el.data('card', card);
+
         return card;
     };
 
@@ -262,6 +328,16 @@ var Card = (function() {
             loader.slideUp(200);
         });
         return card;
+    };
+
+    Card.loadFullCard = function(card_name, variable, expr, parameterValues) {
+        var url = '/card_full/' + card_name;
+        var parms = {
+            variable: variable,
+            expression: expr
+        };
+        $.extend(parms, parameterValues);
+        return $.get(url, parms);
     };
 
     return Card;
