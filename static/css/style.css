@@ -42,7 +42,7 @@ h1 a img {
 
 .menu {
   padding: 0 0.5em;
-  font-family: sans-serif;
+  font-family: "Open Sans", sans-serif;
   border-bottom: 1px solid #81B953;
   background: #002200;
 }
@@ -494,7 +494,7 @@ svg {
 .document {
   text-align: left;
   font-size: 0.9em;
-  font-family: 'Open Sans', Arial, sans-serif;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .document p {
@@ -546,7 +546,7 @@ svg {
 .steps {
   text-align: left;
   font-size: 0.9em;
-  font-family: 'Open Sans', Arial, sans-serif;
+  font-family: 'Open Sans', sans-serif;
   max-width: 1600px;
   overflow: auto;
 }
