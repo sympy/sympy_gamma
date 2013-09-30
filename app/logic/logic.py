@@ -28,14 +28,16 @@ def mathjax_latex(*args):
         else:
             tex_code.append(latex(obj))
 
-    obj = args[0]
-    if (len(args) == 1 and isinstance(obj, sympy.Basic) and
-        not obj.free_symbols and not obj.is_Integer and not obj.is_Float and
-        obj.is_finite):
-        tag = '<script type="math/tex; mode=display" data-numeric="true" ' \
-              'data-output-repr="{}" data-approximation="{}">'.format(repr(obj), latex(obj.evalf(15)))
-    else:
-        tag = '<script type="math/tex; mode=display">'
+    tag = '<script type="math/tex; mode=display">'
+    if len(args) == 1:
+        obj = args[0]
+        if (isinstance(obj, sympy.Basic) and
+            not obj.free_symbols and not obj.is_Integer and
+            not obj.is_Float and
+            obj.is_finite is not False):
+            tag = '<script type="math/tex; mode=display" data-numeric="true" ' \
+                  'data-output-repr="{}" data-approximation="{}">'.format(
+                      repr(obj), latex(obj.evalf(15)))
 
     tex_code = ''.join(tex_code)
 
