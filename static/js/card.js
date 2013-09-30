@@ -79,7 +79,7 @@ var Card = (function() {
     Card.prototype.addOptionsSection = function() {
         if (typeof this._optionsSection === "undefined") {
             this._optionsSection = $("<div/>").addClass('card_options');
-            this.output.append(this._optionsSection);
+            this.element.append(this._optionsSection);
         }
     };
 
