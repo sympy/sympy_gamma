@@ -11,6 +11,7 @@ var Card = (function() {
         this.parameterValues = {};
 
         this._evaluateCallbacks = [];
+        this.onEvaluate($.proxy(this.initApproximation, this));
     }
 
     Card.prototype.parameter = function(key, val) {
@@ -54,7 +55,7 @@ var Card = (function() {
             var error = $("<div/>")
                 .addClass('cell_output_plain')
                 .html(data.error);
-            this.output.append(error);
+            this.output.html(error);
             this.element.addClass('result_card_error');
             this.removeOptionsSection();
         }
@@ -70,7 +71,7 @@ var Card = (function() {
     }
 
     Card.prototype.evaluateError = function() {
-        this.output.append($("<div/>").html("Error occurred"));
+        this.output.html($("<div/>").html("Error occurred"));
         this.removeOptionsSection();
         this.element.addClass('result_card_error');
         this.output.children('.loader').fadeOut(500);
@@ -95,6 +96,45 @@ var Card = (function() {
         var button = $('<button/>').addClass('card_options_toggle').html(text);
         this.addToOptionsSection(button);
         return button;
+    };
+
+    Card.prototype.initApproximation = function() {
+        console.log('init')
+        this.element.find('script[data-numeric="true"]').each(function() {
+            $(this).html($(this).html() + '\\approx' + $(this).data('approximation'));
+        });
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+
+        if (this.element.find('script[data-numeric="true"]').length) {
+            if (this.parameters && this.parameters.indexOf('digits') !== -1) {
+                return;
+            }
+
+            this.addOptionsSection();
+            var equations = this.element.find('script[data-numeric="true"]');
+            var moreDigits = this.addOptionsButton('More Digits');
+            var approximator = new Card('approximator', 'x', null, ['digits']);
+            approximator.parameter('digits', 15);
+
+            moreDigits.click($.proxy(function() {
+                var delta = 10;
+                if (approximator.parameter('digits') <= 15) {
+                    delta = 35;
+                }
+                approximator.parameter('digits', approximator.parameter('digits') + delta);
+
+                equations.each(function() {
+                    approximator.expr = $(this).data('output-repr');
+                    var script = $(this);
+                    approximator.evaluate(function(data) {
+                        if (data.output) {
+                            var equation = MathJax.Hub.getJaxFor(script.get(0));
+                            MathJax.Hub.Queue(["Text", equation, $(data.output).html()]);
+                        }
+                    });
+                });
+            }, this));
+        }
     };
 
     Card.prototype.initSpecificFunctionality = function() {
@@ -180,6 +220,9 @@ var Card = (function() {
             this.element.append($("<ul/>").append([
                 $("<li>Simplify</li>")
             ]).addClass('card_actions'));
+        }
+        else {
+            this.initApproximation();
         }
     };
 
