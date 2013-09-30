@@ -434,16 +434,16 @@ var Plot2D = (function() {
         return this.xScale.domain()[1];
     };
 
-    Plot2D.prototype.yBottom = function(value) {
+    Plot2D.prototype.yTop = function(value) {
         if (typeof value !== "undefined") {
-            this.xScale.domain([value, this.yTop()]);
+            this.yScale.domain([value, this.yTop()]);
         }
         return this.yScale.domain()[0];
     };
 
-    Plot2D.prototype.yTop = function(value) {
+    Plot2D.prototype.yBottom = function(value) {
         if (typeof value !== "undefined") {
-            this.xScale.domain([this.yBottom(), value]);
+            this.yScale.domain([this.yBottom(), value]);
         }
         return this.yScale.domain()[1];
     };
@@ -710,41 +710,7 @@ function setupGraphs() {
                     backend.asDataURI()
                 )
             ]),
-            $('<div/>').append($('<h2>Plot Options</h2>')).append(options),
-            $('<div/>').append([
-                $('<button>Reset</button>')
-                    .click(function() {
-                        container.width(originalWidth);
-                        container.height(originalHeight);
-                        plot.drawOption('square', false);
-                        plot.width(originalWidth);
-                        plot.height(originalHeight);
-                        backend.resize();
-                        plot.resize();
-                        plot.xScale.domain([-10, 10]);
-                        plot.yScale.domain([originalYBottom, originalYTop]);
-                        backend.generateAxes();
-                        backend.draw();
-                        backend.initDraggingZooming();
-                    }),
-                $('<button>Square Viewport</button>')
-                    .click(function() {
-                        var side = d3.max([container.width(), container.height()]);
-                        container.width(side);
-                        container.height(side);
-                        plot.drawOption('square', true);
-                        plot.width(side);
-                        plot.height(side);
-
-                        plot.yTop(plot.xRight());
-                        plot.yBottom(plot.xLeft());
-                        backend.resize();
-                        plot.resize();
-                        backend.generateAxes();
-                        backend.draw();
-                        backend.initDraggingZooming();
-                    })
-            ])
+            $('<div/>').append($('<h2>Plot Options</h2>')).append(options)
         ]);
 
         moreContent.hide();
@@ -754,8 +720,53 @@ function setupGraphs() {
         var options = $(this).parents('.result_card').find('.card_options');
         options.append([
             $('<p>Drag plot to pan, (shift-)double-click to zoom, drag edges to resize</p>')
-                .addClass('help')
+                .addClass('help'),
+            $('<button>Reset</button>')
+                .addClass('card_options_toggle')
+                .click(function() {
+                    container.width(originalWidth);
+                    container.height(originalHeight);
+                    plot.drawOption('square', false);
+                    plot.width(originalWidth);
+                    plot.height(originalHeight);
+                    backend.resize();
+                    plot.resize();
+                    plot.xScale.domain([-10, 10]);
+                    plot.yScale.domain([originalYBottom, originalYTop]);
+                    backend.generateAxes();
+                    backend.draw();
+                    backend.initDraggingZooming();
+                }),
+            $('<button>Square Viewport</button>')
+                .addClass('card_options_toggle')
+                .click(function() {
+                    var side = d3.max([container.width(), container.height()]);
+                    container.width(side);
+                    container.height(side);
+                    plot.drawOption('square', true);
+                    plot.width(side);
+                    plot.height(side);
+
+                    var centerX = Math.floor((plot.xRight() + plot.xLeft()) / 2);
+                    var centerY = Math.floor((plot.yTop() + plot.yBottom()) / 2);
+                    var extent = d3.max([plot.xRight(), plot.xLeft(),
+                                         plot.yTop(), plot.yBottom()], Math.abs);
+                    plot.xLeft(Math.floor(centerX - extent / 2));
+                    plot.xRight(Math.ceil(centerX + extent / 2));
+                    plot.yTop(Math.ceil(centerY + extent / 2));
+                    plot.yBottom(Math.floor(centerY - extent / 2));
+                    backend.resize();
+                    plot.resize();
+                    backend.generateAxes();
+                    backend.draw();
+                    backend.initDraggingZooming();
+                }),
+            $('<button>Fullscreen</button>')
+                .addClass('card_options_toggle')
+                .click(function() {
+                }),
+            moreButton,
+            moreContent
         ]);
-        options.append(moreButton).append(moreContent);
     });
 }
