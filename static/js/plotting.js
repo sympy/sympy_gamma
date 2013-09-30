@@ -680,8 +680,9 @@ function setupGraphs() {
         backend.initTracing(variable, output_variable);
         backend.initDraggingZooming();
 
-        var moreButton = $('<button>More...</button>')
-            .addClass('card_options_toggle');
+        var moreButton = $('<button><i class="icon-angle-down"></i> More...</button>')
+            .addClass('card_options_toggle')
+            .addClass('card_options_more');
         var moreContent = $('<div/>');
 
         var options = $.map(['grid', 'axes', 'points', 'path'], function(opt) {
@@ -716,6 +717,7 @@ function setupGraphs() {
         moreContent.hide();
         moreButton.click(function() {
             moreContent.slideToggle();
+            moreButton.toggleClass('open');
         });
         var options = $(this).parents('.result_card').find('.card_options');
         options.append([

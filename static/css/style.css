@@ -142,6 +142,23 @@ h1 a img {
   display: inline-block;
 }
 
+.card_options_more {
+  float: right;
+}
+
+.card_options_more i {
+  display: inline-block;
+  margin: 0 0.4em 0 0;
+}
+
+.card_options_more.open i {
+  -moz-transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
 .result_card .card_options {
   border-top: 1px solid #777;
   font-size: 1em;
@@ -338,27 +355,23 @@ h1 a img {
   padding: 0.5em 0.25em;
 }
 
+.example-group h3 i {
+  display: inline-block;
+  margin: 0 0.25em;
+  font-size: 1.25em;
+}
+
 .example-group h3.shown {
   border-bottom: 1px solid #777;
 }
 
-.example-group h3:before {
-  background-image: url('/static/images/arrow.png');
-  background-size: 12px;
-  background-position: 6px 50%;
-  background-repeat: no-repeat;
-  content: "";
-  width: 24px;
-  height: 1em;
-  display: inline-block;
-}
-
-.example-group h3.shown:before {
+.example-group h3.shown i {
   -moz-transform: rotate(180deg);
   -webkit-transform: rotate(180deg);
   -o-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
   transform: rotate(180deg);
+
 }
 
 .example-group .contents {
