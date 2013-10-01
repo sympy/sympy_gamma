@@ -425,7 +425,7 @@ def eval_factorization_diagram(evaluator, components, parameters=None):
 def eval_integral(evaluator, components, parameters=None):
     return sympy.integrate(components['integrand'], *components['limits'])
 
-def eval_integral_manual(evaluator, components, variable, parameters=None):
+def eval_integral_manual(evaluator, components, parameters=None):
     return sympy.integrals.manualintegrate(components['integrand'],
                                            components['variable'])
 

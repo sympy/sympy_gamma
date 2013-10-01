@@ -1,4 +1,5 @@
 from __future__ import division
+import difflib
 import collections
 import traceback
 import sys
@@ -8,6 +9,7 @@ from StringIO import StringIO
 import sympy
 
 from sympy.core.relational import Relational
+import sympy.parsing.sympy_tokenize as sympy_tokenize
 from token import NAME
 
 OTHER_SYMPY_FUNCTIONS = ('sqrt',)
@@ -382,3 +384,26 @@ def synonyms(tokens, local_dict, global_dict):
                 continue
         result.append(token)
     return result
+
+def close_matches(s, global_dict):
+    """
+    Checks undefined names to see if they are close matches to a defined name.
+    """
+
+    tokens = sympy_tokenize.generate_tokens(StringIO(s.strip()).readline)
+    result = []
+    has_result = False
+    for token in tokens:
+        if token[0] == NAME and token[1] not in global_dict:
+            matches = difflib.get_close_matches(token[1], global_dict)
+
+            if matches and matches[0] == token[1]:
+                matches = matches[1:]
+            if matches:
+                result.append((NAME, matches[0]))
+                has_result = True
+                continue
+        result.append(token)
+    if has_result:
+        return sympy_tokenize.untokenize(result).strip()
+    return None

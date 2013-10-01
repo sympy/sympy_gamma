@@ -2,7 +2,8 @@ import sys
 import traceback
 import collections
 from utils import Eval, latexify, arguments, removeSymPy, \
-    custom_implicit_transformation, synonyms, OTHER_SYMPY_FUNCTIONS
+    custom_implicit_transformation, synonyms, OTHER_SYMPY_FUNCTIONS, \
+    close_matches
 from resultsets import find_result_set, get_card, format_by_type, \
     is_function_handled
 from sympy import latex, series, sympify, solve, Derivative, \
@@ -62,7 +63,17 @@ class SymPyGamma(object):
         if result:
             parsed, arguments, evaluator, evaluated = result
 
-            return self.prepare_cards(parsed, arguments, evaluator, evaluated)
+            cards = []
+
+            close_match = close_matches(s, sympy.__dict__)
+            if close_match:
+                cards.append({
+                    "ambiguity": close_match,
+                    "description": ""
+                })
+            cards.extend(self.prepare_cards(parsed, arguments, evaluator, evaluated))
+
+            return cards
 
     def handle_error(self, s, e):
         if isinstance(e, SyntaxError):
