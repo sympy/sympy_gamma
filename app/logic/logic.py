@@ -2,7 +2,7 @@ import sys
 import traceback
 import collections
 from utils import Eval, latexify, arguments, removeSymPy, \
-    custom_implicit_transformation, synonyms
+    custom_implicit_transformation, synonyms, OTHER_SYMPY_FUNCTIONS
 from resultsets import find_result_set, get_card, format_by_type, \
     is_function_handled
 from sympy import latex, series, sympify, solve, Derivative, \
@@ -127,7 +127,8 @@ class SymPyGamma(object):
             first_func and
             not isinstance(first_func, FunctionClass) and
             not isinstance(first_func, sympy.Atom) and
-            first_func_name and first_func_name[0].islower())
+            first_func_name and first_func_name[0].islower() and
+            not first_func_name in OTHER_SYMPY_FUNCTIONS)
 
         if is_applied:
             convert_input, cards = find_result_set(arguments[0], evaluated)

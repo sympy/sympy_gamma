@@ -10,6 +10,8 @@ import sympy
 from sympy.core.relational import Relational
 from token import NAME
 
+OTHER_SYMPY_FUNCTIONS = ('sqrt',)
+
 Arguments = collections.namedtuple('Arguments', 'function args kwargs')
 
 class Eval(object):
@@ -103,7 +105,7 @@ class LatexVisitor(ast.NodeVisitor):
             result = self.format(fname, node)
             if result:
                 self.latex = result
-            elif fname[0].islower():
+            elif fname[0].islower() and fname not in OTHER_SYMPY_FUNCTIONS:
                 buffer.append("\\mathrm{%s}" % fname.replace('_', '\\_'))
                 buffer.append('(')
 
@@ -118,6 +120,8 @@ class LatexVisitor(ast.NodeVisitor):
                 buffer.append(')')
 
                 self.latex = ''.join(buffer)
+            else:
+                self.latex = sympy.latex(self.evaluator.eval_node(node))
         return self.latex
 
 @LatexVisitor.formats_function('solve')

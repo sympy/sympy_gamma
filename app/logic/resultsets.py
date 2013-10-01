@@ -159,18 +159,6 @@ def is_float(input_evaluated):
 def is_numbersymbol(input_evaluated):
     return isinstance(input_evaluated, sympy.NumberSymbol)
 
-def is_root(input_evaluated):
-    if isinstance(input_evaluated, sympy.Pow):
-        return (is_rational(input_evaluated.args[0]) and
-                is_rational(input_evaluated.args[1]))
-    elif isinstance(input_evaluated, sympy.Mul):
-        coeff, root = input_evaluated.as_coeff_Mul()
-        if coeff == 1:
-            # for (2/5)^(1/3) we have a product of roots
-            return all(is_root(x) for x in root.args)
-        else:
-            return is_root(root)
-
 def is_constant(input_evaluated):
     # is_constant reduces trig identities (even with simplify=False?) so we
     # check free_symbols instead
@@ -183,7 +171,7 @@ def is_approximatable_constant(input_evaluated):
             not input_evaluated.free_symbols and
             not input_evaluated.is_Integer and
             not input_evaluated.is_Float and
-            input_evaluated.is_finite)
+            input_evaluated.is_finite is not True)
 
 def is_complex(input_evaluated):
     try:
@@ -483,16 +471,6 @@ def eval_function_docs(evaluator, components, parameters=None):
     return docutils.core.publish_parts(docstring, writer_name='html4css1',
                                        settings_overrides={'_disable_config': True})['html_body']
 
-def eval_root_to_polynomial(evaluator, components, parameters=None):
-    coeff, root = evaluator.get("input_evaluated").as_coeff_Mul()
-    if isinstance(root, sympy.Pow):
-        exponent = root.args[1]
-    else:
-        # root is a product of powers
-        exponent = sympy.lcm(*[power.args[1] for power in root.args])
-    root = coeff * root
-    return sympy.Symbol('x') ** (1 / exponent) - sympy.simplify(root ** (1 / exponent))
-
 def eval_approximator(evaluator, components, parameters=None):
     if parameters is None:
         raise ValueError
@@ -645,11 +623,10 @@ all_cards = {
         format_output_function=format_nothing
     ),
 
-    'root_to_polynomial': FakeResultCard(
+    'root_to_polynomial': ResultCard(
         "Polynomial with this root",
-        "%s",
-        no_pre_output,
-        eval_method=eval_root_to_polynomial
+        "sympy.polys.numberfields.minpoly(%s)",
+        no_pre_output
     ),
 
     'matrix_inverse': ResultCard(
@@ -709,13 +686,11 @@ result_sets = [
     ('diff', extract_derivative, ['diff', 'diffsteps']),
     ('factorint', extract_first, ['factorization', 'factorizationDiagram']),
     ('plot', extract_plot, ['graph']),
-    (is_root, None, ['float_approximation', 'root_to_polynomial']),
     (is_integer, None, ['digits', 'factorization', 'factorizationDiagram']),
     (is_complex, None, ['absolute_value', 'polar_angle', 'conjugate']),
     (is_rational, None, ['float_approximation']),
     (is_float, None, ['fractional_approximation']),
-    (is_numbersymbol, None, ['float_approximation']),
-    (is_approximatable_constant, None, ['float_approximation']),
+    (is_approximatable_constant, None, ['root_to_polynomial']),
     (is_uncalled_function, None, ['function_docs']),
     (is_trig, None, ['trig_alternate']),
     (is_matrix, None, ['matrix_inverse', 'matrix_eigenvals', 'matrix_eigenvectors']),
