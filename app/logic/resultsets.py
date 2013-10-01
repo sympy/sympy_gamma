@@ -127,6 +127,8 @@ class MultiResultCard(ResultCard):
         return None
 
     def format_output(self, output, formatter):
+        if not isinstance(output, list):
+            return output
         html = ["<ul>"]
         for card, result in output:
             html.append("<li>")
@@ -400,6 +402,10 @@ def eval_graph(evaluator, components, parameters=None):
 
 def eval_factorization(evaluator, components, parameters=None):
     number = evaluator.get("input_evaluated")
+
+    if number == 0:
+        raise ValueError("Can't factor 0")
+
     factors = sympy.ntheory.factorint(number, limit=100)
     smallfactors = {}
     for factor in factors:
@@ -413,6 +419,8 @@ def eval_factorization_diagram(evaluator, components, parameters=None):
     number = int(evaluator.eval("input_evaluated"))
     if number > 256:
         raise ValueError("Number too large")
+    elif number == 0:
+        raise ValueError("Can't factor 0")
     factors = sympy.ntheory.factorint(number, limit=101)
     smallfactors = {}
     for factor in factors:
