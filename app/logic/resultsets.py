@@ -633,7 +633,7 @@ all_cards = {
 
     'root_to_polynomial': ResultCard(
         "Polynomial with this root",
-        "sympy.polys.numberfields.minpoly(%s)",
+        "minpoly(%s)",
         no_pre_output
     ),
 
