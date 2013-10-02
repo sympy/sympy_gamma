@@ -438,14 +438,14 @@ var Plot2D = (function() {
         if (typeof value !== "undefined") {
             this.yScale.domain([value, this.yTop()]);
         }
-        return this.yScale.domain()[0];
+        return this.yScale.domain()[1];
     };
 
     Plot2D.prototype.yBottom = function(value) {
         if (typeof value !== "undefined") {
             this.yScale.domain([this.yBottom(), value]);
         }
-        return this.yScale.domain()[1];
+        return this.yScale.domain()[0];
     };
 
     Plot2D.prototype.setData = function(xValues, yValues) {
