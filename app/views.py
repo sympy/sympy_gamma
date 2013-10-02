@@ -183,9 +183,16 @@ def input(request, user):
                     "input": input,
                     "output": "Can't handle the input."
                 }]
-            elif user and not models.Query.query(models.Query.text==input).get():
+
+            if (user and not models.Query.query(
+                    models.Query.text==input,
+                    models.Query.user_id==user.user_id()).get()):
                 query = models.Query(text=input, user_id=user.user_id())
                 query.put()
+            elif not models.Query.query(models.Query.text==input).get():
+                query = models.Query(text=input, user_id=None)
+                query.put()
+
 
             # For some reason the |random tag always returns the same result
             return ("result.html", {
@@ -328,7 +335,14 @@ def remove_query(request, qid):
     user = users.get_current_user()
 
     if user:
-        models.ndb.Key(urlsafe=qid).delete()
+        query = models.ndb.Key(urlsafe=qid).get()
+
+        if not models.Query.query(models.Query.text==query.text):
+            query.user_id = None
+            query.put()
+        else:
+            query.key.delete()
+
         response = {
             'result': 'success',
         }
