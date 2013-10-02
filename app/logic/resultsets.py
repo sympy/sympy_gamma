@@ -304,6 +304,8 @@ def format_dict_title(*title):
 
 def format_list(items, formatter):
     try:
+        if len(items) == 0:
+            return "<p>No result</p>"
         html = ['<ul>']
         for item in items:
             html.append('<li>{}</li>'.format(formatter(item)))
