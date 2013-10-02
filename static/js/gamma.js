@@ -143,14 +143,16 @@ function setupVariableChooser() {
 
             // check if we've already loaded the cards
             if ($('.variable-' + variable).length) {
-                $('.result_card.' + currentVariableClass).fadeOut();
-                $('.result_card.variable-' + variable).fadeIn();
+                $('.result_card.' + currentVariableClass).hide();
+                $('.result_card.variable-' + variable).show();
             }
             else {
                 $('.result_card.' + currentVariableClass).each(function() {
                     var card = $(this).data('card');
                     if (card.variable) {
-                        var placeholder = $('<div/>');
+                        var placeholder = $('<div/>')
+                            .addClass('result_card')
+                            .append($('<div/>').addClass('loader'));
                         card.element.after(placeholder);
                         deferreds.push(
                             Card.loadFullCard(card.card_name, variable, card.expr, {})
@@ -159,13 +161,15 @@ function setupVariableChooser() {
                                     newCardEl
                                         .addClass('variable-' + variable)
                                         .find('.loader').remove();
-                                    placeholder.replaceWith(newCardEl);
-                                    newCardEl.fadeIn();
-                                    var newCard = Card.fromCardEl(newCardEl);
-                                    newCard.initSpecificFunctionality();
-                                    newCard.evaluateFinished();
+                                    placeholder.slideUp(300, function() {
+                                        placeholder.replaceWith(newCardEl);
+                                        newCardEl.hide().slideDown();
+                                        var newCard = Card.fromCardEl(newCardEl);
+                                        newCard.initSpecificFunctionality();
+                                        newCard.evaluateFinished();
 
-                                    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+                                        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+                                    });
                                 })
                         );
                     }
