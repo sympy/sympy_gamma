@@ -161,8 +161,8 @@ def log_rule(derivative):
             return LogRule(arg, base, expr, symbol)
         else:
             u = sympy.Dummy()
-            return ChainRule(LogRule(u, base, sympy.log(u, base), symbol),
-                             arg, u, expr, symbol)
+            return ChainRule(LogRule(u, base, sympy.log(u, base), u),
+                             arg, u, diff_steps(arg, symbol), expr, symbol)
 
 def function_rule(derivative):
     return FunctionRule(derivative.expr, derivative.symbol)
