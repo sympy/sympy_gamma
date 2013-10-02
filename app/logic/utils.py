@@ -394,7 +394,9 @@ def close_matches(s, global_dict):
     result = []
     has_result = False
     for token in tokens:
-        if token[0] == NAME and token[1] not in global_dict:
+        if (token[0] == NAME and
+            token[1] not in global_dict and
+            len(token[1]) > 1):
             matches = difflib.get_close_matches(token[1], global_dict)
 
             if matches and matches[0] == token[1]:
