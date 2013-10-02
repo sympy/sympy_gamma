@@ -766,6 +766,7 @@ function setupGraphs() {
             $('<button>Fullscreen</button>')
                 .addClass('card_options_toggle')
                 .click(function() {
+                    card.toggleFullscreen();
                 }),
             moreButton,
             moreContent

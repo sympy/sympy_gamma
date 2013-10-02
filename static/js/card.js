@@ -1,6 +1,7 @@
 var Card = (function() {
     function Card(card_name, variable, expr, parameters) {
         this.card_name = card_name;
+        this._fullscreen = false;
 
         if (typeof this.card_name === "undefined") {
             return;
@@ -214,55 +215,16 @@ var Card = (function() {
                         var steps = card.element.find('.steps').parent();
 
                         var button = $("<button>Fullscreen</button>");
-                        var filler = $('<div/>').hide();
-                        steps.parent().append(filler);
-                        var expanded = false;
+                        // var filler = $('<div/>').hide();
+                        // steps.parent().append(filler);
 
-                        var originalWidth = steps.parent().outerWidth();
-                        var originalHeight = steps.parent().outerHeight();
-                        var originalTop = steps.offset().top;
-                        var originalScroll = 0;
-                        button.click(function() {
-                            if (!expanded) {
-                                // reset as MathJax rendering changes height
-                                originalHeight = steps.outerHeight();
-                                filler.height(originalHeight).slideDown(300);
-
-                                steps.addClass('fullscreen');
-                                steps.css({
-                                    left: steps.offset().left,
-                                    top: originalTop,
-                                    right: $(window).width() - (steps.offset().left + originalWidth)
-                                });
-                                steps.animate({
-                                    left: 0,
-                                    top: 0,
-                                    right: 0,
-                                    height: $(document).height()
-                                }, 300);
-
-                                originalScroll = $('body').scrollTop();
-                                $('body,html').animate({scrollTop: 0}, 300);
-                                expanded = true;
-                            }
-                            else {
-                                // Use filler's left in case window resized
-                                steps.animate({
-                                    left: filler.offset().left,
-                                    right: $(window).width() -
-                                        (filler.offset().left + originalWidth),
-                                    top: originalTop,
-                                    height: originalHeight
-                                }, 300, function() {
-                                    steps.removeClass('fullscreen');
-                                });
-                                $('body').animate({
-                                    scrollTop: originalScroll
-                                }, 300);
-                                filler.slideUp(300);
-                                expanded = false;
-                            }
-                        });
+                        // var originalWidth = steps.parent().outerWidth();
+                        // var originalHeight = steps.parent().outerHeight();
+                        // var originalTop = steps.offset().top;
+                        // var originalScroll = 0;
+                        button.click($.proxy(function() {
+                            this.toggleFullscreen();
+                        }, card));
 
                         steps.prepend(button);
                     }
@@ -271,6 +233,50 @@ var Card = (function() {
         }
         else {
             this.element.addClass('no_actions');
+        }
+    };
+
+    Card.prototype.toggleFullscreen = function() {
+        if (!this._fullscreen) {
+            var margin = 30;
+
+            if ($(window).width() < 1280) {
+                margin = 0;
+            }
+
+            $('<div id="fade"/>').appendTo('body').css({
+                zIndex: 500,
+                background: '#DDD',
+                opacity: 0,
+                position: 'fixed',
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0
+            }).animate({ opacity: 0.8 });
+            this.element.after($('<div id="fullscreen-placeholder"/>'));
+            this.element.appendTo('body')
+                .css({
+                    margin: margin
+                })
+                .addClass('fullscreen');
+
+            this._fullscreen = true;
+
+            var keyClose = $.proxy(function(e) {
+                if (e.keyCode == 27) {
+                    this.toggleFullscreen();
+                    $('body').off('keyup', keyClose);
+                }
+            }, this);
+            $('body').on('keyup', keyClose);
+        }
+        else {
+            $('#fade').fadeOut(function() { $(this).remove(); });
+            this.element.attr('style', '').removeClass('fullscreen');
+            $('#fullscreen-placeholder').replaceWith(this.element);
+
+            this._fullscreen = false;
         }
     };
 
