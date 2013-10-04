@@ -88,6 +88,11 @@ h1 a img {
   opacity: 0.7;
 }
 
+.result_card.result_card_error .cell_output_plain {
+  white-space: pre;
+  text-align: left;
+}
+
 .fullscreen {
   position: fixed;
   left: 0;

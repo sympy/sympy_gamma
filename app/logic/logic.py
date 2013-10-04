@@ -87,8 +87,15 @@ class SymPyGamma(object):
                 {"title": "Input", "input": s},
                 {"title": "Error", "input": s, "exception_info": error}
             ]
+        elif isinstance(e, ValueError):
+            return [
+                {"title": "Input", "input": s},
+                {"title": "Error", "input": s, "error": e.message}
+            ]
         else:
             trace = traceback.format_exc()
+            trace = ("There was an error in Gamma.\n"
+                     "For reference, the stack trace is:\n\n" + trace)
             return [
                 {"title": "Input", "input": s},
                 {"title": "Error", "input": s, "error": trace}
