@@ -393,11 +393,13 @@ def close_matches(s, global_dict):
     tokens = sympy_tokenize.generate_tokens(StringIO(s.strip()).readline)
     result = []
     has_result = False
+    all_names = set(global_dict).union(SYNONYMS)
+
     for token in tokens:
         if (token[0] == NAME and
-            token[1] not in global_dict and
+            token[1] not in all_names and
             len(token[1]) > 1):
-            matches = difflib.get_close_matches(token[1], global_dict)
+            matches = difflib.get_close_matches(token[1], all_names)
 
             if matches and matches[0] == token[1]:
                 matches = matches[1:]
