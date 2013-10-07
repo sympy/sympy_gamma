@@ -1,14 +1,22 @@
 from __future__ import division
+import difflib
+import collections
 import traceback
 import sys
 import ast
 import re
 from StringIO import StringIO
 import sympy
+
 from sympy.core.relational import Relational
+import sympy.parsing.sympy_tokenize as sympy_tokenize
+from token import NAME
+
+OTHER_SYMPY_FUNCTIONS = ('sqrt',)
+
+Arguments = collections.namedtuple('Arguments', 'function args kwargs')
 
 class Eval(object):
-
     def __init__(self, namespace={}):
         self._namespace = namespace
 
@@ -17,6 +25,10 @@ class Eval(object):
 
     def set(self, name, value):
         self._namespace[name] = value
+
+    def eval_node(self, node):
+        tree = ast.fix_missing_locations(ast.Expression(node))
+        return eval(compile(tree, '<string>', 'eval'), self._namespace)
 
     def eval(self, x, use_none_for_exceptions=False, repr_expression=True):
         globals = self._namespace
@@ -66,10 +78,22 @@ class Eval(object):
 
 class LatexVisitor(ast.NodeVisitor):
     EXCEPTIONS = {'integrate': sympy.Integral, 'diff': sympy.Derivative}
+    formatters = {}
 
-    def eval_node(self, node):
-        tree = ast.fix_missing_locations(ast.Expression(node))
-        return eval(compile(tree, '<string>', 'eval'), self.namespace)
+    @staticmethod
+    def formats_function(name):
+        def _formats_function(f):
+            LatexVisitor.formatters[name] = f
+            return f
+        return _formats_function
+
+    def format(self, name, node):
+        formatter = LatexVisitor.formatters.get(name)
+
+        if not formatter:
+            return None
+
+        return formatter(node, self)
 
     def visit_Call(self, node):
         buffer = []
@@ -78,50 +102,123 @@ class LatexVisitor(ast.NodeVisitor):
         # Only apply to lowercase names (i.e. functions, not classes)
         if fname in self.__class__.EXCEPTIONS:
             node.func.id = self.__class__.EXCEPTIONS[fname].__name__
-            self.latex = sympy.latex(self.eval_node(node))
-        elif fname == 'solve':
-            expr = self.eval_node(node.args[0])
-            buffer = ['\\mathrm{solve}\\;', sympy.latex(expr)]
+            self.latex = sympy.latex(self.evaluator.eval_node(node))
+        else:
+            result = self.format(fname, node)
+            if result:
+                self.latex = result
+            elif fname[0].islower() and fname not in OTHER_SYMPY_FUNCTIONS:
+                buffer.append("\\mathrm{%s}" % fname.replace('_', '\\_'))
+                buffer.append('(')
 
-            if not isinstance(expr, Relational):
-                buffer.append('=0')
+                latexes = []
+                for arg in node.args:
+                    if isinstance(arg, ast.Call) and arg.func.id[0].lower() == arg.func.id[0]:
+                        latexes.append(self.visit_Call(arg))
+                    else:
+                        latexes.append(sympy.latex(self.evaluator.eval_node(arg)))
 
-            if len(node.args) > 1:
-                buffer.append('\\;\\mathrm{for}\\;')
-            for arg in node.args[1:]:
-                buffer.append(sympy.latex(self.eval_node(arg)))
-                buffer.append(',\\, ')
-            if len(node.args) > 1:
-                buffer.pop()
+                buffer.append(', '.join(latexes))
+                buffer.append(')')
 
-            self.latex = ''.join(buffer)
-        elif fname == 'limit' and len(node.args) >= 3:
-            self.latex = sympy.latex(sympy.Limit(*list(map(self.eval_node, node.args))))
-            return
-        elif fname[0].lower() == fname[0]:
-            buffer.append("\\mathrm{%s}" % fname.replace('_', '\\_'))
-            buffer.append('(')
+                self.latex = ''.join(buffer)
+            else:
+                self.latex = sympy.latex(self.evaluator.eval_node(node))
+        return self.latex
 
-            latexes = []
-            for arg in node.args:
-                if isinstance(arg, ast.Call) and arg.func.id[0].lower() == arg.func.id[0]:
-                    latexes.append(self.visit_Call(arg))
-                else:
-                    latexes.append(sympy.latex(self.eval_node(arg)))
+@LatexVisitor.formats_function('solve')
+def format_solve(node, visitor):
+    expr = visitor.evaluator.eval_node(node.args[0])
+    buffer = [r'\mathrm{solve}\;', sympy.latex(expr)]
 
-            buffer.append(', '.join(latexes))
-            buffer.append(')')
+    if not isinstance(expr, Relational):
+        buffer.append('=0')
 
-            self.latex = ''.join(buffer)
-            return ''.join(buffer)
+    if len(node.args) > 1:
+        buffer.append(r'\;\mathrm{for}\;')
+    for arg in node.args[1:]:
+        buffer.append(sympy.latex(visitor.evaluator.eval_node(arg)))
+        buffer.append(r',\, ')
+    if len(node.args) > 1:
+        buffer.pop()
+
+    return ''.join(buffer)
+
+@LatexVisitor.formats_function('limit')
+def format_limit(node, visitor):
+    if len(node.args) >= 3:
+        return sympy.latex(
+            sympy.Limit(*[visitor.evaluator.eval_node(arg) for arg in node.args]))
+
+@LatexVisitor.formats_function('prime')
+def format_prime(node, visitor):
+    number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return ''.join([number,
+                    r'^\mathrm{',
+                    ordinal(int(number)),
+                    r'}\; \mathrm{prime~number}'])
+
+@LatexVisitor.formats_function('isprime')
+def format_isprime(node, visitor):
+    number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return ''.join([r'\mathrm{Is~}', number, r'\mathrm{~prime?}'])
+
+@LatexVisitor.formats_function('nextprime')
+def format_nextprime(node, visitor):
+    number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return r'\mathrm{Least~prime~greater~than~}' + number
+
+@LatexVisitor.formats_function('factorint')
+def format_factorint(node, visitor):
+    number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return r'\mathrm{Prime~factorization~of~}' + number
+
+@LatexVisitor.formats_function('factor')
+def format_factor(node, visitor):
+    expression = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return r'\mathrm{Factorization~of~}' + expression
+
+@LatexVisitor.formats_function('solve_poly_system')
+def format_factorint(node, visitor):
+    equations = visitor.evaluator.eval_node(node.args[0])
+    variables = tuple(map(visitor.evaluator.eval_node, node.args[1:]))
+
+    if len(variables) == 1:
+        variables = variables[0]
+
+    return ''.join([r'\mathrm{Solve~} \begin{cases} ',
+                    r'\\'.join(map(sympy.latex, equations)),
+                    r'\end{cases} \mathrm{~for~}',
+                    sympy.latex(variables)])
+
+@LatexVisitor.formats_function('plot')
+def format_plot(node, visitor):
+    function = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    return r'\mathrm{Plot~}' + function
 
 class TopCallVisitor(ast.NodeVisitor):
+    def __init__(self):
+        super(TopCallVisitor, self).__init__()
+        self.call = None
+
     def visit_Call(self, node):
         self.call = node
 
+    def visit_Name(self, node):
+        if not self.call:
+            self.call = node
+
+# From http://stackoverflow.com/a/739301/262727
+def ordinal(n):
+    if 10 <= n % 100 < 20:
+        return 'th'
+    else:
+       return {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(n % 10, "th")
+
+# TODO: modularize all of this
 def latexify(string, evaluator):
     a = LatexVisitor()
-    a.namespace = evaluator._namespace
+    a.evaluator = evaluator
     a.visit(ast.parse(string))
     return a.latex
 
@@ -130,6 +227,33 @@ def topcall(string):
     a.visit(ast.parse(string))
     if hasattr(a, 'call'):
         return getattr(a.call.func, 'id', None)
+    return None
+
+def arguments(string_or_node, evaluator):
+    node = None
+    if not isinstance(string_or_node, ast.Call):
+        a = TopCallVisitor()
+        a.visit(ast.parse(string_or_node))
+
+        if hasattr(a, 'call'):
+            node = a.call
+    else:
+        node = string_or_node
+
+    if node:
+        if isinstance(node, ast.Call):
+            name = getattr(node.func, 'id', None)  # when is it undefined?
+            args, kwargs = None, None
+            if node.args:
+                args = list(map(evaluator.eval_node, node.args))
+
+            kwargs = node.keywords
+            if kwargs:
+                kwargs = {kwarg.arg: evaluator.eval_node(kwarg.value) for kwarg in kwargs}
+
+            return Arguments(name, args, kwargs)
+        elif isinstance(node, ast.Name):
+            return Arguments(node.id, [], {})
     return None
 
 re_calls = re.compile(r'(Integer|Symbol|Float|Rational)\s*\([\'\"]?([a-zA-Z0-9\.]+)[\'\"]?\s*\)')
@@ -150,15 +274,17 @@ from sympy.parsing.sympy_parser import (
 
 def _implicit_multiplication(tokens, local_dict, global_dict):
     result = []
+
     for tok, nextTok in zip(tokens, tokens[1:]):
         result.append(tok)
         if (isinstance(tok, AppliedFunction) and
-                isinstance(nextTok, AppliedFunction)):
+            isinstance(nextTok, AppliedFunction)):
             result.append((OP, '*'))
         elif (isinstance(tok, AppliedFunction) and
               nextTok[0] == OP and nextTok[1] == '('):
             # Applied function followed by an open parenthesis
             if tok.function[1] == 'Symbol' and len(tok.args[1][1]) == 3:
+                # Allow implicit function symbol creation
                 continue
             result.append((OP, '*'))
         elif (tok[0] == OP and tok[1] == ')' and
@@ -173,10 +299,12 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
               and tok[1] == ')' and nextTok[1] == '('):
             # Close parenthesis followed by an open parenthesis
             result.append((OP, '*'))
-        elif (isinstance(tok, AppliedFunction) and nextTok[0] == NAME):
+        elif (isinstance(tok, AppliedFunction) and nextTok[0] == NAME
+              and nextTok[1] not in ('and', 'or', 'not')):
             # Applied function followed by implicitly applied function
             result.append((OP, '*'))
-    result.append(tokens[-1])
+    if tokens:
+        result.append(tokens[-1])
     return result
 
 def implicit_multiplication(result, local_dict, global_dict):
@@ -228,3 +356,58 @@ def custom_implicit_transformation(result, local_dict, global_dict):
         result = step(result, local_dict, global_dict)
 
     return result
+
+
+SYNONYMS = {
+    u'derivative': 'diff',
+    u'derive': 'diff',
+    u'integral': 'integrate',
+    u'antiderivative': 'integrate',
+    u'factorize': 'factor',
+    u'graph': 'plot',
+    u'draw': 'plot'
+}
+
+def synonyms(tokens, local_dict, global_dict):
+    """Make some names synonyms for others.
+
+    This is done at the token level so that the "stringified" output that
+    Gamma displays shows the correct function name. Must be applied before
+    auto_symbol.
+    """
+
+    result = []
+    for token in tokens:
+        if token[0] == NAME:
+            if token[1] in SYNONYMS:
+                result.append((NAME, SYNONYMS[token[1]]))
+                continue
+        result.append(token)
+    return result
+
+def close_matches(s, global_dict):
+    """
+    Checks undefined names to see if they are close matches to a defined name.
+    """
+
+    tokens = sympy_tokenize.generate_tokens(StringIO(s.strip()).readline)
+    result = []
+    has_result = False
+    all_names = set(global_dict).union(SYNONYMS)
+
+    for token in tokens:
+        if (token[0] == NAME and
+            token[1] not in all_names and
+            len(token[1]) > 1):
+            matches = difflib.get_close_matches(token[1], all_names)
+
+            if matches and matches[0] == token[1]:
+                matches = matches[1:]
+            if matches:
+                result.append((NAME, matches[0]))
+                has_result = True
+                continue
+        result.append(token)
+    if has_result:
+        return sympy_tokenize.untokenize(result).strip()
+    return None

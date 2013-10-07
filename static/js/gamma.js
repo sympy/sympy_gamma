@@ -33,12 +33,6 @@ function setupExamples() {
         });
         header.toggleClass('shown');
     });
-
-    $('#random-example').click(function(e) {
-        var examples = $('.example-group a');
-        var index = Math.floor(Math.random() * examples.length);
-        window.location = $(examples[index]).attr('href');
-    });
 }
 
 function setupSavedQueries() {
@@ -113,8 +107,6 @@ function evaluateCards() {
         var card = Card.fromCardEl($(this));
         card.initSpecificFunctionality();
 
-        $(this).data('card', card);
-
         // deferred if can evaluate, false otherwise
         var result = card.evaluate();
         if (!(result.state() == "rejected")) {
@@ -129,6 +121,71 @@ function evaluateCards() {
     return deferred;
 }
 
+function setupDidYouMean() {
+    $('.did_you_mean var').each(function() {
+        $(this).wrap($("<a />").attr('href', '/input/?i=' + $(this).text()));
+    });
+}
+
+function setupVariableChooser() {
+    var defaultVariableClass = 'variable-' + $('.result_variables .active').html();
+    var currentVariableClass = defaultVariableClass;
+    $('.result_card').slice(1).addClass(defaultVariableClass);
+
+    $('.result_variables button').click(function() {
+        var button = $(this);
+        if (!button.is('.active')) {
+            var variable = button.html();
+            // disable the buttons while loading
+            $('.result_variables').addClass('active');
+
+            var deferreds = [];
+
+            // check if we've already loaded the cards
+            if ($('.variable-' + variable).length) {
+                $('.result_card.' + currentVariableClass).hide();
+                $('.result_card.variable-' + variable).show();
+            }
+            else {
+                $('.result_card.' + currentVariableClass).each(function() {
+                    var card = $(this).data('card');
+                    if (card.variable) {
+                        var placeholder = $('<div/>')
+                            .addClass('result_card')
+                            .append($('<div/>').addClass('loader'));
+                        card.element.after(placeholder);
+                        deferreds.push(
+                            Card.loadFullCard(card.card_name, variable, card.expr, {})
+                                .done(function(result) {
+                                    var newCardEl = $(result);
+                                    newCardEl
+                                        .addClass('variable-' + variable)
+                                        .find('.loader').remove();
+                                    placeholder.slideUp(300, function() {
+                                        placeholder.replaceWith(newCardEl);
+                                        newCardEl.hide().slideDown();
+                                        var newCard = Card.fromCardEl(newCardEl);
+                                        newCard.initSpecificFunctionality();
+                                        newCard.evaluateFinished();
+
+                                        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+                                    });
+                                })
+                        );
+                    }
+                    card.element.fadeOut();
+                });
+            }
+
+            $.when.apply($, deferreds).then(function() {
+                currentVariableClass = 'variable-' + variable;
+                $('.result_variables button').removeClass('active');
+                button.addClass('active');
+            });
+        }
+    });
+}
+
 $(document).ready(function() {
     evaluateCards().done(function() {
         setupGraphs();
@@ -138,7 +195,9 @@ $(document).ready(function() {
 
         setupFactorization();
 
-        setupSteps();
+        setupDidYouMean();
+
+        setupVariableChooser();
 
         // TODO: finish integration with Sphinx
         // setupDocumentation();
