@@ -8,75 +8,6 @@ import diffsteps
 import intsteps
 
 
-class FakeSymPyFunction(object):
-    """Used to delay evaluation of a SymPy function.
-
-    In logic.py, add a namespace entry to ``sympify`` that shadows the
-    function to be delayed whose value is
-    ``fake_sympy_function('function_name')``.
-
-    """
-    def __init__(self, fname, args, kwargs):
-        self.function = fname
-        self.args = args
-        self.kwargs = kwargs
-
-    def __repr__(self):
-        if self.kwargs:
-            kwargs = ', '.join(key + '=' + repr(arg)
-                               for key, arg in self.kwargs.items())
-            kwargs = ', ' + kwargs
-        else:
-            kwargs = ''
-        return '{function}({args}{kwargs})'.format(
-            function=self.function,
-            args=', '.join(map(repr, self.args)),
-            kwargs=kwargs
-        )
-
-    def as_latex(self):
-        if self.kwargs:
-            kwargs = ', '.join(key + '=' + sympy.latex(arg)
-                               for key, arg in self.kwargs.items())
-            kwargs = ', ' + kwargs
-        else:
-            kwargs = ''
-            return '{function}({args}{kwargs})'.format(
-                function='\\mathrm{' + self.function.replace('_', '\\_') + '}',
-                args=', '.join(map(sympy.latex, self.args)),
-                kwargs=kwargs
-            )
-
-    def xreplace(self, kwargs):
-        def _replacer(expr):
-            try:
-                return expr.xreplace(kwargs)
-            except (TypeError, AttributeError):
-                return expr
-        self.args = list(map(_replacer, self.args))
-        return self
-
-    @staticmethod
-    def make_result_card(func, title, **kwargs):
-        def eval_fake(evaluator, variable, parameters=None):
-            func_data = evaluator.get('input_evaluated')
-            return func(*func_data.args)
-
-        return FakeResultCard(
-            title,
-            "%s",
-            no_pre_output,
-            eval_method=eval_fake,
-            **kwargs
-        )
-
-
-def fake_sympy_function(fname):
-    def _faker(*args, **kwargs):
-        return FakeSymPyFunction(fname, args, kwargs)
-    return _faker
-
-
 class ResultCard(object):
     """
     Operations to generate a result card.
@@ -95,25 +26,34 @@ class ResultCard(object):
         self.result_statement = result_statement
         self.pre_output_function = pre_output_function
 
-    def eval(self, evaluator, variable, parameters=None):
+    def eval(self, evaluator, components, parameters=None):
         if parameters is None:
             parameters = {}
+        else:
+            parameters = parameters.copy()
+
         parameters = self.default_parameters(parameters)
+
+        for component, val in components.items():
+            parameters[component] = val
+
+        variable = components['variable']
+
         line = self.result_statement.format(_var=variable, **parameters)
         line = line % 'input_evaluated'
-        result = evaluator.eval(line, use_none_for_exceptions=True)
+        result = evaluator.eval(line, use_none_for_exceptions=True,
+                                repr_expression=False)
 
-        if self.card_info.get('sympify') or 'sympify' not in self.card_info:
-            return sympy.sympify(result)
         return result
 
-    def format_input(self, input_repr, variable, **parameters):
+    def format_input(self, input_repr, components, **parameters):
         if parameters is None:
             parameters = {}
         parameters = self.default_parameters(parameters)
+        variable = components['variable']
         if 'format_input_function' in self.card_info:
             return self.card_info['format_input_function'](
-                self.result_statement, input_repr, variable)
+                self.result_statement, input_repr, components)
         return self.result_statement.format(_var=variable, **parameters) % input_repr
 
     def format_output(self, output, formatter):
@@ -148,10 +88,10 @@ class FakeResultCard(ResultCard):
         super(FakeResultCard, self).__init__(*args, **kwargs)
         assert 'eval_method' in kwargs
 
-    def eval(self, evaluator, variable, parameters=None):
+    def eval(self, evaluator, components, parameters=None):
         if parameters is None:
             parameters = {}
-        return self.card_info['eval_method'](evaluator, variable, parameters)
+        return self.card_info['eval_method'](evaluator, components, parameters)
 
 
 class MultiResultCard(ResultCard):
@@ -162,37 +102,38 @@ class MultiResultCard(ResultCard):
         self.cards = cards
         self.cards_used = []
 
-    def eval(self, evaluator, variable, parameters):
+    def eval(self, evaluator, components, parameters):
         self.cards_used = []
-        original = sympy.sympify(evaluator.eval("input_evaluated"))
         results = []
 
         # TODO Implicit state is bad, come up with better API
         # in particular a way to store variable, cards used
         for card in self.cards:
             try:
-                result = card.eval(evaluator, variable, parameters)
+                result = card.eval(evaluator, components, parameters)
             except ValueError:
                 continue
-            if result != None and result != original:
+            if result != None:
                 if not any(result == r[1] for r in results):
                     self.cards_used.append(card)
                     results.append((card, result))
         if results:
-            self.variable = variable
-            self.input_repr = original
+            self.input_repr = evaluator.get("input_evaluated")
+            self.components = components
             return results
         return "None"
 
-    def format_input(self, input_repr, variable):
+    def format_input(self, input_repr, components):
         return None
 
     def format_output(self, output, formatter):
+        if not isinstance(output, list):
+            return output
         html = ["<ul>"]
         for card, result in output:
             html.append("<li>")
             html.append('<div class="cell_input">')
-            html.append(card.format_input(self.input_repr, self.variable))
+            html.append(card.format_input(self.input_repr, self.components))
             html.append('</div>')
             html.append(card.format_output(result, formatter))
             html.append("</li>")
@@ -201,14 +142,6 @@ class MultiResultCard(ResultCard):
 
 
 # Decide which result card set to use
-
-TRUE_AND_FIND_MORE = "True, and look for more result sets"
-
-def is_fake_function(function):
-    def _check(input_evaluated):
-        return (isinstance(input_evaluated, FakeSymPyFunction) and
-                input_evaluated.function == function)
-    return _check
 
 def is_derivative(input_evaluated):
     return isinstance(input_evaluated, sympy.Derivative)
@@ -220,7 +153,7 @@ def is_integer(input_evaluated):
     return isinstance(input_evaluated, sympy.Integer)
 
 def is_rational(input_evaluated):
-    return isinstance(input_evaluated, sympy.Rational)
+    return isinstance(input_evaluated, sympy.Rational) and not input_evaluated.is_Integer
 
 def is_float(input_evaluated):
     return isinstance(input_evaluated, sympy.Float)
@@ -234,6 +167,14 @@ def is_constant(input_evaluated):
     return (hasattr(input_evaluated, 'free_symbols') and
             not input_evaluated.free_symbols)
 
+def is_approximatable_constant(input_evaluated):
+    # is_constant, but exclude Integer/Float/infinity
+    return (hasattr(input_evaluated, 'free_symbols') and
+            not input_evaluated.free_symbols and
+            not input_evaluated.is_Integer and
+            not input_evaluated.is_Float and
+            input_evaluated.is_finite is not True)
+
 def is_complex(input_evaluated):
     try:
         return sympy.I in input_evaluated.atoms()
@@ -246,75 +187,88 @@ def is_trig(input_evaluated):
             any(input_evaluated.find(func)
                 for func in (sympy.sin, sympy.cos, sympy.tan,
                              sympy.csc, sympy.sec, sympy.cot))):
-            return TRUE_AND_FIND_MORE
-        return False
+            return True
     except AttributeError:
-        return False
+        pass
+    return False
+
+def is_not_constant_basic(input_evaluated):
+    return not is_constant(input_evaluated) and isinstance(input_evaluated, sympy.Basic)
 
 def is_uncalled_function(input_evaluated):
     return hasattr(input_evaluated, '__call__') and not isinstance(input_evaluated, sympy.Basic)
 
+def is_matrix(input_evaluated):
+    return isinstance(input_evaluated, sympy.Matrix)
+
 
 # Functions to convert input and extract variable used
 
-def extract_integrand(input_evaluated, variable):
-    assert isinstance(input_evaluated, sympy.Integral)
-    if len(input_evaluated.limits[0]) > 1:  # if there are limits
-        variable = input_evaluated.limits
+def default_variable(arguments, evaluated):
+    try:
+        variables = list(evaluated.atoms(sympy.Symbol))
+    except:
+        variables = []
+
+    return {
+        'variables': variables,
+        'variable': variables[0] if variables else None
+    }
+
+def extract_first(arguments, evaluated):
+    result = default_variable(arguments, evaluated)
+    result['input_evaluated'] = arguments[1][0]
+    return result
+
+def extract_integral(arguments, evaluated):
+    limits = arguments[1][1:]
+    variables = []
+
+    if not limits:
+        variables = [arguments[1][0].atoms(sympy.Symbol).pop()]
+        limits = variables
     else:
-        variable = input_evaluated.variables
-    return input_evaluated.function, variable
+        for limit in limits:
+            if isinstance(limit, tuple):
+                variables.append(limit[0])
+            else:
+                variables.append(limit)
 
-def extract_derivative(input_evaluated, variable):
-    assert isinstance(input_evaluated, sympy.Derivative)
-    if len(input_evaluated.variables) == 1:
-        variable = input_evaluated.variables[0]
-    return input_evaluated.expr, variable
+    return {
+        'integrand': arguments[1][0],
+        'variables': variables,
+        'variable': variables[0],
+        'limits': limits
+    }
 
-def extract_series(input_evaluated, variable):
-    assert (isinstance(input_evaluated, FakeSymPyFunction) and
-            input_evaluated.function == 'series')
-    args = input_evaluated.args
-    if len(args) >= 2:
-        return input_evaluated, args[1]
-    elif len(args) == 1:
-        try:
-            equation = sympy.sympify(args[0])
-            return input_evaluated, equation.free_symbols.pop()
-        except SympifyError:
-            pass
-    return input_evaluated, variable
+def extract_derivative(arguments, evaluated):
+    variables = list(sorted(arguments[1][0].atoms(sympy.Symbol), key=lambda x: x.name))
 
-def extract_solve(input_evaluated, variable):
-    assert (isinstance(input_evaluated, FakeSymPyFunction) and
-            input_evaluated.function == 'solve')
-    args = input_evaluated.args
-    if len(args) >= 2:
-        return input_evaluated, args[1:]
-    elif len(args) == 1:
-        try:
-            equation = sympy.sympify(args[0])
-            return input_evaluated, equation.free_symbols.pop()
-        except SympifyError:
-            pass
-    return input_evaluated, variable
+    variable = arguments[1][1:]
+    if variable:
+        variables.remove(variable[0])
+        variables.insert(0, variable[0])
 
-def extract_solve_poly_system(input_evaluated, variable):
-    assert (isinstance(input_evaluated, FakeSymPyFunction) and
-            input_evaluated.function == 'solve_poly_system')
-    args = input_evaluated.args
-    if len(args) >= 2:
-        return input_evaluated, args[1:]
-    return input_evaluated, None
+    return {
+        'function': arguments[1][0],
+        'variables': variables,
+        'variable': variables[0],
+        'input_evaluated': arguments[1][0]
+    }
 
-def do_nothing(input_evaluated, variable):
-    return input_evaluated, variable
-
-def default_variable(input_evaluated, variable):
-    return input_evaluated, sympy.Symbol('x')
-
+def extract_plot(arguments, evaluated):
+    result = extract_first(arguments, evaluated)
+    result['variables'] = list(arguments.args[0].atoms(sympy.Symbol))
+    result['variable'] = result['variables'][0]
+    return result
 
 # Formatting functions
+
+def format_by_type(result, formatter):
+    if isinstance(result, (list, tuple)):
+        return format_list(result, formatter)
+    else:
+        return formatter(result)
 
 def format_nothing(arg, formatter):
     return arg
@@ -329,12 +283,13 @@ def format_long_integer(line, integer, variable):
         return intstr[:20] + "..." + intstr[len(intstr) - 21:]
     return line % intstr
 
-def format_integral(line, integrand, limits):
-    try:
-        limits = ', '.join(map(repr, limits))
-    except TypeError:
-        limits = repr(limits)
-    return line.format(_var=limits) % integrand
+def format_integral(line, result, components):
+    if components['limits']:
+        limits = ', '.join(map(repr, components['limits']))
+    else:
+        limits = ', '.join(map(repr, components['variables']))
+
+    return line.format(_var=limits) % components['integrand']
 
 def format_dict_title(*title):
     def _format_dict(dictionary, formatter):
@@ -349,6 +304,8 @@ def format_dict_title(*title):
 
 def format_list(items, formatter):
     try:
+        if len(items) == 0:
+            return "<p>No result</p>"
         html = ['<ul>']
         for item in items:
             html.append('<li>{}</li>'.format(formatter(item)))
@@ -367,6 +324,10 @@ def format_series_fake_title(title, evaluated):
     else:
         up_to = 6
     return title.format(about, up_to)
+
+def format_approximator(approximation, formatter):
+    obj, digits = approximation
+    return formatter(obj, r'\approx', obj.evalf(digits))
 
 DIAGRAM_CODE = """
 <div class="factorization-diagram" data-primes="{primes}">
@@ -394,15 +355,18 @@ GRAPHING_CODE = """
 def format_graph(graph_data, formatter):
     return GRAPHING_CODE.format(**graph_data)
 
-def eval_graph(evaluator, variable, parameters=None):
+def eval_graph(evaluator, components, parameters=None):
     if parameters is None:
         parameters = {}
 
+    variable = components['variable']
+
     xmin, xmax = parameters.get('xmin', -10), parameters.get('xmax', 10)
     from sympy.plotting.plot import LineOver1DRangeSeries
-    func = evaluator.eval("input_evaluated")
+    func = evaluator.get("input_evaluated")
 
-    free_symbols = sympy.sympify(func).free_symbols
+    free_symbols = func.free_symbols
+
     if len(free_symbols) != 1 or variable not in free_symbols:
         raise ValueError("Cannot graph function of multiple variables")
 
@@ -438,8 +402,12 @@ def eval_graph(evaluator, variable, parameters=None):
         'yvalues': json.dumps(yvalues)
     }
 
-def eval_factorization(evaluator, variable, parameters=None):
+def eval_factorization(evaluator, components, parameters=None):
     number = evaluator.get("input_evaluated")
+
+    if number == 0:
+        raise ValueError("Can't factor 0")
+
     factors = sympy.ntheory.factorint(number, limit=100)
     smallfactors = {}
     for factor in factors:
@@ -447,12 +415,14 @@ def eval_factorization(evaluator, variable, parameters=None):
             smallfactors[factor] = factors[factor]
     return smallfactors
 
-def eval_factorization_diagram(evaluator, variable, parameters=None):
+def eval_factorization_diagram(evaluator, components, parameters=None):
     # Raises ValueError (stops card from appearing) if the factors are too
     # large so that the diagram will look nice
     number = int(evaluator.eval("input_evaluated"))
     if number > 256:
         raise ValueError("Number too large")
+    elif number == 0:
+        raise ValueError("Can't factor 0")
     factors = sympy.ntheory.factorint(number, limit=101)
     smallfactors = {}
     for factor in factors:
@@ -462,32 +432,23 @@ def eval_factorization_diagram(evaluator, variable, parameters=None):
             raise ValueError("Number too large")
     return smallfactors
 
-def eval_integral(evaluator, variable, parameters=None):
-    return sympy.integrate(evaluator.get("input_evaluated"), *variable)
+def eval_integral(evaluator, components, parameters=None):
+    return sympy.integrate(components['integrand'], *components['limits'])
 
-def _extract_variable_manualintegrate(variable):
-    if not isinstance(variable, sympy.Symbol):
-        if len(variable) != 1:
-            raise ValueError("Only supports single integrals")
-        variable = variable[0]
+def eval_integral_manual(evaluator, components, parameters=None):
+    return sympy.integrals.manualintegrate(components['integrand'],
+                                           components['variable'])
 
-        try:
-            # For definite integrals
-            variable = variable[0]
-        except TypeError:
-            pass
-    return variable
+def eval_diffsteps(evaluator, components, parameters=None):
+    function = components.get('function', evaluator.get('input_evaluated'))
 
-def eval_integral_manual(evaluator, variable, parameters=None):
-    variable = _extract_variable_manualintegrate(variable)
-    return sympy.integrals.manualintegrate(evaluator.get("input_evaluated"), variable)
+    return diffsteps.print_html_steps(function,
+                                      components['variable'])
 
-def eval_diffsteps(evaluator, variable, paramters=None):
-    return diffsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
+def eval_intsteps(evaluator, components, parameters=None):
+    integrand = components.get('integrand', evaluator.get('input_evaluated'))
 
-def eval_intsteps(evaluator, variable, paramters=None):
-    variable = _extract_variable_manualintegrate(variable)
-    return intsteps.print_html_steps(evaluator.get("input_evaluated"), variable)
+    return intsteps.print_html_steps(integrand, components['variable'])
 
 # http://www.python.org/dev/peps/pep-0257/
 def trim(docstring):
@@ -515,10 +476,16 @@ def trim(docstring):
     # Return a single string:
     return '\n'.join(trimmed)
 
-def eval_function_docs(evaluator, variable, parameters=None):
+def eval_function_docs(evaluator, components, parameters=None):
     docstring = trim(evaluator.get("input_evaluated").__doc__)
     return docutils.core.publish_parts(docstring, writer_name='html4css1',
                                        settings_overrides={'_disable_config': True})['html_body']
+
+def eval_approximator(evaluator, components, parameters=None):
+    if parameters is None:
+        raise ValueError
+    digits = parameters.get('digits', 10)
+    return (evaluator.get('input_evaluated'), digits)
 
 # Result cards
 
@@ -528,7 +495,8 @@ all_cards = {
     'roots': ResultCard(
         "Roots",
         "solve(%s, {_var})",
-        lambda statement, var, *args: var),
+        lambda statement, var, *args: var,
+        format_output_function=format_list),
 
     'integral': ResultCard(
         "Integral",
@@ -605,8 +573,7 @@ all_cards = {
         "Floating-point approximation",
         "(%s).evalf({digits})",
         no_pre_output,
-        parameters=['digits'],
-        sympify=False),
+        parameters=['digits']),
 
     'fractional_approximation': ResultCard(
         "Fractional approximation",
@@ -616,12 +583,12 @@ all_cards = {
     'absolute_value': ResultCard(
         "Absolute value",
         "Abs(%s)",
-        lambda s, *args: "|{}|".format(s)),
+        lambda s, *args: sympy.Abs(s, evaluate=False)),
 
     'polar_angle': ResultCard(
         "Angle in the complex plane",
         "atan2(*(%s).as_real_imag()).evalf()",
-        lambda s, *args: sympy.atan2(*sympy.sympify(s).as_real_imag())),
+        lambda s, *args: sympy.atan2(*s.as_real_imag())),
 
     'conjugate': ResultCard(
         "Complex conjugate",
@@ -666,20 +633,39 @@ all_cards = {
         format_output_function=format_nothing
     ),
 
-    'series_fake': FakeSymPyFunction.make_result_card(
-        sympy.series,
-        "Series expansion about {0} up to {1}",
-        format_title_function=format_series_fake_title),
+    'root_to_polynomial': ResultCard(
+        "Polynomial with this root",
+        "minpoly(%s)",
+        no_pre_output
+    ),
 
-    'solve_fake': FakeSymPyFunction.make_result_card(
-        sympy.solve,
-        "Solutions",
-        format_output_function=format_list),
+    'matrix_inverse': ResultCard(
+        "Inverse of matrix",
+        "(%s).inv()",
+        lambda statement, var, *args: sympy.Pow(statement, -1, evaluate=False)
+    ),
 
-    'solve_poly_system_fake': FakeSymPyFunction.make_result_card(
-        sympy.solve_poly_system,
-        "Solutions",
-        format_output_function=format_list)
+    'matrix_eigenvals': ResultCard(
+        "Eigenvalues",
+        "(%s).eigenvals()",
+        no_pre_output,
+        format_output_function=format_dict_title("Eigenvalue", "Multiplicity")
+    ),
+
+    'matrix_eigenvectors': ResultCard(
+        "Eigenvectors",
+        "(%s).eigenvects()",
+        no_pre_output,
+        format_output_function=format_list
+    ),
+
+    'approximator': FakeResultCard(
+        "Approximator_NOT_USER_VISIBLE",
+        "%s",
+        no_pre_output,
+        eval_method=eval_approximator,
+        format_output_function=format_approximator
+    ),
 }
 
 def get_card(name):
@@ -705,37 +691,56 @@ all_cards['integral_alternate_fake'] = MultiResultCard(
     get_card('integral_manual_fake')
 )
 
-
 result_sets = [
-    (is_integral, extract_integrand, ['integral_alternate_fake', 'intsteps']),
-    (is_derivative, extract_derivative, ['diff', 'diffsteps', 'graph']),
-    (is_fake_function('series'), extract_series, ['series_fake']),
-    (is_fake_function('solve'), extract_solve, ['solve_fake']),
-    (is_fake_function('solve_poly_system'), extract_solve_poly_system,
-     ['solve_poly_system_fake']),
-    (is_integer, default_variable,
-     ['digits', 'float_approximation',
-                 'factorization', 'factorizationDiagram']),
-    (is_rational, default_variable, ['float_approximation']),
-    (is_float, default_variable, ['fractional_approximation']),
-    (is_numbersymbol, default_variable, ['float_approximation']),
-    (is_constant, default_variable, ['float_approximation']),
-    (is_complex, default_variable,
-     ['absolute_value', 'polar_angle', 'conjugate']),
-    (is_trig, do_nothing, ['trig_alternate']),
-    (is_uncalled_function, default_variable, ['function_docs']),
-    (lambda x: True, do_nothing, ['graph', 'roots', 'diff', 'integral_alternate', 'series'])
+    ('integrate', extract_integral, ['integral_alternate_fake', 'intsteps']),
+    ('diff', extract_derivative, ['diff', 'diffsteps']),
+    ('factorint', extract_first, ['factorization', 'factorizationDiagram']),
+    ('plot', extract_plot, ['graph']),
+    (is_integer, None, ['digits', 'factorization', 'factorizationDiagram']),
+    (is_complex, None, ['absolute_value', 'polar_angle', 'conjugate']),
+    (is_rational, None, ['float_approximation']),
+    (is_float, None, ['fractional_approximation']),
+    (is_approximatable_constant, None, ['root_to_polynomial']),
+    (is_uncalled_function, None, ['function_docs']),
+    (is_trig, None, ['trig_alternate']),
+    (is_matrix, None, ['matrix_inverse', 'matrix_eigenvals', 'matrix_eigenvectors']),
+    (is_not_constant_basic, None, ['graph', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
 
-def find_result_set(input_evaluated):
-    ci, rc = None, []
-    for (predicate, convert_input, result_cards) in result_sets:
-        result = predicate(input_evaluated)
-        if result is True:
-            if ci:
-                rc.extend(result_cards)
-                return ci, rc
-            return convert_input, result_cards
-        elif result is TRUE_AND_FIND_MORE:
-            ci = convert_input
-            rc.extend(result_cards)
+def is_function_handled(function_name):
+    """Do any of the result sets handle this specific function?"""
+    return any(name == function_name for (name, _, _) in result_sets)
+
+def find_result_set(function_name, input_evaluated):
+    """
+    Finds a set of result cards based on function name and evaluated input.
+
+    Returns:
+
+    - Function that parses the evaluated input into components. For instance,
+      for an integral this would extract the integrand and limits of integration.
+      This function will always extract the variables.
+    - List of result cards.
+    - Flag indicating whether the result cards 'handle' the function call. For
+      instance, 'simplify(x)' will generate a 'Result' card to show the result.
+      But for 'factorint(123)', since one of the result cards already shows the
+      result, this is unnecessary.
+    """
+    result = []
+    result_converter = default_variable
+
+    for predicate, converter, result_cards in result_sets:
+        if predicate == function_name:
+            if converter:
+                result_converter = converter
+            for card in result_cards:
+                if card not in result:
+                    result.append(card)
+        elif callable(predicate) and predicate(input_evaluated):
+            if converter:
+                result_converter = converter
+            for card in result_cards:
+                if card not in result:
+                    result.append(card)
+
+    return result_converter, result

@@ -52,18 +52,6 @@ def replace_u_var(rule, old_u, new_u):
 #             pass
 #     return rule.__class__(**d)
 
-class Equals(sympy.Basic):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-
-    def _latex(self, printer):
-        return '{} = {}'.format(latex(self.left),
-                                latex(self.right))
-
-    def __str__(self):
-        return '{} = {}'.format(str(self.left), str(self.right))
-
 class Printer(object):
     def __init__(self):
         self.lines = []

@@ -2,7 +2,7 @@ import sympy
 import collections
 
 import stepprinter
-from stepprinter import functionnames, Equals, replace_u_var
+from stepprinter import functionnames, replace_u_var
 
 from sympy.core.function import AppliedUndef
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
@@ -161,8 +161,8 @@ def log_rule(derivative):
             return LogRule(arg, base, expr, symbol)
         else:
             u = sympy.Dummy()
-            return ChainRule(LogRule(u, base, sympy.log(u, base), symbol),
-                             arg, u, expr, symbol)
+            return ChainRule(LogRule(u, base, sympy.log(u, base), u),
+                             arg, u, diff_steps(arg, symbol), expr, symbol)
 
 def function_rule(derivative):
     return FunctionRule(derivative.expr, derivative.symbol)
@@ -360,14 +360,14 @@ class DiffPrinter(object):
                         buf.append(fnames[i])
                 ruleform.append(reduce(lambda a,b: a*b, buf))
             self.append(self.format_math_display(
-                Equals(sympy.Derivative(reduce(lambda a,b: a*b, fnames),
+                sympy.Eq(sympy.Derivative(reduce(lambda a,b: a*b, fnames),
                                         rule.symbol),
                        sum(ruleform))))
 
             for fname, deriv, term, substep in zip(fnames, derivatives,
                                                    rule.terms, rule.substeps):
                 self.append("{}; to find {}:".format(
-                    self.format_math(Equals(fname, term)),
+                    self.format_math(sympy.Eq(fname, term)),
                     self.format_math(deriv)
                 ))
                 with self.new_level():
@@ -385,11 +385,11 @@ class DiffPrinter(object):
             qrule_left = sympy.Derivative(ff / gg, rule.symbol)
             qrule_right = sympy.ratsimp(sympy.diff(sympy.Function("f")(x) /
                                                    sympy.Function("g")(x)))
-            qrule = Equals(qrule_left, qrule_right)
+            qrule = sympy.Eq(qrule_left, qrule_right)
             self.append("Apply the quotient rule, which is:")
             self.append(self.format_math_display(qrule))
-            self.append("{} and {}.".format(self.format_math(Equals(ff, f)),
-                                            self.format_math(Equals(gg, g))))
+            self.append("{} and {}.".format(self.format_math(sympy.Eq(ff, f)),
+                                            self.format_math(sympy.Eq(gg, g))))
             self.append("To find {}:".format(self.format_math(ff.diff(rule.symbol))))
             with self.new_level():
                 self.print_rule(rule.numerstep)
@@ -401,7 +401,7 @@ class DiffPrinter(object):
 
     def print_Chain(self, rule):
         with self.new_step(), self.new_u_vars() as (u, du):
-            self.append("Let {}.".format(self.format_math(Equals(u, rule.inner))))
+            self.append("Let {}.".format(self.format_math(sympy.Eq(u, rule.inner))))
             self.print_rule(replace_u_var(rule.substep, rule.u_var, u))
         with self.new_step():
             if isinstance(rule.innerstep, FunctionRule):
@@ -431,7 +431,7 @@ class DiffPrinter(object):
             elif isinstance(rule.f, sympy.csc):
                 self.append("The derivative of cosecant is negative cosecant times cotangent:")
             self.append("{}".format(
-                self.format_math_display(Equals(
+                self.format_math_display(sympy.Eq(
                     sympy.Derivative(rule.f, rule.symbol),
                     diff(rule)))))
 
@@ -442,7 +442,7 @@ class DiffPrinter(object):
                     self.format_math(sympy.exp(rule.symbol))))
             else:
                 self.append(
-                    self.format_math(Equals(sympy.Derivative(rule.f, rule.symbol),
+                    self.format_math(sympy.Eq(sympy.Derivative(rule.f, rule.symbol),
                                             diff(rule))))
 
     def print_Log(self, rule):
@@ -460,7 +460,7 @@ class DiffPrinter(object):
                                                evaluate=False)),
                     self.format_math(1/(rule.arg * sympy.ln(rule.base)))))
                 self.append("So {}".format(
-                    self.format_math(Equals(
+                    self.format_math(sympy.Eq(
                         sympy.Derivative(rule.context, rule.symbol),
                         diff(rule)))))
 
@@ -475,14 +475,14 @@ class DiffPrinter(object):
         with self.new_step():
             self.append("Rewrite the function to be differentiated:")
             self.append(self.format_math_display(
-                Equals(rule.context, rule.rewritten)))
+                sympy.Eq(rule.context, rule.rewritten)))
             self.print_rule(rule.substep)
 
     def print_Function(self, rule):
         with self.new_step():
             self.append("Trivial:")
             self.append(self.format_math_display(
-                Equals(sympy.Derivative(rule.context, rule.symbol),
+                sympy.Eq(sympy.Derivative(rule.context, rule.symbol),
                        diff(rule))))
 
     def print_DontKnow(self, rule):

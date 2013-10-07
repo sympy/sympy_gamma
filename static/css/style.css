@@ -42,7 +42,7 @@ h1 a img {
 
 .menu {
   padding: 0 0.5em;
-  font-family: sans-serif;
+  font-family: "Open Sans", sans-serif;
   border-bottom: 1px solid #81B953;
   background: #002200;
 }
@@ -70,18 +70,37 @@ h1 a img {
   margin: 10px;
   padding: 10px;
   background: #FFF;
-  -webkit-box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
   box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-  /* padding-bottom: 0px; */
+  -webkit-transition: all 3000ms ease-in;
+  -moz-transition: all 3000ms ease-in;
+  -ms-transition: all 3000ms ease-in;
+  -o-transition: all 3000ms ease-in;
+  transition: all 3000ms ease-in;
 }
 
-.result_card.no_actions {
-  /* padding-bottom: 10px; */
+.did_you_mean {
+  text-align: center;
+  box-shadow: 0px 0px 5px 2px rgba(255, 51, 51, 0.7);
 }
 
 .result_card.result_card_error {
   border: 2px solid #F33;
   opacity: 0.7;
+}
+
+.result_card.result_card_error .cell_output_plain {
+  white-space: pre;
+  text-align: left;
+}
+
+.fullscreen {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  overflow: auto;
 }
 
 /* Highlight position of a syntax error */
@@ -136,10 +155,28 @@ h1 a img {
   list-style-type: none;
 }
 
-.result_card .card_options_toggle {
+.card_options_toggle {
   cursor: pointer;
   font-family: 'Open Sans', sans-serif;
   font-size: smaller;
+  display: inline-block;
+}
+
+.card_options_more {
+  float: right;
+}
+
+.card_options_more i {
+  display: inline-block;
+  margin: 0 0.4em 0 0;
+}
+
+.card_options_more.open i {
+  -moz-transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 .result_card .card_options {
@@ -159,22 +196,34 @@ h1 a img {
   margin-left: 0.25em;
 }
 
+.result_variables {
+  text-align: left;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.result_variables li {
+  display: inline-block;
+}
+
+.result_variables button {
+  padding: 0.25em 1em;
+}
+
+.result_variables button.active {
+  background: #444;
+  border: 0px;
+  cursor: default;
+}
+
 .card_actions {
   display: none;
   list-style-type: none;
   font-size: 0.75em;
-  /* color: #81B953; */
 }
 
 .card_actions li {
   display: inline-block;
   border-bottom: 2px solid #CCC;
-/*   background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(61,61,61,0) 76%, rgba(15,15,15,0.2) 94%, rgba(0,0,0,0.3) 100%); /\* FF3.6+ *\/ */
-/* background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0)), color-stop(76%,rgba(61,61,61,0)), color-stop(94%,rgba(15,15,15,0.2)), color-stop(100%,rgba(0,0,0,0.3))); /\* Chrome,Safari4+ *\/ */
-/* background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* Chrome10+,Safari5.1+ *\/ */
-/* background: -o-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* Opera 11.10+ *\/ */
-/* background: -ms-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* IE10+ *\/ */
-/* background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(61,61,61,0) 76%,rgba(15,15,15,0.2) 94%,rgba(0,0,0,0.3) 100%); /\* W3C *\/ */
 }
 
 .input {
@@ -326,27 +375,23 @@ h1 a img {
   padding: 0.5em 0.25em;
 }
 
+.example-group h3 i {
+  display: inline-block;
+  margin: 0 0.25em;
+  font-size: 1.25em;
+}
+
 .example-group h3.shown {
   border-bottom: 1px solid #777;
 }
 
-.example-group h3:before {
-  background-image: url('/static/images/arrow.png');
-  background-size: 12px;
-  background-position: 6px 50%;
-  background-repeat: no-repeat;
-  content: "";
-  width: 24px;
-  height: 1em;
-  display: inline-block;
-}
-
-.example-group h3.shown:before {
+.example-group h3.shown i {
   -moz-transform: rotate(180deg);
   -webkit-transform: rotate(180deg);
   -o-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
   transform: rotate(180deg);
+
 }
 
 .example-group .contents {
@@ -401,6 +446,7 @@ p {
 }
 
 button {
+  cursor: pointer;
   display: block;
   font-family: 'Open Sans', sans-serif;
   border: 1px solid #552634;
@@ -468,7 +514,7 @@ svg {
 .document {
   text-align: left;
   font-size: 0.9em;
-  font-family: 'Open Sans', Arial, sans-serif;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .document p {
@@ -520,16 +566,10 @@ svg {
 .steps {
   text-align: left;
   font-size: 0.9em;
-  font-family: 'Open Sans', Arial, sans-serif;
+  font-family: 'Open Sans', sans-serif;
   max-width: 1600px;
   overflow: auto;
-}
-
-.fullscreen {
-  position: absolute;
-  z-index: 1000;
-  background-color: #FFF;
-  opacity: 0.95
+  margin: auto;
 }
 
 .steps li {
@@ -654,6 +694,11 @@ svg {
     border-radius: 2px;
     margin: 3px;
     padding: 5px;
+  }
+
+  .did_you_mean {
+    box-shadow: none;
+    border: 1px solid #F33;
   }
   
   .col {
