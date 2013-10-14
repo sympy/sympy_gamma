@@ -546,8 +546,9 @@ function setupGraphs() {
         var HEIGHT = 275;
 
         // Make things fit on mobile
-        if (screen.width <= 640) {
-            WIDTH = screen.width - 20;
+        var IS_MOBILE = window.matchMedia("screen and (max-device-width: 1280px)").matches;
+        if (IS_MOBILE) {
+            WIDTH = $(this).width() - 20;
         }
 
         var equation = $(this).data('function').trim();
@@ -572,112 +573,117 @@ function setupGraphs() {
         var originalHeight = $(this).height();
         var originalYTop = plot.yTop();
         var originalYBottom = plot.yBottom();
-        $(this).mousedown(function(e) {
-            var offsetX = e.offsetX;
-            if (typeof e.offsetX == "undefined") {
-                offsetX = e.pageX - $(e.target).offset().left;
-            }
-            var offsetY = e.offsetY;
-            if (typeof e.offsetX == "undefined") {
-                offsetY = e.pageY - $(e.target).offset().top;
-            }
-            if (offsetX < 10 ||
-                offsetX > container.width() - 10 ||
-                offsetY < 10 ||
-                offsetY > container.height() - 10) {
-                e.preventDefault();
-                resizing = true;
-            }
-        });
-        $(this).mousemove(function(e) {
-            var offsetX = e.offsetX;
-            if (typeof e.offsetX == "undefined") {
-                offsetX = e.pageX - $(e.target).offset().left;
-            }
-            var offsetY = e.offsetY;
-            if (typeof e.offsetX == "undefined") {
-                offsetY = e.pageY - $(e.target).offset().top;
-            }
-            var width = container.width();
-            var height = container.height();
-            if (offsetX < 10) {
-                if (offsetY < 10) {
-                    container.css('cursor', 'nw-resize');
+
+        if (!IS_MOBILE) {
+            $(this).mousedown(function(e) {
+                var offsetX = e.offsetX;
+                if (typeof e.offsetX == "undefined") {
+                    offsetX = e.pageX - $(e.target).offset().left;
                 }
-                else if (height - offsetY < 10) {
-                    container.css('cursor', 'sw-resize');
+                var offsetY = e.offsetY;
+                if (typeof e.offsetX == "undefined") {
+                    offsetY = e.pageY - $(e.target).offset().top;
                 }
-                else {
-                    container.css('cursor', 'w-resize');
+                if (offsetX < 10 ||
+                    offsetX > container.width() - 10 ||
+                    offsetY < 10 ||
+                    offsetY > container.height() - 10) {
+                    e.preventDefault();
+                    resizing = true;
                 }
-            }
-            else if (width - offsetX < 10) {
-                if (offsetY < 10) {
-                    container.css('cursor', 'ne-resize');
+            });
+            $(this).mousemove(function(e) {
+                var offsetX = e.offsetX;
+                if (typeof e.offsetX == "undefined") {
+                    offsetX = e.pageX - $(e.target).offset().left;
                 }
-                else if (height - offsetY < 10) {
-                    container.css('cursor', 'se-resize');
+                var offsetY = e.offsetY;
+                if (typeof e.offsetX == "undefined") {
+                    offsetY = e.pageY - $(e.target).offset().top;
                 }
-                else {
-                    container.css('cursor', 'e-resize');
-                }
-            }
-            else if (offsetY < 10) {
-                container.css('cursor', 'n-resize');
-            }
-            else if (height - offsetY < 10) {
-                container.css('cursor', 's-resize');
-            }
-        });
-        $(document.body).mousemove(function(e) {
-            if (resizing) {
-                var offset = container.offset();
                 var width = container.width();
                 var height = container.height();
-                var newW = originalWidth;
-                var newH = originalHeight;
+                if (offsetX < 10) {
+                    if (offsetY < 10) {
+                        container.css('cursor', 'nw-resize');
+                    }
+                    else if (height - offsetY < 10) {
+                        container.css('cursor', 'sw-resize');
+                    }
+                    else {
+                        container.css('cursor', 'w-resize');
+                    }
+                }
+                else if (width - offsetX < 10) {
+                    if (offsetY < 10) {
+                        container.css('cursor', 'ne-resize');
+                    }
+                    else if (height - offsetY < 10) {
+                        container.css('cursor', 'se-resize');
+                    }
+                    else {
+                        container.css('cursor', 'e-resize');
+                    }
+                }
+                else if (offsetY < 10) {
+                    container.css('cursor', 'n-resize');
+                }
+                else if (height - offsetY < 10) {
+                    container.css('cursor', 's-resize');
+                }
+            });
+            $(document.body).mousemove(function(e) {
+                if (resizing) {
+                    var offset = container.offset();
+                    var width = container.width();
+                    var height = container.height();
+                    var newW = originalWidth;
+                    var newH = originalHeight;
 
-                // 30 is a fuzz factor to stop the width from "shaking" when
-                // the mouse is near the border
-                if (e.pageX < offset.left + 30) {
-                    newW = width + offset.left - e.pageX;
-                }
-                else if (e.pageX > (offset.left + width - 30)) {
-                    newW = e.pageX - offset.left;
-                }
+                    // 30 is a fuzz factor to stop the width from "shaking" when
+                    // the mouse is near the border
+                    if (e.pageX < offset.left + 30) {
+                        newW = width + offset.left - e.pageX;
+                    }
+                    else if (e.pageX > (offset.left + width - 30)) {
+                        newW = e.pageX - offset.left;
+                    }
 
-                if (newW < originalWidth) {
-                    newW = originalWidth;
-                }
-                container.width(newW);
-                container.css('max-width', newW + 'px');
+                    if (newW < originalWidth) {
+                        newW = originalWidth;
+                    }
+                    container.width(newW);
+                    container.css('max-width', newW + 'px');
 
-                if (e.pageY < offset.top + 30) {
-                    newH = originalHeight + offset.top - e.pageY;
-                }
-                else if (e.pageY > (offset.top + height - 30)) {
-                    newH = e.pageY - offset.top;
-                }
+                    if (e.pageY < offset.top + 30) {
+                        newH = originalHeight + offset.top - e.pageY;
+                    }
+                    else if (e.pageY > (offset.top + height - 30)) {
+                        newH = e.pageY - offset.top;
+                    }
 
-                if (newH < originalHeight) {
-                    newH = originalHeight;
-                }
-                container.height(newH);
+                    if (newH < originalHeight) {
+                        newH = originalHeight;
+                    }
+                    container.height(newH);
 
-                plot.width(newW);
-                plot.height(newH);
-                plot.resize();
-                backend.resize();
-                backend.generateAxes();
-                backend.draw();
-            }
-        });
-        $(document.body).mouseup(function() {
-            resizing = false;
-        });
+                    plot.width(newW);
+                    plot.height(newH);
+                    plot.resize();
+                    backend.resize();
+                    backend.generateAxes();
+                    backend.draw();
+                }
+            });
+            $(document.body).mouseup(function() {
+                resizing = false;
+            });
+        }
 
         backend.draw();
-        backend.initTracing(variable, output_variable);
+        if (!IS_MOBILE) {
+            backend.initTracing(variable, output_variable);
+        }
         backend.initDraggingZooming();
 
         var moreButton = $('<button><i class="icon-angle-down"></i> More...</button>')

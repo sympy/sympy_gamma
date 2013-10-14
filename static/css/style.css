@@ -678,6 +678,7 @@ svg {
      to { background-position: -256px; }
 }
 
+/* Phones/mobile devices */
 @media screen and (max-device-width: 767px) {
   .menu {
     padding: 0.25em 0.5em;
@@ -753,6 +754,21 @@ svg {
   .result, #footer {
     width: 100%;
     margin: 10px auto;
+  }
+
+  .cell_output[data-card-name="graph"] {
+    overflow-x: hidden;
+  }
+
+  .graph {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    border: 0;
+  }
+
+  .graph:hover {
+    border: 0;
   }
 
   .menu_right {
