@@ -301,19 +301,7 @@ var SVGBackend = (function(_parent) {
             // Zoom = reload all data
             if (d3.event.scale != this._zoomScale) {
                 this._zoomScale = d3.event.scale;
-                this.plot
-                    .fetchData(this.plot.xLeft(), this.plot.xRight())
-                    .done($.proxy(function(data) {
-                        if (typeof data.output == "undefined") {
-                            // TODO: handle error
-                            return;
-                        }
-                        var el = $(data.output);
-                        var newXValues = el.data('xvalues');
-                        var newYValues = el.data('yvalues');
-                        this.plot.setData(newXValues, newYValues);
-                        this.draw();
-                    }, this));
+                this.plot.reloadData();
                 return;
             }
 
@@ -366,6 +354,7 @@ var SVGBackend = (function(_parent) {
         }, this));
 
         this._svg.call(zoom);
+        this.zoom = zoom;
     };
 
     SVGBackend.prototype.draw = function() {
@@ -495,6 +484,21 @@ var Plot2D = (function() {
 
         return card.evaluate("f", "f").always($.proxy(function() {
             this._fetchRequestPending = false;
+        }, this));
+    };
+
+    Plot2D.prototype.reloadData = function() {
+        this.fetchData(this.xLeft(), this.xRight())
+        .done($.proxy(function(data) {
+            if (typeof data.output == "undefined") {
+                // TODO: handle error
+                return;
+            }
+            var el = $(data.output);
+            var newXValues = el.data('xvalues');
+            var newYValues = el.data('yvalues');
+            this.setData(newXValues, newYValues);
+            this.backend.draw();
         }, this));
     };
 
@@ -763,6 +767,7 @@ function setupGraphs() {
                     plot.resize();
                     plot.xScale.domain([-10, 10]);
                     plot.yScale.domain([originalYBottom, originalYTop]);
+                    plot.reloadData();
                     backend.generateAxes();
                     backend.draw();
                     backend.initDraggingZooming();
