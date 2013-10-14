@@ -294,10 +294,28 @@ var SVGBackend = (function(_parent) {
         var zoom = d3.behavior.zoom();
         zoom.x(this.plot.xScale);
         zoom.y(this.plot.yScale);
+        this._zoomScale = 1;
         zoom.on('zoom', $.proxy(function() {
             this.draw();
 
-            // TODO: zoom triggers reload of all data?
+            // Zoom = reload all data
+            if (d3.event.scale != this._zoomScale) {
+                this._zoomScale = d3.event.scale;
+                this.plot
+                    .fetchData(this.plot.xLeft(), this.plot.xRight())
+                    .done($.proxy(function(data) {
+                        if (typeof data.output == "undefined") {
+                            // TODO: handle error
+                            return;
+                        }
+                        var el = $(data.output);
+                        var newXValues = el.data('xvalues');
+                        var newYValues = el.data('yvalues');
+                        this.plot.setData(newXValues, newYValues);
+                        this.draw();
+                    }, this));
+                return;
+            }
 
             var xValues = this.plot.xValues();
             var yValues = this.plot.yValues();
@@ -333,13 +351,17 @@ var SVGBackend = (function(_parent) {
             // TODO: if function available, some sort of interpolation while
             // waiting for results?
             var xWidth = Math.abs(this.plot.xRight() - this.plot.xLeft());
+            var newXLeft = this.plot.xMax();
+            var newXRight = this.plot.xMin();
             if (this.plot.xLeft() < this.plot.xMin()) {
-                this.plot.fetchData(this.plot.xMin() - Math.floor(xWidth / 2), this.plot.xMin()).
-                    done(handleDone);
+                this.plot.fetchData(
+                    this.plot.xMin() - Math.floor(xWidth / 2),
+                    this.plot.xMin()).done(handleDone);
             }
-            if (this.plot.xRight() > this.plot.xMax()) {
-                this.plot.fetchData(this.plot.xMax(), this.plot.xMax() + Math.ceil(xWidth / 2)).
-                    done(handleDone);
+            else if (this.plot.xRight() > this.plot.xMax()) {
+                this.plot.fetchData(
+                    this.plot.xMax(),
+                    this.plot.xMax() + Math.ceil(xWidth / 2)).done(handleDone);
             }
         }, this));
 
