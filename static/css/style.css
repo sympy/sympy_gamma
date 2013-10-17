@@ -474,22 +474,31 @@ button:hover {
   filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#552634, endColorstr=#40252D);
 }
 
-/* Graphs */
+/* Plots */
 
-.graph {
-  max-width: 400px;
-  height: 275px;
-  margin: 1em auto;
+.plot {
+  width: 400px;
+  height: 270px;
+  margin: 0 auto;
   border: 1px solid #CCC;
-  padding: 20px;
+  padding: 10px;
 }
 
-.graph:hover {
+.plot:hover {
   border: 1px solid #000;
 }
 
-svg {
+.plot .graphs {
+  display: none;
+}
+
+.plot svg {
   cursor: all-scroll;
+}
+
+.plot svg text {
+  font-family: monospace;
+  font-size: 0.875em;
 }
 
 .help {

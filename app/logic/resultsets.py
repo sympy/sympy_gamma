@@ -257,9 +257,30 @@ def extract_derivative(arguments, evaluated):
     }
 
 def extract_plot(arguments, evaluated):
-    result = extract_first(arguments, evaluated)
-    result['variables'] = list(arguments.args[0].atoms(sympy.Symbol))
-    result['variable'] = result['variables'][0]
+    result = {}
+    if isinstance(arguments.args[0], sympy.Basic):
+        result['variables'] = list(arguments.args[0].atoms(sympy.Symbol))
+        result['variable'] = result['variables'][0]
+        result['input_evaluated'] = [arguments.args[0]]
+
+        if len(result['variables']) != 1:
+            raise ValueError("Cannot plot function of multiple variables")
+    else:
+        variables = set()
+        try:
+            for func in arguments.args[0]:
+                variables.update(func.atoms(sympy.Symbol))
+        except TypeError:
+            raise ValueError("plot() accepts either one function or a list of functions to plot")
+
+        variables = list(variables)
+        if len(variables) > 1:
+            raise ValueError('All functions must have the same and at most one variable')
+        if len(variables) == 0:
+            variables.append(sympy.Symbol('x'))
+        result['variables'] = variables
+        result['variable'] = variables[0]
+        result['input_evaluated'] = arguments.args[0]
     return result
 
 # Formatting functions
@@ -343,19 +364,18 @@ def format_factorization_diagram(factors, formatter):
         primes.extend([prime] * times)
     return DIAGRAM_CODE.format(primes=primes)
 
-GRAPHING_CODE = """
-<div class="graph"
+PLOTTING_CODE = """
+<div class="plot"
      data-function="{function}"
-     data-variable="{variable}"
-     data-xvalues="{xvalues}"
-     data-yvalues="{yvalues}">
+     data-variable="{variable}">
+<div class="graphs">{graphs}</div>
 </div>
 """
 
-def format_graph(graph_data, formatter):
-    return GRAPHING_CODE.format(**graph_data)
+def format_plot(plot_data, formatter):
+    return PLOTTING_CODE.format(**plot_data)
 
-def eval_graph(evaluator, components, parameters=None):
+def eval_plot(evaluator, components, parameters=None):
     if parameters is None:
         parameters = {}
 
@@ -363,43 +383,47 @@ def eval_graph(evaluator, components, parameters=None):
 
     xmin, xmax = parameters.get('xmin', -10), parameters.get('xmax', 10)
     from sympy.plotting.plot import LineOver1DRangeSeries
-    func = evaluator.get("input_evaluated")
+    functions = evaluator.get("input_evaluated")
 
-    free_symbols = func.free_symbols
+    graphs = []
+    for func in functions:
+        try:
+            series = LineOver1DRangeSeries(
+                func, (variable, xmin, xmax),
+                nb_of_points=150)
+            # returns a list of [[x,y], [next_x, next_y]] pairs
+            series = series.get_segments()
+        except TypeError:
+            raise ValueError("Cannot plot function")
 
-    if len(free_symbols) != 1 or variable not in free_symbols:
-        raise ValueError("Cannot graph function of multiple variables")
+        xvalues = []
+        yvalues = []
 
-    try:
-        series = LineOver1DRangeSeries(
-            func, (variable, xmin, xmax),
-            nb_of_points=150)
-        # returns a list of [[x,y], [next_x, next_y]] pairs
-        series = series.get_segments()
-    except TypeError:
-        raise ValueError("Cannot graph function")
+        def limit_y(y):
+            CEILING = 1e8
+            if y > CEILING:
+                y = CEILING
+            if y < -CEILING:
+                y = -CEILING
+            return y
 
-    xvalues = []
-    yvalues = []
-
-    def limit_y(y):
-        CEILING = 1e8
-        if y > CEILING:
-            y = CEILING
-        if y < -CEILING:
-            y = -CEILING
-        return y
-
-    for point in series:
-        xvalues.append(point[0][0])
-        yvalues.append(limit_y(point[0][1]))
-    xvalues.append(series[-1][1][0])
-    yvalues.append(limit_y(series[-1][1][1]))
+        for point in series:
+            xvalues.append(point[0][0])
+            yvalues.append(limit_y(point[0][1]))
+        xvalues.append(series[-1][1][0])
+        yvalues.append(limit_y(series[-1][1][1]))
+        graphs.append({
+            'type': 'xy',
+            'points': {
+                'x': xvalues,
+                'y': yvalues
+            },
+            'data': None
+        })
     return {
         'function': sympy.jscode(sympy.sympify(func)),
         'variable': repr(variable),
-        'xvalues': json.dumps(xvalues),
-        'yvalues': json.dumps(yvalues)
+        'graphs': json.dumps(graphs)
     }
 
 def eval_factorization(evaluator, components, parameters=None):
@@ -617,12 +641,12 @@ all_cards = {
         lambda statement, var, *args: statement
     ),
 
-    'graph': FakeResultCard(
+    'plot': FakeResultCard(
         "Graph",
         "plot(%s)",
         no_pre_output,
-        format_output_function=format_graph,
-        eval_method=eval_graph,
+        format_output_function=format_plot,
+        eval_method=eval_plot,
         parameters=['xmin', 'xmax']),
 
     'function_docs': FakeResultCard(
@@ -695,7 +719,7 @@ result_sets = [
     ('integrate', extract_integral, ['integral_alternate_fake', 'intsteps']),
     ('diff', extract_derivative, ['diff', 'diffsteps']),
     ('factorint', extract_first, ['factorization', 'factorizationDiagram']),
-    ('plot', extract_plot, ['graph']),
+    ('plot', extract_plot, ['plot']),
     (is_integer, None, ['digits', 'factorization', 'factorizationDiagram']),
     (is_complex, None, ['absolute_value', 'polar_angle', 'conjugate']),
     (is_rational, None, ['float_approximation']),
@@ -704,7 +728,7 @@ result_sets = [
     (is_uncalled_function, None, ['function_docs']),
     (is_trig, None, ['trig_alternate']),
     (is_matrix, None, ['matrix_inverse', 'matrix_eigenvals', 'matrix_eigenvectors']),
-    (is_not_constant_basic, None, ['graph', 'roots', 'diff', 'integral_alternate', 'series'])
+    (is_not_constant_basic, None, ['plot', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
 
 def is_function_handled(function_name):

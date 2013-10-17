@@ -71,7 +71,11 @@ class SymPyGamma(object):
                     "ambiguity": close_match,
                     "description": ""
                 })
-            cards.extend(self.prepare_cards(parsed, arguments, evaluator, evaluated))
+
+            try:
+                cards.extend(self.prepare_cards(parsed, arguments, evaluator, evaluated))
+            except ValueError as e:
+                return self.handle_error(s, e)
 
             return cards
 
@@ -120,8 +124,10 @@ class SymPyGamma(object):
         transformations.append(synonyms)
         transformations.extend(standard_transformations)
         transformations.extend((convert_xor, custom_implicit_transformation))
+        def plot(f):
+            pass
         local_dict = {
-            'plot': lambda *args: None  # prevent textplot from printing stuff
+            'plot': plot  # prevent textplot from printing stuff
         }
         global_dict = {}
         exec 'from sympy import *' in global_dict
