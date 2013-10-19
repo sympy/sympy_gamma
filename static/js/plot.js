@@ -56,21 +56,6 @@ var D3Backend = (function(_parent) {
         }
     };
 
-    D3Backend.prototype.reset = function() {
-        d3.transition().duration(500).tween("zoom", $.proxy(function() {
-            var x = this.plot.scales.x
-            var y= this.plot.scales.y;
-            var ix = d3.interpolate(x.domain(), [-10, 10]);
-            var iy = d3.interpolate(y.domain(), [-10, 10]);
-            return $.proxy(function(t) {
-                this.zoom
-                    .x(x.domain(ix(t)))
-                    .y(y.domain(iy(t)));
-                this._handleZoom();
-            }, this);
-        }, this));
-    }
-
     D3Backend.prototype.showAxes = function() {
         this.svg.select('.axes').remove();
         this.axes = this.svg.append('g').attr('class', 'axes');
@@ -138,10 +123,13 @@ var D3Backend = (function(_parent) {
             path.attr({
                 d: line(graph.points.x),
                 fill: 'none',
-                stroke: color
-            });
+                stroke: color,
+                opacity: 0.8
+            }).attr('stroke-width', 1.5);
         }, this);
 
+        var visible = true;
+        var highlight = false;
         var g = {
             update: $.proxy(function() {
                 if (this.plot.option('points')) {
@@ -158,7 +146,30 @@ var D3Backend = (function(_parent) {
                 else {
                     path.attr('display', 'none');
                 }
-            }, this)
+            }, this),
+
+            toggle: function() {
+                if (visible) {
+                    path.attr('display', 'none');
+                    points.attr('display', 'none');
+                }
+                else {
+                    this.update();
+                }
+                visible = !visible;
+            },
+
+            highlight: function() {
+                if (!highlight) {
+                    path.attr('stroke-width', 3);
+                    points.selectAll('circle').attr('r', 3);
+                }
+                else {
+                    path.attr('stroke-width', 1.5);
+                    points.selectAll('circle').attr('r', 2);
+                }
+                highlight = !highlight;
+            }
         };
         this.graphs.push(g);
         return g;
@@ -175,6 +186,21 @@ var D3Backend = (function(_parent) {
                 .x(this.plot.scales.x)
                 .y(this.plot.scales.y);
         }
+    };
+
+    D3Backend.prototype.reset = function() {
+        d3.transition().duration(300).tween("zoom", $.proxy(function() {
+            var x = this.plot.scales.x;
+            var y = this.plot.scales.y;
+            var ix = d3.interpolate(x.domain(), [-10, 10]);
+            var iy = d3.interpolate(y.domain(), [-10, 10]);
+            return $.proxy(function(t) {
+                this.zoom
+                    .x(x.domain(ix(t)))
+                    .y(y.domain(iy(t)));
+                this._handleZoom();
+            }, this);
+        }, this));
     };
 
     D3Backend.prototype.asDataURI = function() {
@@ -204,10 +230,14 @@ var Plot2D = (function() {
     }
 
     Plot2D.prototype._generateScales = function() {
-        this.scales = {
-            x: d3.scale.linear().domain([-10, 10]).range([10, this.width() - 10]),
-            y: d3.scale.linear().domain([-10, 10]).range([this.height() - 10, 10])
-        };
+        if (typeof this.scales === "undefined") {
+            this.scales = {
+                x: d3.scale.linear(),
+                y: d3.scale.linear()
+            };
+        }
+        this.scales.x.domain([-10, 10]).range([10, this.width() - 10]);
+        this.scales.y.domain([-10, 10]).range([this.height() - 10, 10]);
     };
 
     Plot2D.prototype.width = function() {
@@ -243,8 +273,17 @@ var Plot2D = (function() {
         }
     };
 
+    Plot2D.prototype.toggle = function(index) {
+        this.graphs[index].toggle();
+    };
+
+    Plot2D.prototype.highlight = function(index) {
+        this.graphs[index].highlight();
+    };
+
     Plot2D.prototype.resize = function(options) {
-        this._generateScales();
+        this.scales.x.range([10, this.width() - 10]);
+        this.scales.y.range([this.height() - 10, 10]);
         this._backend.resize(options);
         this.update();
     };
@@ -296,6 +335,22 @@ function setupPlots() {
         var plot = new Plot2D($(this)[0], D3Backend, graphs);
         plot.show();
 
+        // Highlight the input function with the graph line color
+        var colors = d3.scale.category10();
+        card.element.addClass('plot-card');
+        card.element.find('.cell_input span').each(function(index) {
+            var element = $(this)
+                .css('color', colors(index))
+                .attr('title', 'Click to toggle visibility')
+                .hover(function() {
+                    plot.highlight(index);
+                })
+                .click(function() {
+                    plot.toggle(index);
+                    element.toggleClass('hidden');
+                });
+        });
+
         var resizing = false;
         var container = $(this);
         var originalWidth = container.width();
@@ -336,29 +391,35 @@ function setupPlots() {
             moreButton.toggleClass('open');
         });
         var options = $(this).parents('.result_card').find('.card_options');
+        var resizeContainer = function(width, height) {
+            plot.reset();
+            container.animate({
+                width: width,
+                height: height
+            }, {
+                duration: 300,
+                progress: function() {
+                    plot.resize();
+                },
+                complete: function() {
+                    plot.resize({ updateZoom: true });
+                    plot.reset();
+                }
+            });
+        };
         options.append([
             $('<p>Drag to pan, (shift-)double-click to zoom, drag edges to resize</p>')
                 .addClass('help'),
             $('<button>Reset</button>')
                 .addClass('card_options_toggle')
                 .click(function() {
-                    container.animate({
-                        width: originalWidth,
-                        height: originalHeight
-                    }, {
-                        duration: 300,
-                        progress: function() {
-                            plot.resize();
-                        },
-                        complete: function() {
-                            // needed to ensure dragging keeps working
-                            plot.reset();
-                        }
-                    });
+                    resizeContainer(originalWidth, originalHeight);
                 }),
             $('<button>Square Viewport</button>')
                 .addClass('card_options_toggle')
                 .click(function() {
+                    var size = d3.max([container.width(), container.height()]);
+                    resizeContainer(size, size);
                 }),
             $('<button>Fullscreen</button>')
                 .addClass('card_options_toggle')

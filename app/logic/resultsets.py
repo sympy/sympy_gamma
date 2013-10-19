@@ -375,6 +375,13 @@ PLOTTING_CODE = """
 def format_plot(plot_data, formatter):
     return PLOTTING_CODE.format(**plot_data)
 
+def format_plot_input(result_statement, input_repr, components):
+    funcs = ['<span>{}</span>'.format(f) for f in components['input_evaluated']]
+    if len(funcs) > 1:
+        return 'plot([{}])'.format(', '.join(funcs))
+    else:
+        return 'plot({})'.format(funcs[0])
+
 def eval_plot(evaluator, components, parameters=None):
     if parameters is None:
         parameters = {}
@@ -645,6 +652,7 @@ all_cards = {
         "Graph",
         "plot(%s)",
         no_pre_output,
+        format_input_function=format_plot_input,
         format_output_function=format_plot,
         eval_method=eval_plot,
         parameters=['xmin', 'xmax']),

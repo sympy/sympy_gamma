@@ -476,6 +476,25 @@ button:hover {
 
 /* Plots */
 
+/* Formatting for the input line */
+.plot-card .cell_input span.hidden {
+  opacity: 0.5;
+}
+
+.plot-card .cell_input span {
+  cursor: pointer;
+}
+
+.plot-card .cell_input span:after {
+  content: " \f06e";
+  font-family: "FontAwesome";
+  color: #000;
+}
+
+.plot-card .cell_input span.hidden:after {
+  content: " \f070";
+}
+
 .plot {
   width: 400px;
   height: 270px;
@@ -499,6 +518,10 @@ button:hover {
 .plot svg text {
   font-family: monospace;
   font-size: 0.875em;
+}
+
+.plot svg path:hover {
+  stroke-width: 3;
 }
 
 .help {
