@@ -54,6 +54,9 @@ var D3Backend = (function(_parent) {
         for (var i = 0; i < this.graphs.length; i++) {
             this.graphs[i].update();
         }
+        if (d3.event !== null) {
+            this.plot.retrieveData({ scale: d3.event.scale });
+        }
     };
 
     D3Backend.prototype.showAxes = function() {
@@ -98,16 +101,13 @@ var D3Backend = (function(_parent) {
     D3Backend.prototype.makeGraph = function(graph, color) {
         var points = this.svg.append('g').attr('class', 'points');
         var path = this.svg.append('g').attr('class', 'path').append('svg:path');
-        var line = d3.svg.line()
-            .x(this.plot.scales.x)
-            .y($.proxy(function(value, index) {
-                return this.plot.scales.y(graph.points.y[index])
-            }, this));
+        var line = d3.svg.line().x(this.plot.scales .x);
 
-        var updatePoints = $.proxy(function() {
-            points.selectAll('circle')
-                .data(graph.points.x)
-                .enter().append('circle');
+        var updatePoints = $.proxy(function(graph) {
+            var circles = points.selectAll('circle')
+                .data(graph.points.x);
+            circles.exit().remove('circle');
+            circles.enter().append('circle');
             points.selectAll('circle')
                 .attr({
                     cx: this.plot.scales.x,
@@ -118,8 +118,11 @@ var D3Backend = (function(_parent) {
                     fill: color
                 });
         }, this);
-        var updateLine = $.proxy(function() {
+        var updateLine = $.proxy(function(graph) {
             line.x(this.plot.scales.x)
+                .y($.proxy(function(value, index) {
+                    return this.plot.scales.y(graph.points.y[index])
+                }, this));
             path.attr({
                 d: line(graph.points.x),
                 fill: 'none',
@@ -131,16 +134,19 @@ var D3Backend = (function(_parent) {
         var visible = true;
         var highlight = false;
         var g = {
-            update: $.proxy(function() {
+            update: $.proxy(function(_graph) {
+                if (typeof _graph !== "undefined") {
+                    graph = _graph;
+                }
                 if (this.plot.option('points')) {
-                    updatePoints();
+                    updatePoints(graph);
                     points.attr('display', 'block');
                 }
                 else {
                     points.attr('display', 'none');
                 }
                 if (this.plot.option('path')) {
-                    updateLine();
+                    updateLine(graph);
                     path.attr('display', 'block');
                 }
                 else {
@@ -215,7 +221,8 @@ var D3Backend = (function(_parent) {
 })(PlotBackend);
 
 var Plot2D = (function() {
-    function Plot2D(container, backendClass, graphs) {
+    function Plot2D(card, container, backendClass, graphs) {
+        this.card = card;
         this._container = $(container);
         this._generateScales();
         this._backend = new backendClass(this, container);
@@ -226,7 +233,25 @@ var Plot2D = (function() {
             axes: true,
             points: false,
             path: true
+        };
+
+        for (var opt in this.options) {
+            if (!this.options.hasOwnProperty(opt)) {
+                continue;
+            }
+            var cookie = readCookie(opt);
+
+            if (cookie === 'true') {
+                this.options[opt] = true;
+            }
+            else if (cookie === 'false') {
+                this.options[opt] = false;
+            }
         }
+
+        this._scale = 1;
+        this._requestPending = false;
+        this._calculateExtent();
     }
 
     Plot2D.prototype._generateScales = function() {
@@ -238,6 +263,13 @@ var Plot2D = (function() {
         }
         this.scales.x.domain([-10, 10]).range([10, this.width() - 10]);
         this.scales.y.domain([-10, 10]).range([this.height() - 10, 10]);
+    };
+
+    Plot2D.prototype._calculateExtent = function() {
+        this._extent = {
+            min: d3.min(this._graphs.map(function(g) { return d3.min(g.points.x); })),
+            max: d3.max(this._graphs.map(function(g) { return d3.max(g.points.x); }))
+        };
     };
 
     Plot2D.prototype.width = function() {
@@ -273,6 +305,73 @@ var Plot2D = (function() {
         }
     };
 
+    Plot2D.prototype.retrieveData = function(view) {
+        if (view.scale != this._scale) {
+            this._scale = view.scale;
+            this.fetch(this.scales.x.domain()[0], this.scales.x.domain()[1], 'replace');
+        }
+        else {
+            var half = (this._extent.max - this._extent.min)/2;
+            if (this.scales.x.domain()[0] < this._extent.min) {
+                this.fetch(Math.round(this.scales.x.domain()[0] - half), this._extent.min, 'prepend');
+            }
+            if (this.scales.x.domain()[1] > this._extent.max) {
+                this.fetch(this._extent.max, Math.round(this.scales.x.domain()[1] + half), 'append');
+            }
+        }
+    };
+
+    // mode: replace, prepend, or append
+    Plot2D.prototype.fetch = function(xMin, xMax, mode) {
+        if (!this._requestPending) {
+            this.card.parameter('xmin', xMin);
+            this.card.parameter('xmax', xMax);
+            this._requestPending = true;
+            this.card.evaluate($.proxy(function(data) {
+                if (typeof data.output == "undefined") {
+                    // TODO: handle error
+                    return;
+                }
+                var data = JSON.parse($(data.output).find('.graphs').text());
+                if (mode === 'replace') {
+                    this._graphs = data;
+
+                    for (var i = 0; i < this.graphs.length; i++) {
+                        this.graphs[i].update(this._graphs[i]);
+                    }
+                }
+                else if (mode === 'prepend') {
+                    for (var i = 0; i < this.graphs.length; i++) {
+                        var graph = this._graphs[i];
+                        data[i].points.x.pop();
+                        data[i].points.y.pop();
+                        graph.points.x = data[i].points.x.concat(graph.points.x);
+                        graph.points.y = data[i].points.y.concat(graph.points.y);
+                        this.graphs[i].update(this._graphs[i]);
+                    }
+                }
+                else if (mode === 'append') {
+                    console.log('append')
+                    for (var i = 0; i < this.graphs.length; i++) {
+                        var graph = this._graphs[i];
+                        data[i].points.x.shift();
+                        data[i].points.y.shift();
+                        graph.points.x = graph.points.x.concat(data[i].points.x);
+                        graph.points.y = graph.points.y.concat(data[i].points.y);
+                        this.graphs[i].update(this._graphs[i]);
+                    }
+                }
+                this._calculateExtent();
+            }, this), function() {
+                // TODO: handle errors
+            }).always($.proxy(function() {
+                this._requestPending = false;
+            }, this));
+        }
+        else {
+        }
+    };
+
     Plot2D.prototype.toggle = function(index) {
         this.graphs[index].toggle();
     };
@@ -290,6 +389,9 @@ var Plot2D = (function() {
 
     Plot2D.prototype.reset = function() {
         this._backend.reset();
+        setTimeout($.proxy(function() {
+            this.retrieveData({ scale: 1 });
+        }, this), 300);
     };
 
     Plot2D.prototype.option = function(opt, value) {
@@ -297,6 +399,7 @@ var Plot2D = (function() {
             return this.options[opt];
         }
         this.options[opt] = value;
+        createCookie(opt, value, 365);
     };
 
     Plot2D.prototype.asDataURI = function() {
@@ -332,7 +435,7 @@ function setupPlots() {
         var card = $(this).parents('.result_card').data('card');
         var graphs = JSON.parse($(this).find('.graphs').text());
 
-        var plot = new Plot2D($(this)[0], D3Backend, graphs);
+        var plot = new Plot2D(card, $(this)[0], D3Backend, graphs);
         plot.show();
 
         // Highlight the input function with the graph line color
