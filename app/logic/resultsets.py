@@ -376,21 +376,26 @@ def format_plot(plot_data, formatter):
     return PLOTTING_CODE.format(**plot_data)
 
 def format_plot_input(result_statement, input_repr, components):
-    funcs = ['<span>{}</span>'.format(f) for f in components['input_evaluated']]
-    if len(funcs) > 1:
-        return 'plot([{}])'.format(', '.join(funcs))
+    if 'input_evaluated' in components:
+        funcs = ['<span>{}</span>'.format(f) for f in components['input_evaluated']]
+        if len(funcs) > 1:
+            return 'plot([{}])'.format(', '.join(funcs))
+        else:
+            return 'plot({})'.format(funcs[0])
     else:
-        return 'plot({})'.format(funcs[0])
+        return 'plot({})'.format(input_repr)
 
 def eval_plot(evaluator, components, parameters=None):
     if parameters is None:
         parameters = {}
 
     variable = components['variable']
-
+    print parameters
     xmin, xmax = parameters.get('xmin', -10), parameters.get('xmax', 10)
     from sympy.plotting.plot import LineOver1DRangeSeries
     functions = evaluator.get("input_evaluated")
+    if isinstance(functions, sympy.Basic):
+        functions = [functions]
 
     graphs = []
     for func in functions:
