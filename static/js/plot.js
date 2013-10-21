@@ -51,6 +51,7 @@ var D3Backend = (function(_parent) {
 
     D3Backend.prototype._handleZoom = function() {
         this.updateAxes();
+        this.updateGrid();
         for (var i = 0; i < this.graphs.length; i++) {
             this.graphs[i].update();
         }
@@ -96,6 +97,44 @@ var D3Backend = (function(_parent) {
         }
         this.svg.select('.x-axis').attr('transform', 'translate(0,' + yPos + ')');
         this.svg.select('.y-axis').attr('transform', 'translate(' + xPos + ', 0)');
+    };
+
+    D3Backend.prototype.showGrid = function() {
+        this.svg.select('.grid').remove();
+        this.grid = this.svg.append('g').attr('class', 'grid');
+        this.xGrid = this.grid.append('g').attr('class', 'x-grid');
+        this.yGrid = this.grid.append('g').attr('class', 'y-grid');
+        this.updateGrid();
+    };
+
+    D3Backend.prototype.hideGrid = function() {
+        this.svg.select('.grid').remove();
+    };
+
+    D3Backend.prototype.updateGrid = function() {
+        var x = this.xGrid.selectAll('line').data(this.plot.scales.x.ticks(20));
+        x.enter().append('line');
+        x.exit().remove();
+        x.attr({
+            x1: this.plot.scales.x,
+            y1: this.plot.scales.y(this.plot.scales.y.domain()[1]),
+            x2: this.plot.scales.x,
+            y2: this.plot.scales.y(this.plot.scales.y.domain()[0]),
+            fill: 'none',
+            stroke: d3.rgb(125, 125, 125)
+        }).attr('stroke-dasharray', '1, 3');
+
+        var y = this.yGrid.selectAll('line').data(this.plot.scales.y.ticks(20))
+        y.enter().append('line');
+        y.exit().remove();
+        y.attr({
+            x1: this.plot.scales.x(this.plot.scales.x.domain()[0]),
+            y1: this.plot.scales.y,
+            x2: this.plot.scales.x(this.plot.scales.x.domain()[1]),
+            y2: this.plot.scales.y,
+            fill: 'none',
+            stroke: d3.rgb(125, 125, 125)
+        }).attr('stroke-dasharray', '1, 3');
     };
 
     D3Backend.prototype.makeGraph = function(graph, color) {
@@ -145,6 +184,7 @@ var D3Backend = (function(_parent) {
                 else {
                     points.attr('display', 'none');
                 }
+
                 if (this.plot.option('path')) {
                     updateLine(graph);
                     path.attr('display', 'block');
@@ -282,6 +322,7 @@ var Plot2D = (function() {
 
     Plot2D.prototype.show = function() {
         this._backend.showAxes(this.scales);
+        this._backend.showGrid(this.scales);
 
         var colors = d3.scale.category10();
         for (var i = 0; i < this._graphs.length; i++) {
@@ -297,6 +338,13 @@ var Plot2D = (function() {
         }
         else {
             this._backend.hideAxes();
+        }
+
+        if (this.option('grid')) {
+            this._backend.showGrid(this.scales);
+        }
+        else {
+            this._backend.hideGrid();
         }
 
         for (var i = 0; i < this.graphs.length; i++) {
@@ -351,7 +399,6 @@ var Plot2D = (function() {
                     }
                 }
                 else if (mode === 'append') {
-                    console.log('append')
                     for (var i = 0; i < this.graphs.length; i++) {
                         var graph = this._graphs[i];
                         data[i].points.x.shift();
