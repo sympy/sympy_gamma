@@ -5,7 +5,7 @@ from utils import Eval, latexify, arguments, removeSymPy, \
     custom_implicit_transformation, synonyms, OTHER_SYMPY_FUNCTIONS, \
     close_matches
 from resultsets import find_result_set, get_card, format_by_type, \
-    is_function_handled
+    is_function_handled, find_learn_more_set
 from sympy import latex, series, sympify, solve, Derivative, \
     Integral, Symbol, diff, integrate
 import sympy
@@ -245,6 +245,15 @@ class SymPyGamma(object):
                     })
                 except (SyntaxError, ValueError) as e:
                     pass
+
+            if is_function:
+                learn_more = find_learn_more_set(arguments[0])
+                if learn_more:
+                    result.append({
+                        "title": "Learn More",
+                        "input": '',
+                        "output": learn_more
+                    })
         return result
 
     def get_card_info(self, card_name, expression, variable):

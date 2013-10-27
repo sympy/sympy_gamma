@@ -767,6 +767,12 @@ result_sets = [
     (is_not_constant_basic, None, ['plot', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
 
+learn_more_sets = {
+    'rsolve': ['http://en.wikipedia.org/wiki/Recurrence_relation',
+               'http://mathworld.wolfram.com/RecurrenceEquation.html',
+               'http://docs.sympy.org/latest/modules/solvers/solvers.html#recurrence-equtions']
+}
+
 def is_function_handled(function_name):
     """Do any of the result sets handle this specific function?"""
     return any(name == function_name for (name, _, cards) in result_sets if cards is not None)
@@ -802,3 +808,8 @@ def find_result_set(function_name, input_evaluated):
                     result.append(card)
 
     return result_converter, result
+
+def find_learn_more_set(function_name):
+    urls = learn_more_sets.get(function_name)
+    if urls:
+        return '<div class="document"><ul>{}</ul></div>'.format('\n'.join('<li><a href="{0}">{0}</a></li>'.format(url) for url in urls))
