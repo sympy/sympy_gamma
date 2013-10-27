@@ -206,6 +206,12 @@ def is_matrix(input_evaluated):
 def is_logic(input_evaluated):
     return isinstance(input_evaluated, Boolean)
 
+def is_sum(input_evaluated):
+    return isinstance(input_evaluated, sympy.Sum)
+
+def is_product(input_evaluated):
+    return isinstance(input_evaluated, sympy.Product)
+
 
 # Functions to convert input and extract variable used
 
@@ -342,8 +348,11 @@ def format_dict_title(*title):
         html = ['<table>',
                 '<thead><tr><th>{}</th><th>{}</th></tr></thead>'.format(*title),
                 '<tbody>']
-        for key, val in dictionary.iteritems():
-            html.append('<tr><td>{}</td><td>{}</td></tr>'.format(key, val))
+        try:
+            for key, val in dictionary.iteritems():
+                html.append('<tr><td>{}</td><td>{}</td></tr>'.format(key, val))
+        except AttributeError, TypeError:  # not iterable/not a dict
+            return formatter(dictionary)
         html.append('</tbody></table>')
         return '\n'.join(html)
     return _format_dict
@@ -749,6 +758,12 @@ all_cards = {
         format_output_function=format_dict_title('Variable', 'Possible Value')
     ),
 
+    'doit': ResultCard(
+        "Result",
+        "(%s).doit()",
+        no_pre_output
+    ),
+
     'approximator': FakeResultCard(
         "Approximator_NOT_USER_VISIBLE",
         "%s",
@@ -798,9 +813,9 @@ extract_components: None or func
   might extract the limits, integrand, and variable.
 
 result_cards: None or list
-  If None, predicate should be a string. Do not show any result cards for this
-  function beyond the automatically generated 'Result' and 'Simplification'
-  cards (if they are applicable).
+  If None, do not show any result cards for this function beyond the
+  automatically generated 'Result' and 'Simplification' cards (if they are
+  applicable).
   If a list, specifies a list of result cards to display.
 """
 result_sets = [
@@ -818,6 +833,9 @@ result_sets = [
     (is_trig, None, ['trig_alternate']),
     (is_matrix, None, ['matrix_inverse', 'matrix_eigenvals', 'matrix_eigenvectors']),
     (is_logic, None, ['satisfiable']),
+    (is_sum, None, ['doit']),
+    (is_product, None, ['doit']),
+    (is_product, None, None),
     (is_not_constant_basic, None, ['plot', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
 
@@ -857,6 +875,8 @@ def find_result_set(function_name, input_evaluated):
         elif callable(predicate) and predicate(input_evaluated):
             if converter:
                 result_converter = converter
+            if result_cards is None:
+                return result_converter, result
             for card in result_cards:
                 if card not in result:
                     result.append(card)
