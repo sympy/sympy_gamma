@@ -101,6 +101,10 @@ EXAMPLES = [
             ('Solve a recurrence relation', 'rsolve(y(n+2)-y(n+1)-y(n), y(n))'),
             ('Specify initial conditions', 'rsolve(y(n+2)-y(n+1)-y(n), y(n), {y(0): 0, y(1): 1})')
         ]],
+        ['Boolean Logic', [
+            '(x | y) & (x | ~y) & (~x | y)',
+            'x & ~x'
+        ]],
     ]),
     ('Miscellaneous', [
         [None, [('Documentation for functions', 'factorial2'),
