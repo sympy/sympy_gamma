@@ -208,6 +208,11 @@ def format_rsolve(node, visitor):
     else:
         return r'\mathrm{Solve~the~recurrence~}' + recurrence
 
+@LatexVisitor.formats_function('diophantine')
+def format_diophantine(node, visitor):
+    function = sympy.latex(sympy.Eq(visitor.evaluator.eval_node(node.args[0]), 0))
+    return r'\mathrm{Solve~the~diophantine~equation~}' + function
+
 class TopCallVisitor(ast.NodeVisitor):
     def __init__(self):
         super(TopCallVisitor, self).__init__()

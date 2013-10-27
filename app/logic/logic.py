@@ -206,7 +206,7 @@ class SymPyGamma(object):
             result.append({
                 'title': 'Result',
                 'input': removeSymPy(parsed),
-                'output': format_by_type(evaluated, mathjax_latex)
+                'output': format_by_type(evaluated, arguments, mathjax_latex)
             })
         else:
             var = components['variable']
@@ -216,7 +216,7 @@ class SymPyGamma(object):
             if is_function and not is_function_handled(arguments[0]):
                 result.append(
                     {"title": "Result", "input": "",
-                     "output": mathjax_latex(evaluated)})
+                     "output": format_by_type(evaluated, arguments, mathjax_latex)})
 
             line = "simplify(input_evaluated)"
             simplified = evaluator.eval(line,

@@ -285,8 +285,28 @@ def extract_plot(arguments, evaluated):
 
 # Formatting functions
 
-def format_by_type(result, formatter):
-    if isinstance(result, (list, tuple)):
+_function_formatters = {}
+def formats_function(name):
+    def _formats_function(func):
+        _function_formatters[name] = func
+        return func
+    return _formats_function
+
+@formats_function('diophantine')
+def format_diophantine(result, arguments, formatter):
+    variables = list(sorted(arguments.args[0].atoms(sympy.Symbol), key=str))
+    if isinstance(result, set):
+        return format_nested_list_title(*variables)(result, formatter)
+    else:
+        return format_nested_list_title(*variables)([result], formatter)
+
+def format_by_type(result, arguments, formatter):
+    """
+    Format something based on its type and on the input to Gamma.
+    """
+    if arguments[0] in _function_formatters:
+        return _function_formatters[arguments[0]](result, arguments, formatter)
+    elif isinstance(result, (list, tuple)):
         return format_list(result, formatter)
     else:
         return formatter(result)
@@ -334,6 +354,27 @@ def format_list(items, formatter):
         return '\n'.join(html)
     except TypeError:  # not iterable, like None
         return formatter(items)
+
+def format_nested_list_title(*titles):
+    def _format_nested_list_title(items, formatter):
+        try:
+            if len(items) == 0:
+                return "<p>No result</p>"
+            html = ['<table>', '<thead><tr>']
+            for title in titles:
+                html.append('<th>{}</th>'.format(title))
+            html.append('</tr></thead>')
+            html.append('<tbody>')
+            for item in items:
+                html.append('<tr>')
+                for subitem in item:
+                    html.append('<td>{}</td>'.format(formatter(subitem)))
+                html.append('</tr>')
+            html.append('</tbody></table>')
+            return '\n'.join(html)
+        except TypeError:  # not iterable, like None
+            return formatter(items)
+    return _format_nested_list_title
 
 def format_series_fake_title(title, evaluated):
     if len(evaluated.args) >= 3:
