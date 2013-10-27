@@ -213,6 +213,15 @@ def format_diophantine(node, visitor):
     function = sympy.latex(sympy.Eq(visitor.evaluator.eval_node(node.args[0]), 0))
     return r'\mathrm{Solve~the~diophantine~equation~}' + function
 
+@LatexVisitor.formats_function('summation')
+@LatexVisitor.formats_function('product')
+def format_diophantine(node, visitor):
+    if node.func.id == 'summation':
+        klass = sympy.Sum
+    else:
+        klass = sympy.Product
+    return sympy.latex(klass(*map(visitor.evaluator.eval_node, node.args)))
+
 class TopCallVisitor(ast.NodeVisitor):
     def __init__(self):
         super(TopCallVisitor, self).__init__()
