@@ -196,6 +196,18 @@ def format_plot(node, visitor):
     function = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
     return r'\mathrm{Plot~}' + function
 
+@LatexVisitor.formats_function('rsolve')
+def format_rsolve(node, visitor):
+    recurrence = sympy.latex(sympy.Eq(visitor.evaluator.eval_node(node.args[0]), 0))
+    if len(node.args) == 3:
+        conds = visitor.evaluator.eval_node(node.args[2])
+        initconds = '\\\\\n'.join('&' + sympy.latex(sympy.Eq(eqn, val)) for eqn, val in conds.items())
+        text = r'&\mathrm{Solve~the~recurrence~}' + recurrence + r'\\'
+        condstext = r'&\mathrm{with~initial~conditions}\\'
+        return r'\begin{align}' + text + condstext + initconds + r'\end{align}'
+    else:
+        return r'\mathrm{Solve~the~recurrence~}' + recurrence
+
 class TopCallVisitor(ast.NodeVisitor):
     def __init__(self):
         super(TopCallVisitor, self).__init__()

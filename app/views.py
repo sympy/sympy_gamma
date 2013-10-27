@@ -91,6 +91,12 @@ EXAMPLES = [
             ('First prime greater than 42', 'nextprime(42)'),
         ]],
     ]),
+    ('Discrete Mathematics', [
+        ['Recurrences', [
+            ('Solve a recurrence relation', 'rsolve(y(n+2)-y(n+1)-y(n), y(n))'),
+            ('Specify initial conditions', 'rsolve(y(n+2)-y(n+1)-y(n), y(n), {y(0): 0, y(1): 1})')
+        ]],
+    ]),
     ('Miscellaneous', [
         [None, [('Documentation for functions', 'factorial2'),
                 'sympify',

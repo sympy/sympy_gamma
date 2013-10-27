@@ -728,11 +728,34 @@ all_cards['integral_alternate_fake'] = MultiResultCard(
     get_card('integral_manual_fake')
 )
 
+"""
+Syntax:
+
+(predicate, extract_components, result_cards)
+
+predicate: str or func
+  If a string, names a function that uses this set of result cards.
+  If a function, the function, given the evaluated input, returns True if
+  this set of result cards should be used.
+
+extract_components: None or func
+  If None, use the default function.
+  If a function, specifies a function that parses the input expression into
+  a components dictionary. For instance, for an integral, this function
+  might extract the limits, integrand, and variable.
+
+result_cards: None or list
+  If None, predicate should be a string. Do not show any result cards for this
+  function beyond the automatically generated 'Result' and 'Simplification'
+  cards (if they are applicable).
+  If a list, specifies a list of result cards to display.
+"""
 result_sets = [
     ('integrate', extract_integral, ['integral_alternate_fake', 'intsteps']),
     ('diff', extract_derivative, ['diff', 'diffsteps']),
     ('factorint', extract_first, ['factorization', 'factorizationDiagram']),
     ('plot', extract_plot, ['plot']),
+    ('rsolve', None, None),
     (is_integer, None, ['digits', 'factorization', 'factorizationDiagram']),
     (is_complex, None, ['absolute_value', 'polar_angle', 'conjugate']),
     (is_rational, None, ['float_approximation']),
@@ -746,7 +769,7 @@ result_sets = [
 
 def is_function_handled(function_name):
     """Do any of the result sets handle this specific function?"""
-    return any(name == function_name for (name, _, _) in result_sets)
+    return any(name == function_name for (name, _, cards) in result_sets if cards is not None)
 
 def find_result_set(function_name, input_evaluated):
     """
@@ -758,10 +781,6 @@ def find_result_set(function_name, input_evaluated):
       for an integral this would extract the integrand and limits of integration.
       This function will always extract the variables.
     - List of result cards.
-    - Flag indicating whether the result cards 'handle' the function call. For
-      instance, 'simplify(x)' will generate a 'Result' card to show the result.
-      But for 'factorint(123)', since one of the result cards already shows the
-      result, this is unnecessary.
     """
     result = []
     result_converter = default_variable
@@ -770,6 +789,8 @@ def find_result_set(function_name, input_evaluated):
         if predicate == function_name:
             if converter:
                 result_converter = converter
+            if result_cards is None:
+                return result_converter, result
             for card in result_cards:
                 if card not in result:
                     result.append(card)
