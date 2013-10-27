@@ -2,8 +2,8 @@ import sys
 import json
 import sympy
 from sympy.core.function import FunctionClass
+from sympy.logic.boolalg import Boolean
 import docutils.core
-from operator import itemgetter
 import diffsteps
 import intsteps
 
@@ -193,13 +193,18 @@ def is_trig(input_evaluated):
     return False
 
 def is_not_constant_basic(input_evaluated):
-    return not is_constant(input_evaluated) and isinstance(input_evaluated, sympy.Basic)
+    return (not is_constant(input_evaluated) and
+            isinstance(input_evaluated, sympy.Basic) and
+            not is_logic(input_evaluated))
 
 def is_uncalled_function(input_evaluated):
     return hasattr(input_evaluated, '__call__') and not isinstance(input_evaluated, sympy.Basic)
 
 def is_matrix(input_evaluated):
     return isinstance(input_evaluated, sympy.Matrix)
+
+def is_logic(input_evaluated):
+    return isinstance(input_evaluated, Boolean)
 
 
 # Functions to convert input and extract variable used
@@ -337,7 +342,7 @@ def format_dict_title(*title):
         html = ['<table>',
                 '<thead><tr><th>{}</th><th>{}</th></tr></thead>'.format(*title),
                 '<tbody>']
-        for key, val in sorted(dictionary.iteritems(), key=itemgetter(0)):
+        for key, val in dictionary.iteritems():
             html.append('<tr><td>{}</td><td>{}</td></tr>'.format(key, val))
         html.append('</tbody></table>')
         return '\n'.join(html)
@@ -737,6 +742,13 @@ all_cards = {
         format_output_function=format_list
     ),
 
+    'satisfiable': ResultCard(
+        "Satisfiability",
+        "satisfiable(%s)",
+        no_pre_output,
+        format_output_function=format_dict_title('Variable', 'Possible Value')
+    ),
+
     'approximator': FakeResultCard(
         "Approximator_NOT_USER_VISIBLE",
         "%s",
@@ -805,6 +817,7 @@ result_sets = [
     (is_uncalled_function, None, ['function_docs']),
     (is_trig, None, ['trig_alternate']),
     (is_matrix, None, ['matrix_inverse', 'matrix_eigenvals', 'matrix_eigenvectors']),
+    (is_logic, None, ['satisfiable']),
     (is_not_constant_basic, None, ['plot', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
 
