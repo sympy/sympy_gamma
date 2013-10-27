@@ -90,6 +90,11 @@ EXAMPLES = [
             'isprime(12321)',
             ('First prime greater than 42', 'nextprime(42)'),
         ]],
+        ['Diophantine Equations', [
+            'diophantine(x**2 - 4*x*y + 8*y**2 - 3*x + 7*y - 5)',
+            'diophantine(2*x + 3*y - 5)',
+            'diophantine(3*x**2 + 4*y**2 - 5*z**2 + 4*x*y - 7*y*z + 7*z*x)'
+        ]]
     ]),
     ('Discrete Mathematics', [
         ['Recurrences', [
