@@ -97,14 +97,21 @@ EXAMPLES = [
         ]]
     ]),
     ('Discrete Mathematics', [
-        ['Recurrences', [
-            ('Solve a recurrence relation', 'rsolve(y(n+2)-y(n+1)-y(n), y(n))'),
-            ('Specify initial conditions', 'rsolve(y(n+2)-y(n+1)-y(n), y(n), {y(0): 0, y(1): 1})')
-        ]],
         ['Boolean Logic', [
             '(x | y) & (x | ~y) & (~x | y)',
             'x & ~x'
         ]],
+        ['Recurrences', [
+            ('Solve a recurrence relation', 'rsolve(y(n+2)-y(n+1)-y(n), y(n))'),
+            ('Specify initial conditions', 'rsolve(y(n+2)-y(n+1)-y(n), y(n), {y(0): 0, y(1): 1})')
+        ]],
+        ['Summation', [
+            'Sum(k,(k,1,m))',
+            'Sum(x**k,(k,0,oo))',
+            'Product(k**2,(k,1,m))',
+            'summation(1/2**i, (i, 0, oo))',
+            'product(i, (i, 1, k), (k, 1, n))'
+        ]]
     ]),
     ('Miscellaneous', [
         [None, [('Documentation for functions', 'factorial2'),

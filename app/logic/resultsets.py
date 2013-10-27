@@ -824,6 +824,7 @@ result_sets = [
     ('factorint', extract_first, ['factorization', 'factorizationDiagram']),
     ('plot', extract_plot, ['plot']),
     ('rsolve', None, None),
+    ('product', None, []),  # suppress automatic Result card
     (is_integer, None, ['digits', 'factorization', 'factorizationDiagram']),
     (is_complex, None, ['absolute_value', 'polar_angle', 'conjugate']),
     (is_rational, None, ['float_approximation']),
@@ -835,6 +836,7 @@ result_sets = [
     (is_logic, None, ['satisfiable']),
     (is_sum, None, ['doit']),
     (is_product, None, ['doit']),
+    (is_sum, None, None),
     (is_product, None, None),
     (is_not_constant_basic, None, ['plot', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
