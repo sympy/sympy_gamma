@@ -16,6 +16,7 @@ from sympy.parsing.sympy_parser import stringify_expr, eval_expr, \
 PREEXEC = """from __future__ import division
 from sympy import *
 import sympy
+from sympy.solvers.diophantine import diophantine
 x, y, z = symbols('x,y,z')
 k, m, n = symbols('k,m,n', integer=True)
 f, g, h = map(Function, 'fgh')"""
@@ -127,12 +128,16 @@ class SymPyGamma(object):
         def plot(f):
             pass
         local_dict = {
-            'plot': plot  # prevent textplot from printing stuff
+            'plot': plot,  # prevent textplot from printing stuff
+            'diophantine': namespace['diophantine']  # manually import this
         }
         global_dict = {}
         exec 'from sympy import *' in global_dict
         parsed = stringify_expr(s, local_dict, global_dict, transformations)
-        evaluated = eval_expr(parsed, local_dict, global_dict)
+        try:
+            evaluated = eval_expr(parsed, local_dict, global_dict)
+        except Exception as e:
+            raise ValueError(str(e))
         input_repr = repr(evaluated)
         namespace['input_evaluated'] = evaluated
 
