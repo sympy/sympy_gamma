@@ -113,7 +113,7 @@ class LatexVisitor(ast.NodeVisitor):
 
                 latexes = []
                 for arg in node.args:
-                    if isinstance(arg, ast.Call) and arg.func.id[0].lower() == arg.func.id[0]:
+                    if isinstance(arg, ast.Call) and getattr(arg.func, 'id', None) and arg.func.id[0].lower() == arg.func.id[0]:
                         latexes.append(self.visit_Call(arg))
                     else:
                         latexes.append(sympy.latex(self.evaluator.eval_node(arg)))
