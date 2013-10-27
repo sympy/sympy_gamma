@@ -71,11 +71,6 @@ h1 a img {
   padding: 10px;
   background: #FFF;
   box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-  -webkit-transition: all 3000ms ease-in;
-  -moz-transition: all 3000ms ease-in;
-  -ms-transition: all 3000ms ease-in;
-  -o-transition: all 3000ms ease-in;
-  transition: all 3000ms ease-in;
 }
 
 .did_you_mean {
@@ -400,6 +395,7 @@ h1 a img {
 
 .example-group h4 {
   font-weight: 600;
+  padding: 0.25em 0 0;
 }
 
 .example-group li {
@@ -407,7 +403,7 @@ h1 a img {
 }
 
 .example-group a:link, .example-group a:visited,
-.example-group a:hover, .example-group a:active, a#random-example {
+.example-group a:hover, .example-group a:active {
   text-decoration: none;
   color: #3B5526;
   font-family: 'Droid Sans Mono', monospace;
@@ -418,6 +414,12 @@ h1 a img {
   padding: 0.125em 0;
   font-style: italic;
   font-size: 90%;
+}
+
+.col button a:link, .col button a:visited,
+.col button a:hover, .col button a:active {
+  color: #FFF;
+  text-decoration: none;
 }
 
 #random-example, #clear-all-recent {
