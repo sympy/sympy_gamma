@@ -296,7 +296,7 @@ def removeSymPy(string):
 from sympy.parsing.sympy_parser import (
     AppliedFunction, implicit_multiplication, split_symbols,
     function_exponentiation, implicit_application, OP, NAME,
-    _group_parentheses, _apply_functions, _flatten)
+    _group_parentheses, _apply_functions, _flatten, _token_callable)
 
 def _implicit_multiplication(tokens, local_dict, global_dict):
     result = []
@@ -304,12 +304,13 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
     for tok, nextTok in zip(tokens, tokens[1:]):
         result.append(tok)
         if (isinstance(tok, AppliedFunction) and
-            isinstance(nextTok, AppliedFunction)):
+              isinstance(nextTok, AppliedFunction)):
             result.append((OP, '*'))
         elif (isinstance(tok, AppliedFunction) and
               nextTok[0] == OP and nextTok[1] == '('):
             # Applied function followed by an open parenthesis
-            if tok.function[1] == 'Symbol' and len(tok.args[1][1]) == 3:
+            if (tok.function[1] == 'Symbol' and
+                len(tok.args[1][1]) == 3 and tok.args[1][1][1] in 'fgh'):
                 # Allow implicit function symbol creation
                 continue
             result.append((OP, '*'))
@@ -325,9 +326,24 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
               and tok[1] == ')' and nextTok[1] == '('):
             # Close parenthesis followed by an open parenthesis
             result.append((OP, '*'))
-        elif (isinstance(tok, AppliedFunction) and nextTok[0] == NAME
-              and nextTok[1] not in ('and', 'or', 'not')):
+        elif (isinstance(tok, AppliedFunction) and nextTok[0] == NAME):
             # Applied function followed by implicitly applied function
+            result.append((OP, '*'))
+        elif (tok[0] == NAME and
+              not _token_callable(tok, local_dict, global_dict) and
+              nextTok[0] == OP and nextTok[1] == '('):
+            # Constant followed by parenthesis
+            result.append((OP, '*'))
+        elif (tok[0] == NAME and
+              not _token_callable(tok, local_dict, global_dict) and
+              nextTok[0] == NAME and
+              not _token_callable(nextTok, local_dict, global_dict)):
+            # Constant followed by constant
+            result.append((OP, '*'))
+        elif (tok[0] == NAME and
+              not _token_callable(tok, local_dict, global_dict) and
+              (isinstance(nextTok, AppliedFunction) or nextTok[0] == NAME)):
+            # Constant followed by (implicitly applied) function
             result.append((OP, '*'))
     if tokens:
         result.append(tokens[-1])
