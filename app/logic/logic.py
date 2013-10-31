@@ -291,7 +291,7 @@ class SymPyGamma(object):
         variable = sympy.Symbol(variable)
         components, cards, evaluated, _ = self.get_cards(arguments, evaluator, evaluated)
         components['variable'] = variable
-
+        evaluator.set(str(variable), variable)
         result = card.eval(evaluator, components, parameters)
 
         return {
