@@ -223,7 +223,9 @@ class SymPyGamma(object):
                                         use_none_for_exceptions=True,
                                         repr_expression=False)
             if (simplified != None and
-                simplified != evaluated):
+                simplified != evaluated and
+                len(arguments.args) > 0 and
+                simplified != arguments.args[0]):
                 result.append(
                     {"title": "Simplification", "input": repr(simplified),
                      "output": mathjax_latex(simplified)})
