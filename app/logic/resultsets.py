@@ -849,6 +849,8 @@ learn_more_sets = {
 
 def is_function_handled(function_name):
     """Do any of the result sets handle this specific function?"""
+    if function_name == "simplify":
+        return True
     return any(name == function_name for (name, _, cards) in result_sets if cards is not None)
 
 def find_result_set(function_name, input_evaluated):
