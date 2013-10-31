@@ -445,7 +445,9 @@ def eval_plot(evaluator, components, parameters=None):
         parameters = {}
 
     variable = components['variable']
-    print parameters
+    if 'variables' in components and len(components['variables']) > 1:
+        raise ValueError("Cannot plot multivariate function")
+
     xmin, xmax = parameters.get('xmin', -10), parameters.get('xmax', 10)
     from sympy.plotting.plot import LineOver1DRangeSeries
     functions = evaluator.get("input_evaluated")
