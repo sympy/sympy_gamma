@@ -311,12 +311,16 @@ def format_diophantine(result, arguments, formatter):
     else:
         return format_nested_list_title(*variables)([result], formatter)
 
-def format_by_type(result, arguments, formatter):
+def format_by_type(result, arguments=None, formatter=None, function_name=None):
     """
     Format something based on its type and on the input to Gamma.
     """
-    if arguments[0] in _function_formatters:
-        return _function_formatters[arguments[0]](result, arguments, formatter)
+    if arguments and not function_name:
+        function_name = arguments[0]
+    if function_name in _function_formatters:
+        return _function_formatters[function_name](result, arguments, formatter)
+    elif function_name in all_cards and 'format_output_function' in all_cards[function_name].card_info:
+        return all_cards[function_name].format_output(result, formatter)
     elif isinstance(result, (list, tuple)):
         return format_list(result, formatter)
     else:
@@ -400,6 +404,14 @@ def format_series_fake_title(title, evaluated):
     else:
         up_to = 6
     return title.format(about, up_to)
+
+def format_truth_table(table, formatter):
+    # table is (variables, [(bool, bool...)] representing combination of values
+    # and result
+    variables, table = table
+    titles = list(map(str, variables))
+    titles.append("Value")
+    return format_nested_list_title(*titles)(table, formatter)
 
 def format_approximator(approximation, formatter):
     obj, digits = approximation
@@ -573,6 +585,17 @@ def eval_function_docs(evaluator, components, parameters=None):
     docstring = trim(evaluator.get("input_evaluated").__doc__)
     return docutils.core.publish_parts(docstring, writer_name='html4css1',
                                        settings_overrides={'_disable_config': True})['html_body']
+
+def eval_truth_table(evaluator, components, parameters=None):
+    expr = evaluator.get("input_evaluated")
+    variables = list(sorted(expr.atoms(sympy.Symbol), key=str))
+
+    result = []
+    for combination in itertools.product([True, False], repeat=len(variables)):
+        result.append(combination +(expr.subs(zip(variables, combination)),))
+    return variables, result
+
+
 
 def eval_approximator(evaluator, components, parameters=None):
     if parameters is None:
@@ -760,6 +783,14 @@ all_cards = {
         format_output_function=format_dict_title('Variable', 'Possible Value')
     ),
 
+    'truth_table': FakeResultCard(
+        "Truth table",
+        "%s",
+        no_pre_output,
+        eval_method=eval_truth_table,
+        format_output_function=format_truth_table
+    ),
+
     'doit': ResultCard(
         "Result",
         "(%s).doit()",
@@ -835,7 +866,7 @@ result_sets = [
     (is_uncalled_function, None, ['function_docs']),
     (is_trig, None, ['trig_alternate']),
     (is_matrix, None, ['matrix_inverse', 'matrix_eigenvals', 'matrix_eigenvectors']),
-    (is_logic, None, ['satisfiable']),
+    (is_logic, None, ['satisfiable', 'truth_table']),
     (is_sum, None, ['doit']),
     (is_product, None, ['doit']),
     (is_sum, None, None),
