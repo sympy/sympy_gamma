@@ -130,7 +130,8 @@ class SymPyGamma(object):
             pass
         local_dict = {
             'plot': plot,  # prevent textplot from printing stuff
-            'diophantine': namespace['diophantine']  # manually import this
+            'diophantine': namespace['diophantine'],  # manually import this
+            'help': lambda f: f
         }
         global_dict = {}
         exec 'from sympy import *' in global_dict
