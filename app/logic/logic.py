@@ -83,11 +83,12 @@ class SymPyGamma(object):
     def handle_error(self, s, e):
         if isinstance(e, SyntaxError):
             error = {
-                "input_start": e.text[:e.offset],
-                "input_end": e.text[e.offset:],
                 "msg": e.msg,
                 "offset": e.offset
             }
+            if e.text:
+                error["input_start"] = e.text[:e.offset]
+                error["input_end"] = e.text[e.offset:]
             return [
                 {"title": "Input", "input": s},
                 {"title": "Error", "input": s, "exception_info": error}
@@ -136,6 +137,8 @@ class SymPyGamma(object):
         parsed = stringify_expr(s, local_dict, global_dict, transformations)
         try:
             evaluated = eval_expr(parsed, local_dict, global_dict)
+        except SyntaxError:
+            raise
         except Exception as e:
             raise ValueError(str(e))
         input_repr = repr(evaluated)
