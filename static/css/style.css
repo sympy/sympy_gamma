@@ -503,6 +503,8 @@ button:hover {
   margin: 0 auto;
   border: 1px solid #CCC;
   padding: 10px;
+  overflow: hidden;
+  resize: both;
 }
 
 .plot:hover {
