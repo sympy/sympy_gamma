@@ -193,7 +193,13 @@ def format_factorint(node, visitor):
 
 @LatexVisitor.formats_function('plot')
 def format_plot(node, visitor):
-    function = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    if node.args:
+        function = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    else:
+        keywords = {}
+        for keyword in node.keywords:
+            keywords[keyword.arg] = visitor.evaluator.eval_node(keyword.value)
+        function = sympy.latex(keywords)
     return r'\mathrm{Plot~}' + function
 
 @LatexVisitor.formats_function('rsolve')

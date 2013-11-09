@@ -1,5 +1,6 @@
 import sys
 import json
+import itertools
 import sympy
 from sympy.core.function import FunctionClass
 from sympy.logic.boolalg import Boolean
@@ -269,29 +270,34 @@ def extract_derivative(arguments, evaluated):
 
 def extract_plot(arguments, evaluated):
     result = {}
-    if isinstance(arguments.args[0], sympy.Basic):
-        result['variables'] = list(arguments.args[0].atoms(sympy.Symbol))
-        result['variable'] = result['variables'][0]
-        result['input_evaluated'] = [arguments.args[0]]
+    if arguments.args:
+        if isinstance(arguments.args[0], sympy.Basic):
+            result['variables'] = list(arguments.args[0].atoms(sympy.Symbol))
+            result['variable'] = result['variables'][0]
+            result['input_evaluated'] = [arguments.args[0]]
 
-        if len(result['variables']) != 1:
-            raise ValueError("Cannot plot function of multiple variables")
-    else:
-        variables = set()
-        try:
-            for func in arguments.args[0]:
-                variables.update(func.atoms(sympy.Symbol))
-        except TypeError:
-            raise ValueError("plot() accepts either one function or a list of functions to plot")
+            if len(result['variables']) != 1:
+                raise ValueError("Cannot plot function of multiple variables")
+        else:
+            variables = set()
+            try:
+                for func in arguments.args[0]:
+                    variables.update(func.atoms(sympy.Symbol))
+            except TypeError:
+                raise ValueError("plot() accepts either one function, a list of functions, or keyword arguments")
 
-        variables = list(variables)
-        if len(variables) > 1:
-            raise ValueError('All functions must have the same and at most one variable')
-        if len(variables) == 0:
-            variables.append(sympy.Symbol('x'))
-        result['variables'] = variables
-        result['variable'] = variables[0]
-        result['input_evaluated'] = arguments.args[0]
+            variables = list(variables)
+            if len(variables) > 1:
+                raise ValueError('All functions must have the same and at most one variable')
+            if len(variables) == 0:
+                variables.append(sympy.Symbol('x'))
+            result['variables'] = variables
+            result['variable'] = variables[0]
+            result['input_evaluated'] = arguments.args[0]
+    elif arguments.kwargs:
+        result['variables'] = [sympy.Symbol('x')]
+        result['variable'] = sympy.Symbol('x')
+        result['input_evaluated'] = arguments.kwargs
     return result
 
 # Formatting functions
@@ -433,7 +439,6 @@ def format_factorization_diagram(factors, formatter):
 
 PLOTTING_CODE = """
 <div class="plot"
-     data-function="{function}"
      data-variable="{variable}">
 <div class="graphs">{graphs}</div>
 </div>
@@ -444,34 +449,57 @@ def format_plot(plot_data, formatter):
 
 def format_plot_input(result_statement, input_repr, components):
     if 'input_evaluated' in components:
-        funcs = ['<span>{}</span>'.format(f) for f in components['input_evaluated']]
-        if len(funcs) > 1:
-            return 'plot([{}])'.format(', '.join(funcs))
-        else:
-            return 'plot({})'.format(funcs[0])
+        functions = components['input_evaluated']
+        if isinstance(functions, list):
+            functions = ['<span>{}</span>'.format(f) for f in functions]
+            if len(funcs) > 1:
+                return 'plot([{}])'.format(', '.join(functions))
+            else:
+                return 'plot({})'.format(functions[0])
+        elif isinstance(functions, dict):
+            return 'plot({})'.format(', '.join(
+                '<span>{}={}</span>'.format(y, x)
+                for y, x in functions.items()))
     else:
         return 'plot({})'.format(input_repr)
 
+GRAPH_TYPES = {
+    'xy': [lambda x, y: x, lambda x, y: y],
+    'polar': [lambda x, y: float(y * sympy.cos(x)),
+              lambda x, y: float(y * sympy.sin(x))]
+}
 def eval_plot(evaluator, components, parameters=None):
     if parameters is None:
         parameters = {}
 
-    variable = components['variable']
-    if 'variables' in components and len(components['variables']) > 1:
-        raise ValueError("Cannot plot multivariate function")
-
     xmin, xmax = parameters.get('xmin', -10), parameters.get('xmax', 10)
+    tmin, tmax = parameters.get('tmin', 0), parameters.get('tmax', 2 * sympy.pi)
     from sympy.plotting.plot import LineOver1DRangeSeries
     functions = evaluator.get("input_evaluated")
     if isinstance(functions, sympy.Basic):
-        functions = [functions]
+        functions = [(functions, 'xy')]
+    elif isinstance(functions, list):
+        functions = [(f, 'xy') for f in functions]
+    elif isinstance(functions, dict):
+        functions = [(f, determine_graph_type(key)) for key, f in functions.items()]
 
     graphs = []
-    for func in functions:
+    for func, graph_type in functions:
+        variables = func.free_symbols
+
+        if len(variables) > 1:
+            raise ValueError("Cannot plot multivariate function")
+        elif len(variables) == 0:
+            variable = sympy.Symbol('x')
+        else:
+            variable = list(variables)[0]
+
         try:
-            series = LineOver1DRangeSeries(
-                func, (variable, xmin, xmax),
-                nb_of_points=150)
+            if graph_type == 'xy':
+                graph_range = (variable, xmin, xmax)
+            elif graph_type == 'polar':
+                graph_range = (variable, tmin, tmax)
+            series = LineOver1DRangeSeries(func, graph_range, nb_of_points=150)
             # returns a list of [[x,y], [next_x, next_y]] pairs
             series = series.get_segments()
         except TypeError:
@@ -488,13 +516,17 @@ def eval_plot(evaluator, components, parameters=None):
                 y = -CEILING
             return y
 
+        x_transform, y_transform = GRAPH_TYPES[graph_type]
+        series.append([series[-1][1], None])
         for point in series:
-            xvalues.append(point[0][0])
-            yvalues.append(limit_y(point[0][1]))
-        xvalues.append(series[-1][1][0])
-        yvalues.append(limit_y(series[-1][1][1]))
+            x = point[0][0]
+            y = limit_y(point[0][1])
+            xvalues.append(x_transform(x, y))
+            yvalues.append(y_transform(x, y))
+
         graphs.append({
-            'type': 'xy',
+            'type': graph_type,
+            'function': sympy.jscode(sympy.sympify(func)),
             'points': {
                 'x': xvalues,
                 'y': yvalues
@@ -502,10 +534,15 @@ def eval_plot(evaluator, components, parameters=None):
             'data': None
         })
     return {
-        'function': sympy.jscode(sympy.sympify(func)),
         'variable': repr(variable),
         'graphs': json.dumps(graphs)
     }
+
+def determine_graph_type(key):
+    if key.startswith('r'):
+        return 'polar'
+    else:
+        return 'xy'
 
 def eval_factorization(evaluator, components, parameters=None):
     number = evaluator.get("input_evaluated")
@@ -734,13 +771,13 @@ all_cards = {
     ),
 
     'plot': FakeResultCard(
-        "Graph",
+        "Plot",
         "plot(%s)",
         no_pre_output,
         format_input_function=format_plot_input,
         format_output_function=format_plot,
         eval_method=eval_plot,
-        parameters=['xmin', 'xmax']),
+        parameters=['xmin', 'xmax', 'tmin', 'tmax']),
 
     'function_docs': FakeResultCard(
         "Documentation",

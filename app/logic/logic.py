@@ -126,7 +126,10 @@ class SymPyGamma(object):
         transformations.append(synonyms)
         transformations.extend(standard_transformations)
         transformations.extend((convert_xor, custom_implicit_transformation))
-        def plot(f):
+        def plot(f=None, **kwargs):
+            """
+            Plot functions. Not the same as SymPy's plot.
+            """
             pass
         local_dict = {
             'plot': plot,  # prevent textplot from printing stuff
@@ -228,6 +231,7 @@ class SymPyGamma(object):
                                         repr_expression=False)
             if (simplified != None and
                 simplified != evaluated and
+                arguments.args and
                 len(arguments.args) > 0 and
                 simplified != arguments.args[0]):
                 result.append(
