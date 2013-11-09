@@ -112,7 +112,7 @@ var D3Backend = (function(_parent) {
     };
 
     D3Backend.prototype.updateGrid = function() {
-        var x = this.xGrid.selectAll('line').data(this.plot.scales.x.ticks(20));
+        var x = this.xGrid.selectAll('line').data(this.plot.scales.x.ticks(10));
         x.enter().append('line');
         x.exit().remove();
         x.attr({
@@ -124,7 +124,7 @@ var D3Backend = (function(_parent) {
             stroke: d3.rgb(125, 125, 125)
         }).attr('stroke-dasharray', '1, 3');
 
-        var y = this.yGrid.selectAll('line').data(this.plot.scales.y.ticks(20))
+        var y = this.yGrid.selectAll('line').data(this.plot.scales.y.ticks(10));
         y.enter().append('line');
         y.exit().remove();
         y.attr({
@@ -137,10 +137,46 @@ var D3Backend = (function(_parent) {
         }).attr('stroke-dasharray', '1, 3');
     };
 
+    D3Backend.prototype.showCrosshair = function() {
+        this.crosshair = this.svg.append('g').attr('class', 'crosshair');
+        this.crosshair.append('line').attr({
+            'class': 'x',
+            x1: 0,
+            y1: 0,
+            fill: 'none',
+            stroke: d3.rgb(25, 25, 25)
+        });
+        this.crosshair.append('line').attr({
+            'class': 'y',
+            x1: 0,
+            y1: 0,
+            fill: 'none',
+            stroke: d3.rgb(25, 25, 25)
+        });
+        this.updateCrosshair({ x: 0, y: 0 });
+    };
+
+    D3Backend.prototype.hideCrosshair = function() {
+        this.svg.select('.crosshair').remove();
+    };
+
+    D3Backend.prototype.updateCrosshair = function(offset) {
+        this.crosshair.select('.x').attr({
+            y1: offset.y,
+            x2: this.plot.scales.x(this.plot.scales.x.domain()[1]),
+            y2: offset.y
+        });
+        this.crosshair.select('.y').attr({
+            x1: offset.x,
+            x2: offset.x,
+            y2: this.plot.scales.y(this.plot.scales.y.domain()[0])
+        });
+    };
+
     D3Backend.prototype.makeGraph = function(graph, color) {
         var points = this.svg.append('g').attr('class', 'points');
         var path = this.svg.append('g').attr('class', 'path').append('svg:path');
-        var line = d3.svg.line().x(this.plot.scales .x);
+        var line = d3.svg.line().x(this.plot.scales.x);
 
         var updatePoints = $.proxy(function(graph) {
             var circles = points.selectAll('circle')
@@ -251,9 +287,10 @@ var D3Backend = (function(_parent) {
 
     D3Backend.prototype.asDataURI = function() {
         // http://stackoverflow.com/questions/2483919
+        this.hideCrosshair();
         var serializer = new XMLSerializer();
         var svgData = window.btoa(serializer.serializeToString(this.svg[0][0]));
-
+        this.showCrosshair();
         return 'data:image/svg+xml;base64,\n' + svgData;
     };
 
@@ -330,6 +367,8 @@ var Plot2D = (function() {
             graph.update();
             this.graphs.push(graph);
         }
+
+        this._backend.showCrosshair();
     };
 
     Plot2D.prototype.update = function() {
@@ -383,10 +422,6 @@ var Plot2D = (function() {
                 var data = JSON.parse($(data.output).find('.graphs').text());
                 if (mode === 'replace') {
                     this._graphs = data;
-
-                    for (var i = 0; i < this.graphs.length; i++) {
-                        this.graphs[i].update(this._graphs[i]);
-                    }
                 }
                 else if (mode === 'prepend') {
                     for (var i = 0; i < this.graphs.length; i++) {
@@ -395,7 +430,6 @@ var Plot2D = (function() {
                         data[i].points.y.pop();
                         graph.points.x = data[i].points.x.concat(graph.points.x);
                         graph.points.y = data[i].points.y.concat(graph.points.y);
-                        this.graphs[i].update(this._graphs[i]);
                     }
                 }
                 else if (mode === 'append') {
@@ -405,8 +439,11 @@ var Plot2D = (function() {
                         data[i].points.y.shift();
                         graph.points.x = graph.points.x.concat(data[i].points.x);
                         graph.points.y = graph.points.y.concat(data[i].points.y);
-                        this.graphs[i].update(this._graphs[i]);
                     }
+                }
+
+                for (var i = 0; i < this.graphs.length; i++) {
+                    this.graphs[i].update(this._graphs[i]);
                 }
                 this._calculateExtent();
             }, this), function() {
@@ -472,13 +509,11 @@ var Plot2D = (function() {
 
 function setupPlots() {
     $('.plot').each(function() {
-        var equation = $(this).data('function').toString().trim();
         var variable = $(this).data('variable');
         var output_variable = 'y';
         if (variable == 'y') {
             output_variable = 'x';
         }
-        var f = new Function(variable, 'return ' + equation + ';');
         var card = $(this).parents('.result_card').data('card');
         var graphs = JSON.parse($(this).find('.graphs').text());
 
@@ -503,6 +538,11 @@ function setupPlots() {
 
         var resizing = false;
         var container = $(this);
+
+        container.find('svg').mousemove(function(e) {
+            plot._backend.updateCrosshair({ x: e.offsetX, y: e.offsetY });
+        });
+
         var originalWidth = container.width();
         var originalHeight = container.height();
 
@@ -540,20 +580,27 @@ function setupPlots() {
             moreContent.slideToggle();
             moreButton.toggleClass('open');
         });
-        var options = $(this).parents('.result_card').find('.card_options');
-        var resizeContainer = function(width, height) {
-            plot.reset();
+        var options = container.parents('.result_card').find('.card_options');
+        var resizeContainer = function(options) {
+            var reset = (typeof options.reset === "undefined") ? false : options.reset;
+
+            if (reset) {
+                plot.reset();
+            }
+
             container.animate({
-                width: width,
-                height: height
+                width: options.width,
+                height: options.height
             }, {
                 duration: 300,
                 progress: function() {
                     plot.resize();
                 },
                 complete: function() {
+                    if (reset) {
+                        plot.reset();
+                    }
                     plot.resize({ updateZoom: true });
-                    plot.reset();
                 }
             });
         };
@@ -563,13 +610,21 @@ function setupPlots() {
             $('<button>Reset</button>')
                 .addClass('card_options_toggle')
                 .click(function() {
-                    resizeContainer(originalWidth, originalHeight);
+                    plot.reset();
+                    resizeContainer({
+                        width: originalWidth,
+                        height: originalHeight,
+                        reset: true
+                    });
                 }),
             $('<button>Square Viewport</button>')
                 .addClass('card_options_toggle')
                 .click(function() {
                     var size = d3.max([container.width(), container.height()]);
-                    resizeContainer(size, size);
+                    resizeContainer({
+                        width: size,
+                        height: size
+                    });
                 }),
             $('<button>Fullscreen</button>')
                 .addClass('card_options_toggle')
@@ -581,24 +636,7 @@ function setupPlots() {
         ]);
 
         if (!window.matchMedia("screen and (max-device-width: 1280px)").matches) {
-            $(this).mousedown(function(e) {
-                var offsetX = e.offsetX;
-                if (typeof e.offsetX == "undefined") {
-                    offsetX = e.pageX - $(e.target).offset().left;
-                }
-                var offsetY = e.offsetY;
-                if (typeof e.offsetX == "undefined") {
-                    offsetY = e.pageY - $(e.target).offset().top;
-                }
-                if (offsetX < 10 ||
-                    offsetX > container.width() - 10 ||
-                    offsetY < 10 ||
-                    offsetY > container.height() - 10) {
-                    e.preventDefault();
-                    resizing = true;
-                }
-            });
-            $(this).mousemove(function(e) {
+            container.mousemove(function(e) {
                 var offsetX = e.offsetX;
                 if (typeof e.offsetX == "undefined") {
                     offsetX = e.pageX - $(e.target).offset().left;
@@ -609,77 +647,25 @@ function setupPlots() {
                 }
                 var width = container.width();
                 var height = container.height();
-                if (offsetX < 10) {
-                    if (offsetY < 10) {
-                        container.css('cursor', 'nw-resize');
-                    }
-                    else if (height - offsetY < 10) {
-                        container.css('cursor', 'sw-resize');
-                    }
-                    else {
-                        container.css('cursor', 'w-resize');
-                    }
+                if ((width - offsetX < 10) && (height - offsetY < 10)) {
+                    container.css('cursor', 'se-resize');
                 }
-                else if (width - offsetX < 10) {
-                    if (offsetY < 10) {
-                        container.css('cursor', 'ne-resize');
-                    }
-                    else if (height - offsetY < 10) {
-                        container.css('cursor', 'se-resize');
-                    }
-                    else {
-                        container.css('cursor', 'e-resize');
-                    }
-                }
-                else if (offsetY < 10) {
-                    container.css('cursor', 'n-resize');
-                }
-                else if (height - offsetY < 10) {
-                    container.css('cursor', 's-resize');
+                else {
+                    container.css('cursor', 'default');
                 }
             });
-            $(document.body).mousemove(function(e) {
-                if (resizing) {
-                    var offset = container.offset();
-                    var width = container.width();
-                    var height = container.height();
-                    var newW = originalWidth;
-                    var newH = originalHeight;
 
-                    // 30 is a fuzz factor to stop the width from "shaking" when
-                    // the mouse is near the border
-                    if (e.pageX < offset.left + 30) {
-                        newW = width + offset.left - e.pageX;
-                    }
-                    else if (e.pageX > (offset.left + width - 30)) {
-                        newW = e.pageX - offset.left;
-                    }
 
-                    if (newW < originalWidth) {
-                        newW = originalWidth;
-                    }
-                    container.width(newW);
-                    container.css('max-width', newW + 'px');
-
-                    if (e.pageY < offset.top + 30) {
-                        newH = originalHeight + offset.top - e.pageY;
-                    }
-                    else if (e.pageY > (offset.top + height - 30)) {
-                        newH = e.pageY - offset.top;
-                    }
-
-                    if (newH < originalHeight) {
-                        newH = originalHeight;
-                    }
-                    container.height(newH);
+            var observer = new MutationObserver(function(mutations) {
+                if (mutations[0].attributeName === "style") {
+                    var width = container.width(), height = container.height();
+                    plot.width(width);
+                    plot.height(height);
                     plot.resize();
                 }
             });
-            $(document.body).mouseup(function() {
-                if (resizing) {
-                    resizing = false;
-                    plot.resize({ updateZoom: true });
-                }
+            observer.observe(container.get(0), {
+                attributes: true
             });
         }
     });
