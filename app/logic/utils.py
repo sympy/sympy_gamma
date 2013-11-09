@@ -443,6 +443,8 @@ def close_matches(s, global_dict):
     has_result = False
     all_names = set(global_dict).union(SYNONYMS)
 
+    # strip the token location info to avoid strange untokenize results
+    tokens = [(tok[0], tok[1]) for tok in tokens]
     for token in tokens:
         if (token[0] == NAME and
             token[1] not in all_names and
