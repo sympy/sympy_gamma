@@ -452,7 +452,7 @@ def format_plot_input(result_statement, input_repr, components):
         functions = components['input_evaluated']
         if isinstance(functions, list):
             functions = ['<span>{}</span>'.format(f) for f in functions]
-            if len(funcs) > 1:
+            if len(functions) > 1:
                 return 'plot([{}])'.format(', '.join(functions))
             else:
                 return 'plot({})'.format(functions[0])
