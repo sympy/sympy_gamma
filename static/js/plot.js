@@ -40,6 +40,17 @@ var D3Backend = (function(_parent) {
                 xmlns: 'http://www.w3.org/2000/svg'
             });
 
+        // Disable scroll wheel zoom
+        // https://developer.mozilla.org/en-US/docs/Web/Reference/Events/wheel
+        var wheel_event = (
+            ("onwheel" in document.createElement("div")) ?
+                "wheel" : (document.onmousewheel !== undefined) ?
+                "mousewheel" :
+                "DOMMouseScroll");
+        this.svg.on(wheel_event, function() {
+            d3.event.stopImmediatePropagation();
+        });
+
         this.zoom = d3.behavior.zoom()
             .size([this.plot.width(), this.plot.height()])
             .x(this.plot.scales.x)
