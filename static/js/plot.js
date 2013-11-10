@@ -286,7 +286,7 @@ var D3Backend = (function(_parent) {
             var x = this.plot.scales.x;
             var y = this.plot.scales.y;
             var ix = d3.interpolate(x.domain(), [-10, 10]);
-            var iy = d3.interpolate(y.domain(), [-10, 10]);
+            var iy = d3.interpolate(y.domain(), this.plot.calculateYRange());
             return $.proxy(function(t) {
                 this.zoom
                     .x(x.domain(ix(t)))
@@ -312,8 +312,6 @@ var Plot2D = (function() {
     function Plot2D(card, container, backendClass, graphs) {
         this.card = card;
         this._container = $(container);
-        this._generateScales();
-        this._backend = new backendClass(this, container);
         this._graphs = graphs;
         this.graphs = [];
         this.options = {
@@ -339,6 +337,9 @@ var Plot2D = (function() {
 
         this._scale = 1;
         this._requestPending = false;
+
+        this._generateScales();
+        this._backend = new backendClass(this, container);
         this._calculateExtent();
     }
 
@@ -350,7 +351,7 @@ var Plot2D = (function() {
             };
         }
         this.scales.x.domain([-10, 10]).range([10, this.width() - 10]);
-        this.scales.y.domain([-10, 10]).range([this.height() - 10, 10]);
+        this.scales.y.domain(this.calculateYRange()).range([this.height() - 10, 10]);
     };
 
     Plot2D.prototype._calculateExtent = function() {
@@ -358,6 +359,48 @@ var Plot2D = (function() {
             min: d3.min(this._graphs.map(function(g) { return d3.min(g.points.x); })),
             max: d3.max(this._graphs.map(function(g) { return d3.max(g.points.x); }))
         };
+    };
+
+    Plot2D.prototype.calculateYRange = function() {
+        if (typeof this._originalExtent !== "undefined") {
+            return this._originalExtent;
+        }
+
+        var ypos = [];
+        var yneg = [];
+        var ytop = 0;
+        var ybottom = 0;
+        this._graphs.forEach(function(graph) {
+            graph.points.y.forEach(function(y) {
+                if (y < ytop) {
+                    ytop = y;
+                }
+                else if (y > ybottom) {
+                    ybottom = y;
+                }
+
+                if (y <= 0) {
+                    yneg.push(y);
+                }
+                else if (y > 0) {
+                    ypos.push(y);
+                }
+            });
+        });
+
+        var yposmean = Math.abs(d3.mean(ypos));
+        var ynegmean = Math.abs(d3.mean(yneg));
+
+        // Prevent asymptotes from dominating the graph
+        if (Math.abs(ytop) >= 10 * yposmean) {
+            ytop = yposmean;
+        }
+        if (Math.abs(ybottom) >= 10 * ynegmean) {
+            ybottom = -ynegmean;
+        }
+
+        this._originalExtent = [ytop, ybottom];
+        return this._originalExtent;
     };
 
     Plot2D.prototype.width = function() {
