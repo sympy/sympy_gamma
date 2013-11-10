@@ -519,6 +519,8 @@ def eval_plot(evaluator, components, parameters=None):
         x_transform, y_transform = GRAPH_TYPES[graph_type]
         series.append([series[-1][1], None])
         for point in series:
+            if point[0][1] is None:
+                continue
             x = point[0][0]
             y = limit_y(point[0][1])
             xvalues.append(x_transform(x, y))
