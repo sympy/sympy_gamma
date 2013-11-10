@@ -127,8 +127,24 @@ class SymPyGamma(object):
         transformations.extend(standard_transformations)
         transformations.extend((convert_xor, custom_implicit_transformation))
         def plot(f=None, **kwargs):
-            """
-            Plot functions. Not the same as SymPy's plot.
+            """Plot functions. Not the same as SymPy's plot.
+
+            This plot function is specific to Gamma. It has the following syntax::
+
+                plot([x^2, x^3, ...])
+
+            or::
+
+                plot(y=x,y1=x^2,r=sin(theta),r1=cos(theta))
+
+            ``plot`` accepts either a list of single-variable expressions to
+            plot or keyword arguments indicating expressions to plot. If
+            keyword arguments are used, the plot will be polar if the keyword
+            argument starts with ``r`` and will be an xy graph otherwise.
+
+            Note that Gamma will cut off plot values above and below a
+            certain value, and that it will **not** warn the user if so.
+
             """
             pass
         local_dict = {
