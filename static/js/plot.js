@@ -372,11 +372,11 @@ var Plot2D = (function() {
         var ybottom = 0;
         this._graphs.forEach(function(graph) {
             graph.points.y.forEach(function(y) {
-                if (y < ytop) {
-                    ytop = y;
-                }
-                else if (y > ybottom) {
+                if (y < ybottom) {
                     ybottom = y;
+                }
+                else if (y > ytop) {
+                    ytop = y;
                 }
 
                 if (y <= 0) {
@@ -398,8 +398,8 @@ var Plot2D = (function() {
         if (Math.abs(ybottom) >= 10 * ynegmean) {
             ybottom = -ynegmean;
         }
-
-        this._originalExtent = [ytop, ybottom];
+        console.log(this._graphs)
+        this._originalExtent = [ybottom, ytop];
         return this._originalExtent;
     };
 
@@ -659,7 +659,7 @@ function setupPlots() {
             });
         };
         options.append([
-            $('<p>Drag to pan, (shift-)double-click to zoom, drag edges to resize</p>')
+            $('<p>Drag to pan, (shift-)double-click to zoom, drag corner to resize</p>')
                 .addClass('help'),
             $('<button>Reset</button>')
                 .addClass('card_options_toggle')
