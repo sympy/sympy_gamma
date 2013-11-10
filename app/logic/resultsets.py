@@ -3,7 +3,6 @@ import json
 import itertools
 import sympy
 from sympy.core.function import FunctionClass
-from sympy.logic.boolalg import Boolean
 import docutils.core
 import diffsteps
 import intsteps
@@ -205,7 +204,7 @@ def is_matrix(input_evaluated):
     return isinstance(input_evaluated, sympy.Matrix)
 
 def is_logic(input_evaluated):
-    return isinstance(input_evaluated, Boolean)
+    return isinstance(input_evaluated, (sympy.And, sympy.Or, sympy.Not, sympy.Xor))
 
 def is_sum(input_evaluated):
     return isinstance(input_evaluated, sympy.Sum)
