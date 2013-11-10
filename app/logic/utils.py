@@ -316,8 +316,11 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
               nextTok[0] == OP and nextTok[1] == '('):
             # Applied function followed by an open parenthesis
             if (tok.function[1] == 'Symbol' and
-                len(tok.args[1][1]) == 3 and tok.args[1][1][1] in 'fgh'):
+                len(tok.args[1][1]) == 3):
                 # Allow implicit function symbol creation
+                # TODO XXX need some way to offer alternative parsing here -
+                # sometimes we want this and sometimes not, hard to tell when
+                # (making it context-sensitive based on input function best)
                 continue
             result.append((OP, '*'))
         elif (tok[0] == OP and tok[1] == ')' and
