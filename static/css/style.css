@@ -673,6 +673,24 @@ button:hover {
   content: "+";
 }
 
+/* Truth table */
+
+.cell_output[data-card-name="truth_table"] td {
+  padding: 0;
+}
+
+td .true {
+  display: block;
+  padding: 0.25em 0.5em;
+  background-color: #3BB878;
+}
+
+td .false {
+  display: block;
+  padding: 0.25em 0.5em;
+  background-color: #F7977A;
+}
+
 /* Loading PNG */
 
 .loader {

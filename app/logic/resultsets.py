@@ -432,6 +432,13 @@ def format_truth_table(table, formatter):
     variables, table = table
     titles = list(map(str, variables))
     titles.append("Value")
+    def formatter(x):
+        if x is True:
+            return '<span class="true">True</span>'
+        elif x is False:
+            return '<span class="false">False</span>'
+        else:
+            return str(x)
     return format_nested_list_title(*titles)(table, formatter)
 
 def format_approximator(approximation, formatter):
