@@ -67,6 +67,9 @@ class ResultCard(object):
                                                            input_evaluated)
         return self.title
 
+    def is_multivariate(self):
+        return self.card_info.get('multivariate', True)
+
     def default_parameters(self, kwargs):
         if 'parameters' in self.card_info:
             for arg in self.card_info['parameters']:
@@ -747,12 +750,14 @@ all_cards = {
         "Digits in base-10 expansion of number",
         "len(str(%s))",
         no_pre_output,
+        multivariate=False,
         format_input_function=format_long_integer),
 
     'factorization': FakeResultCard(
         "Factors less than 100",
         "factorint(%s, limit=100)",
         no_pre_output,
+        multivariate=False,
         format_input_function=format_long_integer,
         format_output_function=format_dict_title("Factor", "Times"),
         eval_method=eval_factorization),
@@ -761,6 +766,7 @@ all_cards = {
         "Factorization Diagram",
         "factorint(%s, limit=256)",
         no_pre_output,
+        multivariate=False,
         format_output_function=format_factorization_diagram,
         eval_method=eval_factorization_diagram),
 
@@ -768,48 +774,57 @@ all_cards = {
         "Floating-point approximation",
         "(%s).evalf({digits})",
         no_pre_output,
+        multivariate=False,
         parameters=['digits']),
 
     'fractional_approximation': ResultCard(
         "Fractional approximation",
         "nsimplify(%s)",
-        no_pre_output),
+        no_pre_output,
+        multivariate=False),
 
     'absolute_value': ResultCard(
         "Absolute value",
         "Abs(%s)",
-        lambda s, *args: sympy.Abs(s, evaluate=False)),
+        lambda s, *args: sympy.Abs(s, evaluate=False),
+        multivariate=False),
 
     'polar_angle': ResultCard(
         "Angle in the complex plane",
         "atan2(*(%s).as_real_imag()).evalf()",
-        lambda s, *args: sympy.atan2(*s.as_real_imag())),
+        lambda s, *args: sympy.atan2(*s.as_real_imag()),
+        multivariate=False),
 
     'conjugate': ResultCard(
         "Complex conjugate",
         "conjugate(%s)",
-        lambda s, *args: sympy.conjugate(s)),
+        lambda s, *args: sympy.conjugate(s),
+        multivariate=False),
 
     'trigexpand': ResultCard(
         "Alternate form",
         "(%s).expand(trig=True)",
-        lambda statement, var, *args: statement),
+        lambda statement, var, *args: statement,
+        multivariate=False),
 
     'trigsimp': ResultCard(
         "Alternate form",
         "trigsimp(%s)",
-        lambda statement, var, *args: statement),
+        lambda statement, var, *args: statement,
+        multivariate=False),
 
     'trigsincos': ResultCard(
         "Alternate form",
         "(%s).rewrite(csc, sin, sec, cos, cot, tan)",
-        lambda statement, var, *args: statement
+        lambda statement, var, *args: statement,
+        multivariate=False
     ),
 
     'trigexp': ResultCard(
         "Alternate form",
         "(%s).rewrite(sin, exp, cos, exp, tan, exp)",
-        lambda statement, var, *args: statement
+        lambda statement, var, *args: statement,
+        multivariate=False
     ),
 
     'plot': FakeResultCard(
@@ -825,6 +840,7 @@ all_cards = {
         "Documentation",
         "help(%s)",
         no_pre_output,
+        multivariate=False,
         eval_method=eval_function_docs,
         format_output_function=format_nothing
     ),
@@ -832,19 +848,22 @@ all_cards = {
     'root_to_polynomial': ResultCard(
         "Polynomial with this root",
         "minpoly(%s)",
-        no_pre_output
+        no_pre_output,
+        multivariate=False
     ),
 
     'matrix_inverse': ResultCard(
         "Inverse of matrix",
         "(%s).inv()",
-        lambda statement, var, *args: sympy.Pow(statement, -1, evaluate=False)
+        lambda statement, var, *args: sympy.Pow(statement, -1, evaluate=False),
+        multivariate=False
     ),
 
     'matrix_eigenvals': ResultCard(
         "Eigenvalues",
         "(%s).eigenvals()",
         no_pre_output,
+        multivariate=False,
         format_output_function=format_dict_title("Eigenvalue", "Multiplicity")
     ),
 
@@ -852,6 +871,7 @@ all_cards = {
         "Eigenvectors",
         "(%s).eigenvects()",
         no_pre_output,
+        multivariate=False,
         format_output_function=format_list
     ),
 
@@ -859,6 +879,7 @@ all_cards = {
         "Satisfiability",
         "satisfiable(%s)",
         no_pre_output,
+        multivariate=False,
         format_output_function=format_dict_title('Variable', 'Possible Value')
     ),
 
@@ -866,6 +887,7 @@ all_cards = {
         "Truth table",
         "%s",
         no_pre_output,
+        multivariate=False,
         eval_method=eval_truth_table,
         format_output_function=format_truth_table
     ),
