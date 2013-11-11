@@ -117,15 +117,7 @@ class SymPyGamma(object):
     def eval_input(self, s):
         namespace = {}
         exec PREEXEC in {}, namespace
-        evaluator = Eval(namespace)
-        # change to True to spare the user from exceptions:
-        if not len(s):
-            return None
 
-        transformations = []
-        transformations.append(synonyms)
-        transformations.extend(standard_transformations)
-        transformations.extend((convert_xor, custom_implicit_transformation))
         def plot(f=None, **kwargs):
             """Plot functions. Not the same as SymPy's plot.
 
@@ -147,16 +139,23 @@ class SymPyGamma(object):
 
             """
             pass
-        local_dict = {
+        namespace.update({
             'plot': plot,  # prevent textplot from printing stuff
-            'diophantine': namespace['diophantine'],  # manually import this
             'help': lambda f: f
-        }
-        global_dict = {}
-        exec 'from sympy import *' in global_dict
-        parsed = stringify_expr(s, local_dict, global_dict, transformations)
+        })
+
+        evaluator = Eval(namespace)
+        # change to True to spare the user from exceptions:
+        if not len(s):
+            return None
+
+        transformations = []
+        transformations.append(synonyms)
+        transformations.extend(standard_transformations)
+        transformations.extend((convert_xor, custom_implicit_transformation))
+        parsed = stringify_expr(s, {}, namespace, transformations)
         try:
-            evaluated = eval_expr(parsed, local_dict, global_dict)
+            evaluated = eval_expr(parsed, {}, namespace)
         except SyntaxError:
             raise
         except Exception as e:

@@ -238,6 +238,13 @@ def format_diophantine(node, visitor):
         klass = sympy.Product
     return sympy.latex(klass(*map(visitor.evaluator.eval_node, node.args)))
 
+@LatexVisitor.formats_function('help')
+def format_help(node, visitor):
+    if node.args:
+        function = visitor.evaluator.eval_node(node.args[0])
+        return r'\mathrm{Show~documentation~for~}' + function.__name__
+    return r'\mathrm{Show~documentation~(requires~1~argument)}'
+
 class TopCallVisitor(ast.NodeVisitor):
     def __init__(self):
         super(TopCallVisitor, self).__init__()

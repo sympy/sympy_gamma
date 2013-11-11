@@ -371,6 +371,10 @@ def format_integral(line, result, components):
 
     return line.format(_var=limits) % components['integrand']
 
+def format_function_docs_input(line, function, components):
+    function = getattr(components['input_evaluated'], '__name__', str(function))
+    return line % function
+
 def format_dict_title(*title):
     def _format_dict(dictionary, formatter):
         html = ['<table>',
@@ -842,6 +846,7 @@ all_cards = {
         no_pre_output,
         multivariate=False,
         eval_method=eval_function_docs,
+        format_input_function=format_function_docs_input,
         format_output_function=format_nothing
     ),
 
@@ -956,6 +961,7 @@ result_sets = [
     ('integrate', extract_integral, ['integral_alternate_fake', 'intsteps']),
     ('diff', extract_derivative, ['diff', 'diffsteps']),
     ('factorint', extract_first, ['factorization', 'factorizationDiagram']),
+    ('help', extract_first, ['function_docs']),
     ('plot', extract_plot, ['plot']),
     ('rsolve', None, None),
     ('product', None, []),  # suppress automatic Result card
