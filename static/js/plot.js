@@ -398,7 +398,6 @@ var Plot2D = (function() {
         if (Math.abs(ybottom) >= 10 * ynegmean) {
             ybottom = -ynegmean;
         }
-        console.log(this._graphs)
         this._originalExtent = [ybottom, ytop];
         return this._originalExtent;
     };
