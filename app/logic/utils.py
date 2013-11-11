@@ -214,10 +214,20 @@ def format_rsolve(node, visitor):
     else:
         return r'\mathrm{Solve~the~recurrence~}' + recurrence
 
+diophantine_template = (r"\begin{{align}}&{}\\&\mathrm{{where~}}"
+                        r"{}\mathrm{{~are~integers}}\end{{align}}")
 @LatexVisitor.formats_function('diophantine')
 def format_diophantine(node, visitor):
-    function = sympy.latex(sympy.Eq(visitor.evaluator.eval_node(node.args[0]), 0))
-    return r'\mathrm{Solve~the~diophantine~equation~}' + function
+    expression = visitor.evaluator.eval_node(node.args[0])
+    symbols = None
+    if isinstance(expression, sympy.Basic):
+        symbols = expression.free_symbols
+    equation = sympy.latex(sympy.Eq(expression, 0))
+
+    result = r'\mathrm{Solve~the~diophantine~equation~}' + equation
+    if symbols:
+        result = diophantine_template.format(result, tuple(symbols))
+    return result
 
 @LatexVisitor.formats_function('summation')
 @LatexVisitor.formats_function('product')
