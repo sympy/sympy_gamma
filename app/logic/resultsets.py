@@ -296,7 +296,23 @@ def extract_plot(arguments, evaluated):
     elif arguments.kwargs:
         result['variables'] = [sympy.Symbol('x')]
         result['variable'] = sympy.Symbol('x')
-        result['input_evaluated'] = arguments.kwargs
+
+        parametrics = 1
+        functions = {}
+        for f in arguments.kwargs:
+            if f.startswith('x'):
+                y_key = 'y' + f[1:]
+                if y_key in arguments.kwargs:
+                    # Parametric
+                    x = arguments.kwargs[f]
+                    y = arguments.kwargs[y_key]
+                    functions['p' + str(parametrics)] = (x, y)
+                    parametrics += 1
+            else:
+                if f.startswith('y') and ('x' + f[1:]) in arguments.kwargs:
+                    continue
+                functions[f] = arguments.kwargs[f]
+        result['input_evaluated'] = functions
     return result
 
 # Formatting functions
@@ -464,16 +480,27 @@ def format_plot_input(result_statement, input_repr, components):
 
 GRAPH_TYPES = {
     'xy': [lambda x, y: x, lambda x, y: y],
+    'parametric': [lambda x, y: x, lambda x, y: y],
     'polar': [lambda x, y: float(y * sympy.cos(x)),
               lambda x, y: float(y * sympy.sin(x))]
 }
+
+def determine_graph_type(key):
+    if key.startswith('r'):
+        return 'polar'
+    elif key.startswith('p'):
+        return 'parametric'
+    else:
+        return 'xy'
+
 def eval_plot(evaluator, components, parameters=None):
     if parameters is None:
         parameters = {}
 
     xmin, xmax = parameters.get('xmin', -10), parameters.get('xmax', 10)
-    tmin, tmax = parameters.get('tmin', 0), parameters.get('tmax', 2 * sympy.pi)
-    from sympy.plotting.plot import LineOver1DRangeSeries
+    pmin, pmax = parameters.get('tmin', 0), parameters.get('tmax', 2 * sympy.pi)
+    tmin, tmax = parameters.get('tmin', 0), parameters.get('tmax', 10)
+    from sympy.plotting.plot import LineOver1DRangeSeries, Parametric2DLineSeries
     functions = evaluator.get("input_evaluated")
     if isinstance(functions, sympy.Basic):
         functions = [(functions, 'xy')]
@@ -484,7 +511,14 @@ def eval_plot(evaluator, components, parameters=None):
 
     graphs = []
     for func, graph_type in functions:
-        variables = func.free_symbols
+        if graph_type == 'parametric':
+            x_func, y_func = func
+            x_vars, y_vars = x_func.free_symbols, y_func.free_symbols
+            variables = x_vars.union(y_vars)
+            if x_vars != y_vars:
+                raise ValueError("Both functions in a parametric plot must have the same variable")
+        else:
+            variables = func.free_symbols
 
         if len(variables) > 1:
             raise ValueError("Cannot plot multivariate function")
@@ -497,8 +531,14 @@ def eval_plot(evaluator, components, parameters=None):
             if graph_type == 'xy':
                 graph_range = (variable, xmin, xmax)
             elif graph_type == 'polar':
+                graph_range = (variable, pmin, pmax)
+            elif graph_type == 'parametric':
                 graph_range = (variable, tmin, tmax)
-            series = LineOver1DRangeSeries(func, graph_range, nb_of_points=150)
+
+            if graph_type in ('xy', 'polar'):
+                series = LineOver1DRangeSeries(func, graph_range, nb_of_points=150)
+            elif graph_type == 'parametric':
+                series = Parametric2DLineSeries(x_func, y_func, graph_range, nb_of_points=150)
             # returns a list of [[x,y], [next_x, next_y]] pairs
             series = series.get_segments()
         except TypeError:
@@ -538,12 +578,6 @@ def eval_plot(evaluator, components, parameters=None):
         'variable': repr(variable),
         'graphs': json.dumps(graphs)
     }
-
-def determine_graph_type(key):
-    if key.startswith('r'):
-        return 'polar'
-    else:
-        return 'xy'
 
 def eval_factorization(evaluator, components, parameters=None):
     number = evaluator.get("input_evaluated")
@@ -778,7 +812,7 @@ all_cards = {
         format_input_function=format_plot_input,
         format_output_function=format_plot,
         eval_method=eval_plot,
-        parameters=['xmin', 'xmax', 'tmin', 'tmax']),
+        parameters=['xmin', 'xmax', 'tmin', 'tmax', 'pmin', 'pmax']),
 
     'function_docs': FakeResultCard(
         "Documentation",
