@@ -12,10 +12,6 @@
     <div class="cell_input">
       <pre>{{ cell.input|safe }}</pre>
     </div>
-
-    {% if cell.exception_info or cell.error %}
-    <button><a href="/input/?i={{input|urlencode}}&simple=1">Try Simple Python Input</a></button>
-    {% endif %}
    {% endif %}
    {% if cell.output %}
     <div class="cell_output">
