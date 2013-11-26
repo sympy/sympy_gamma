@@ -226,7 +226,8 @@ def default_variable(arguments, evaluated):
 
     return {
         'variables': variables,
-        'variable': variables[0] if variables else None
+        'variable': variables[0] if variables else None,
+        'input_evaluated': evaluated
     }
 
 def extract_first(arguments, evaluated):
