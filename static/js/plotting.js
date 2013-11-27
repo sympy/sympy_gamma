@@ -294,10 +294,16 @@ var SVGBackend = (function(_parent) {
         var zoom = d3.behavior.zoom();
         zoom.x(this.plot.xScale);
         zoom.y(this.plot.yScale);
+        this._zoomScale = 1;
         zoom.on('zoom', $.proxy(function() {
             this.draw();
 
-            // TODO: zoom triggers reload of all data?
+            // Zoom = reload all data
+            if (d3.event.scale != this._zoomScale) {
+                this._zoomScale = d3.event.scale;
+                this.plot.reloadData();
+                return;
+            }
 
             var xValues = this.plot.xValues();
             var yValues = this.plot.yValues();
@@ -333,17 +339,22 @@ var SVGBackend = (function(_parent) {
             // TODO: if function available, some sort of interpolation while
             // waiting for results?
             var xWidth = Math.abs(this.plot.xRight() - this.plot.xLeft());
+            var newXLeft = this.plot.xMax();
+            var newXRight = this.plot.xMin();
             if (this.plot.xLeft() < this.plot.xMin()) {
-                this.plot.fetchData(this.plot.xMin() - Math.floor(xWidth / 2), this.plot.xMin()).
-                    done(handleDone);
+                this.plot.fetchData(
+                    this.plot.xMin() - Math.floor(xWidth / 2),
+                    this.plot.xMin()).done(handleDone);
             }
-            if (this.plot.xRight() > this.plot.xMax()) {
-                this.plot.fetchData(this.plot.xMax(), this.plot.xMax() + Math.ceil(xWidth / 2)).
-                    done(handleDone);
+            else if (this.plot.xRight() > this.plot.xMax()) {
+                this.plot.fetchData(
+                    this.plot.xMax(),
+                    this.plot.xMax() + Math.ceil(xWidth / 2)).done(handleDone);
             }
         }, this));
 
         this._svg.call(zoom);
+        this.zoom = zoom;
     };
 
     SVGBackend.prototype.draw = function() {
@@ -476,6 +487,21 @@ var Plot2D = (function() {
         }, this));
     };
 
+    Plot2D.prototype.reloadData = function() {
+        this.fetchData(this.xLeft(), this.xRight())
+        .done($.proxy(function(data) {
+            if (typeof data.output == "undefined") {
+                // TODO: handle error
+                return;
+            }
+            var el = $(data.output);
+            var newXValues = el.data('xvalues');
+            var newYValues = el.data('yvalues');
+            this.setData(newXValues, newYValues);
+            this.backend.draw();
+        }, this));
+    };
+
     var OFFSET_Y = 25;
     var MARGIN_TOP = 25;
 
@@ -546,8 +572,9 @@ function setupGraphs() {
         var HEIGHT = 275;
 
         // Make things fit on mobile
-        if (screen.width <= 640) {
-            WIDTH = screen.width - 20;
+        var IS_MOBILE = window.matchMedia("screen and (max-device-width: 1280px)").matches;
+        if (IS_MOBILE) {
+            WIDTH = $(this).width() - 20;
         }
 
         var equation = $(this).data('function').trim();
@@ -572,112 +599,117 @@ function setupGraphs() {
         var originalHeight = $(this).height();
         var originalYTop = plot.yTop();
         var originalYBottom = plot.yBottom();
-        $(this).mousedown(function(e) {
-            var offsetX = e.offsetX;
-            if (typeof e.offsetX == "undefined") {
-                offsetX = e.pageX - $(e.target).offset().left;
-            }
-            var offsetY = e.offsetY;
-            if (typeof e.offsetX == "undefined") {
-                offsetY = e.pageY - $(e.target).offset().top;
-            }
-            if (offsetX < 10 ||
-                offsetX > container.width() - 10 ||
-                offsetY < 10 ||
-                offsetY > container.height() - 10) {
-                e.preventDefault();
-                resizing = true;
-            }
-        });
-        $(this).mousemove(function(e) {
-            var offsetX = e.offsetX;
-            if (typeof e.offsetX == "undefined") {
-                offsetX = e.pageX - $(e.target).offset().left;
-            }
-            var offsetY = e.offsetY;
-            if (typeof e.offsetX == "undefined") {
-                offsetY = e.pageY - $(e.target).offset().top;
-            }
-            var width = container.width();
-            var height = container.height();
-            if (offsetX < 10) {
-                if (offsetY < 10) {
-                    container.css('cursor', 'nw-resize');
+
+        if (!IS_MOBILE) {
+            $(this).mousedown(function(e) {
+                var offsetX = e.offsetX;
+                if (typeof e.offsetX == "undefined") {
+                    offsetX = e.pageX - $(e.target).offset().left;
                 }
-                else if (height - offsetY < 10) {
-                    container.css('cursor', 'sw-resize');
+                var offsetY = e.offsetY;
+                if (typeof e.offsetX == "undefined") {
+                    offsetY = e.pageY - $(e.target).offset().top;
                 }
-                else {
-                    container.css('cursor', 'w-resize');
+                if (offsetX < 10 ||
+                    offsetX > container.width() - 10 ||
+                    offsetY < 10 ||
+                    offsetY > container.height() - 10) {
+                    e.preventDefault();
+                    resizing = true;
                 }
-            }
-            else if (width - offsetX < 10) {
-                if (offsetY < 10) {
-                    container.css('cursor', 'ne-resize');
+            });
+            $(this).mousemove(function(e) {
+                var offsetX = e.offsetX;
+                if (typeof e.offsetX == "undefined") {
+                    offsetX = e.pageX - $(e.target).offset().left;
                 }
-                else if (height - offsetY < 10) {
-                    container.css('cursor', 'se-resize');
+                var offsetY = e.offsetY;
+                if (typeof e.offsetX == "undefined") {
+                    offsetY = e.pageY - $(e.target).offset().top;
                 }
-                else {
-                    container.css('cursor', 'e-resize');
-                }
-            }
-            else if (offsetY < 10) {
-                container.css('cursor', 'n-resize');
-            }
-            else if (height - offsetY < 10) {
-                container.css('cursor', 's-resize');
-            }
-        });
-        $(document.body).mousemove(function(e) {
-            if (resizing) {
-                var offset = container.offset();
                 var width = container.width();
                 var height = container.height();
-                var newW = originalWidth;
-                var newH = originalHeight;
+                if (offsetX < 10) {
+                    if (offsetY < 10) {
+                        container.css('cursor', 'nw-resize');
+                    }
+                    else if (height - offsetY < 10) {
+                        container.css('cursor', 'sw-resize');
+                    }
+                    else {
+                        container.css('cursor', 'w-resize');
+                    }
+                }
+                else if (width - offsetX < 10) {
+                    if (offsetY < 10) {
+                        container.css('cursor', 'ne-resize');
+                    }
+                    else if (height - offsetY < 10) {
+                        container.css('cursor', 'se-resize');
+                    }
+                    else {
+                        container.css('cursor', 'e-resize');
+                    }
+                }
+                else if (offsetY < 10) {
+                    container.css('cursor', 'n-resize');
+                }
+                else if (height - offsetY < 10) {
+                    container.css('cursor', 's-resize');
+                }
+            });
+            $(document.body).mousemove(function(e) {
+                if (resizing) {
+                    var offset = container.offset();
+                    var width = container.width();
+                    var height = container.height();
+                    var newW = originalWidth;
+                    var newH = originalHeight;
 
-                // 30 is a fuzz factor to stop the width from "shaking" when
-                // the mouse is near the border
-                if (e.pageX < offset.left + 30) {
-                    newW = width + offset.left - e.pageX;
-                }
-                else if (e.pageX > (offset.left + width - 30)) {
-                    newW = e.pageX - offset.left;
-                }
+                    // 30 is a fuzz factor to stop the width from "shaking" when
+                    // the mouse is near the border
+                    if (e.pageX < offset.left + 30) {
+                        newW = width + offset.left - e.pageX;
+                    }
+                    else if (e.pageX > (offset.left + width - 30)) {
+                        newW = e.pageX - offset.left;
+                    }
 
-                if (newW < originalWidth) {
-                    newW = originalWidth;
-                }
-                container.width(newW);
-                container.css('max-width', newW + 'px');
+                    if (newW < originalWidth) {
+                        newW = originalWidth;
+                    }
+                    container.width(newW);
+                    container.css('max-width', newW + 'px');
 
-                if (e.pageY < offset.top + 30) {
-                    newH = originalHeight + offset.top - e.pageY;
-                }
-                else if (e.pageY > (offset.top + height - 30)) {
-                    newH = e.pageY - offset.top;
-                }
+                    if (e.pageY < offset.top + 30) {
+                        newH = originalHeight + offset.top - e.pageY;
+                    }
+                    else if (e.pageY > (offset.top + height - 30)) {
+                        newH = e.pageY - offset.top;
+                    }
 
-                if (newH < originalHeight) {
-                    newH = originalHeight;
-                }
-                container.height(newH);
+                    if (newH < originalHeight) {
+                        newH = originalHeight;
+                    }
+                    container.height(newH);
 
-                plot.width(newW);
-                plot.height(newH);
-                plot.resize();
-                backend.resize();
-                backend.generateAxes();
-                backend.draw();
-            }
-        });
-        $(document.body).mouseup(function() {
-            resizing = false;
-        });
+                    plot.width(newW);
+                    plot.height(newH);
+                    plot.resize();
+                    backend.resize();
+                    backend.generateAxes();
+                    backend.draw();
+                }
+            });
+            $(document.body).mouseup(function() {
+                resizing = false;
+            });
+        }
 
         backend.draw();
-        backend.initTracing(variable, output_variable);
+        if (!IS_MOBILE) {
+            backend.initTracing(variable, output_variable);
+        }
         backend.initDraggingZooming();
 
         var moreButton = $('<button><i class="icon-angle-down"></i> More...</button>')
@@ -735,6 +767,7 @@ function setupGraphs() {
                     plot.resize();
                     plot.xScale.domain([-10, 10]);
                     plot.yScale.domain([originalYBottom, originalYTop]);
+                    plot.reloadData();
                     backend.generateAxes();
                     backend.draw();
                     backend.initDraggingZooming();

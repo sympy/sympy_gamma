@@ -57,13 +57,13 @@
 
    {% if cell.exception_info %}
    <div class="cell_output">
+     {% if cell.exception_info.input_start %}
      <div class="cell_output_plain">
        <span>{{ cell.exception_info.input_start }}</span>
        <span>{{ cell.exception_info.input_end }}</span>
      </div>
-     <div class="cell_output_plain">
-       {{ cell.exception_info.offset }}: {{ cell.exception_info.msg }}
-     </div>
+     {% endif %}
+     <div class="cell_output_plain">{% if cell.exception_info.offset %}{{ cell.exception_info.offset }}: {% endif %}{{ cell.exception_info.msg }}</div>
    </div>
    {% else %}
    {% if cell.error %}

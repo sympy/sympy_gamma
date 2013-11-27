@@ -188,7 +188,7 @@ function setupVariableChooser() {
 
 $(document).ready(function() {
     evaluateCards().done(function() {
-        setupGraphs();
+        setupPlots();
 
         setupExamples();
         setupSavedQueries();

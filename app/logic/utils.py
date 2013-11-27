@@ -113,7 +113,7 @@ class LatexVisitor(ast.NodeVisitor):
 
                 latexes = []
                 for arg in node.args:
-                    if isinstance(arg, ast.Call) and arg.func.id[0].lower() == arg.func.id[0]:
+                    if isinstance(arg, ast.Call) and getattr(arg.func, 'id', None) and arg.func.id[0].lower() == arg.func.id[0]:
                         latexes.append(self.visit_Call(arg))
                     else:
                         latexes.append(sympy.latex(self.evaluator.eval_node(arg)))
@@ -193,8 +193,57 @@ def format_factorint(node, visitor):
 
 @LatexVisitor.formats_function('plot')
 def format_plot(node, visitor):
-    function = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    if node.args:
+        function = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
+    else:
+        keywords = {}
+        for keyword in node.keywords:
+            keywords[keyword.arg] = visitor.evaluator.eval_node(keyword.value)
+        function = sympy.latex(keywords)
     return r'\mathrm{Plot~}' + function
+
+@LatexVisitor.formats_function('rsolve')
+def format_rsolve(node, visitor):
+    recurrence = sympy.latex(sympy.Eq(visitor.evaluator.eval_node(node.args[0]), 0))
+    if len(node.args) == 3:
+        conds = visitor.evaluator.eval_node(node.args[2])
+        initconds = '\\\\\n'.join('&' + sympy.latex(sympy.Eq(eqn, val)) for eqn, val in conds.items())
+        text = r'&\mathrm{Solve~the~recurrence~}' + recurrence + r'\\'
+        condstext = r'&\mathrm{with~initial~conditions}\\'
+        return r'\begin{align}' + text + condstext + initconds + r'\end{align}'
+    else:
+        return r'\mathrm{Solve~the~recurrence~}' + recurrence
+
+diophantine_template = (r"\begin{{align}}&{}\\&\mathrm{{where~}}"
+                        r"{}\mathrm{{~are~integers}}\end{{align}}")
+@LatexVisitor.formats_function('diophantine')
+def format_diophantine(node, visitor):
+    expression = visitor.evaluator.eval_node(node.args[0])
+    symbols = None
+    if isinstance(expression, sympy.Basic):
+        symbols = expression.free_symbols
+    equation = sympy.latex(sympy.Eq(expression, 0))
+
+    result = r'\mathrm{Solve~the~diophantine~equation~}' + equation
+    if symbols:
+        result = diophantine_template.format(result, tuple(symbols))
+    return result
+
+@LatexVisitor.formats_function('summation')
+@LatexVisitor.formats_function('product')
+def format_diophantine(node, visitor):
+    if node.func.id == 'summation':
+        klass = sympy.Sum
+    else:
+        klass = sympy.Product
+    return sympy.latex(klass(*map(visitor.evaluator.eval_node, node.args)))
+
+@LatexVisitor.formats_function('help')
+def format_help(node, visitor):
+    if node.args:
+        function = visitor.evaluator.eval_node(node.args[0])
+        return r'\mathrm{Show~documentation~for~}' + function.__name__
+    return r'\mathrm{Show~documentation~(requires~1~argument)}'
 
 class TopCallVisitor(ast.NodeVisitor):
     def __init__(self):
@@ -270,7 +319,7 @@ def removeSymPy(string):
 from sympy.parsing.sympy_parser import (
     AppliedFunction, implicit_multiplication, split_symbols,
     function_exponentiation, implicit_application, OP, NAME,
-    _group_parentheses, _apply_functions, _flatten)
+    _group_parentheses, _apply_functions, _flatten, _token_callable)
 
 def _implicit_multiplication(tokens, local_dict, global_dict):
     result = []
@@ -278,13 +327,17 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
     for tok, nextTok in zip(tokens, tokens[1:]):
         result.append(tok)
         if (isinstance(tok, AppliedFunction) and
-            isinstance(nextTok, AppliedFunction)):
+              isinstance(nextTok, AppliedFunction)):
             result.append((OP, '*'))
         elif (isinstance(tok, AppliedFunction) and
               nextTok[0] == OP and nextTok[1] == '('):
             # Applied function followed by an open parenthesis
-            if tok.function[1] == 'Symbol' and len(tok.args[1][1]) == 3:
+            if (tok.function[1] == 'Symbol' and
+                len(tok.args[1][1]) == 3):
                 # Allow implicit function symbol creation
+                # TODO XXX need some way to offer alternative parsing here -
+                # sometimes we want this and sometimes not, hard to tell when
+                # (making it context-sensitive based on input function best)
                 continue
             result.append((OP, '*'))
         elif (tok[0] == OP and tok[1] == ')' and
@@ -299,9 +352,24 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
               and tok[1] == ')' and nextTok[1] == '('):
             # Close parenthesis followed by an open parenthesis
             result.append((OP, '*'))
-        elif (isinstance(tok, AppliedFunction) and nextTok[0] == NAME
-              and nextTok[1] not in ('and', 'or', 'not')):
+        elif (isinstance(tok, AppliedFunction) and nextTok[0] == NAME):
             # Applied function followed by implicitly applied function
+            result.append((OP, '*'))
+        elif (tok[0] == NAME and
+              not _token_callable(tok, local_dict, global_dict) and
+              nextTok[0] == OP and nextTok[1] == '('):
+            # Constant followed by parenthesis
+            result.append((OP, '*'))
+        elif (tok[0] == NAME and
+              not _token_callable(tok, local_dict, global_dict) and
+              nextTok[0] == NAME and
+              not _token_callable(nextTok, local_dict, global_dict)):
+            # Constant followed by constant
+            result.append((OP, '*'))
+        elif (tok[0] == NAME and
+              not _token_callable(tok, local_dict, global_dict) and
+              (isinstance(nextTok, AppliedFunction) or nextTok[0] == NAME)):
+            # Constant followed by (implicitly applied) function
             result.append((OP, '*'))
     if tokens:
         result.append(tokens[-1])
@@ -395,6 +463,8 @@ def close_matches(s, global_dict):
     has_result = False
     all_names = set(global_dict).union(SYNONYMS)
 
+    # strip the token location info to avoid strange untokenize results
+    tokens = [(tok[0], tok[1]) for tok in tokens]
     for token in tokens:
         if (token[0] == NAME and
             token[1] not in all_names and

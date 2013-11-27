@@ -1,9 +1,9 @@
 import sys
 import json
+import itertools
 import sympy
 from sympy.core.function import FunctionClass
 import docutils.core
-from operator import itemgetter
 import diffsteps
 import intsteps
 
@@ -66,6 +66,9 @@ class ResultCard(object):
             return self.card_info['format_title_function'](self.title,
                                                            input_evaluated)
         return self.title
+
+    def is_multivariate(self):
+        return self.card_info.get('multivariate', True)
 
     def default_parameters(self, kwargs):
         if 'parameters' in self.card_info:
@@ -193,13 +196,24 @@ def is_trig(input_evaluated):
     return False
 
 def is_not_constant_basic(input_evaluated):
-    return not is_constant(input_evaluated) and isinstance(input_evaluated, sympy.Basic)
+    return (not is_constant(input_evaluated) and
+            isinstance(input_evaluated, sympy.Basic) and
+            not is_logic(input_evaluated))
 
 def is_uncalled_function(input_evaluated):
     return hasattr(input_evaluated, '__call__') and not isinstance(input_evaluated, sympy.Basic)
 
 def is_matrix(input_evaluated):
     return isinstance(input_evaluated, sympy.Matrix)
+
+def is_logic(input_evaluated):
+    return isinstance(input_evaluated, (sympy.And, sympy.Or, sympy.Not, sympy.Xor))
+
+def is_sum(input_evaluated):
+    return isinstance(input_evaluated, sympy.Sum)
+
+def is_product(input_evaluated):
+    return isinstance(input_evaluated, sympy.Product)
 
 
 # Functions to convert input and extract variable used
@@ -212,7 +226,8 @@ def default_variable(arguments, evaluated):
 
     return {
         'variables': variables,
-        'variable': variables[0] if variables else None
+        'variable': variables[0] if variables else None,
+        'input_evaluated': evaluated
     }
 
 def extract_first(arguments, evaluated):
@@ -257,15 +272,81 @@ def extract_derivative(arguments, evaluated):
     }
 
 def extract_plot(arguments, evaluated):
-    result = extract_first(arguments, evaluated)
-    result['variables'] = list(arguments.args[0].atoms(sympy.Symbol))
-    result['variable'] = result['variables'][0]
+    result = {}
+    if arguments.args:
+        if isinstance(arguments.args[0], sympy.Basic):
+            result['variables'] = list(arguments.args[0].atoms(sympy.Symbol))
+            result['variable'] = result['variables'][0]
+            result['input_evaluated'] = [arguments.args[0]]
+
+            if len(result['variables']) != 1:
+                raise ValueError("Cannot plot function of multiple variables")
+        else:
+            variables = set()
+            try:
+                for func in arguments.args[0]:
+                    variables.update(func.atoms(sympy.Symbol))
+            except TypeError:
+                raise ValueError("plot() accepts either one function, a list of functions, or keyword arguments")
+
+            variables = list(variables)
+            if len(variables) > 1:
+                raise ValueError('All functions must have the same and at most one variable')
+            if len(variables) == 0:
+                variables.append(sympy.Symbol('x'))
+            result['variables'] = variables
+            result['variable'] = variables[0]
+            result['input_evaluated'] = arguments.args[0]
+    elif arguments.kwargs:
+        result['variables'] = [sympy.Symbol('x')]
+        result['variable'] = sympy.Symbol('x')
+
+        parametrics = 1
+        functions = {}
+        for f in arguments.kwargs:
+            if f.startswith('x'):
+                y_key = 'y' + f[1:]
+                if y_key in arguments.kwargs:
+                    # Parametric
+                    x = arguments.kwargs[f]
+                    y = arguments.kwargs[y_key]
+                    functions['p' + str(parametrics)] = (x, y)
+                    parametrics += 1
+            else:
+                if f.startswith('y') and ('x' + f[1:]) in arguments.kwargs:
+                    continue
+                functions[f] = arguments.kwargs[f]
+        result['input_evaluated'] = functions
     return result
 
 # Formatting functions
 
-def format_by_type(result, formatter):
-    if isinstance(result, (list, tuple)):
+_function_formatters = {}
+def formats_function(name):
+    def _formats_function(func):
+        _function_formatters[name] = func
+        return func
+    return _formats_function
+
+@formats_function('diophantine')
+def format_diophantine(result, arguments, formatter):
+    variables = list(sorted(arguments.args[0].atoms(sympy.Symbol), key=str))
+    if isinstance(result, set):
+        return format_nested_list_title(*variables)(result, formatter)
+    else:
+        return format_nested_list_title(*variables)([result], formatter)
+
+def format_by_type(result, arguments=None, formatter=None, function_name=None):
+    """
+    Format something based on its type and on the input to Gamma.
+    """
+    if arguments and not function_name:
+        function_name = arguments[0]
+    if function_name in _function_formatters:
+        return _function_formatters[function_name](result, arguments, formatter)
+    elif function_name in all_cards and 'format_output_function' in all_cards[function_name].card_info:
+        return all_cards[function_name].format_output(result, formatter)
+    elif isinstance(result, (list, tuple)):
         return format_list(result, formatter)
     else:
         return formatter(result)
@@ -291,13 +372,20 @@ def format_integral(line, result, components):
 
     return line.format(_var=limits) % components['integrand']
 
+def format_function_docs_input(line, function, components):
+    function = getattr(components['input_evaluated'], '__name__', str(function))
+    return line % function
+
 def format_dict_title(*title):
     def _format_dict(dictionary, formatter):
         html = ['<table>',
                 '<thead><tr><th>{}</th><th>{}</th></tr></thead>'.format(*title),
                 '<tbody>']
-        for key, val in sorted(dictionary.iteritems(), key=itemgetter(0)):
-            html.append('<tr><td>{}</td><td>{}</td></tr>'.format(key, val))
+        try:
+            for key, val in dictionary.iteritems():
+                html.append('<tr><td>{}</td><td>{}</td></tr>'.format(key, val))
+        except AttributeError, TypeError:  # not iterable/not a dict
+            return formatter(dictionary)
         html.append('</tbody></table>')
         return '\n'.join(html)
     return _format_dict
@@ -314,6 +402,27 @@ def format_list(items, formatter):
     except TypeError:  # not iterable, like None
         return formatter(items)
 
+def format_nested_list_title(*titles):
+    def _format_nested_list_title(items, formatter):
+        try:
+            if len(items) == 0:
+                return "<p>No result</p>"
+            html = ['<table>', '<thead><tr>']
+            for title in titles:
+                html.append('<th>{}</th>'.format(title))
+            html.append('</tr></thead>')
+            html.append('<tbody>')
+            for item in items:
+                html.append('<tr>')
+                for subitem in item:
+                    html.append('<td>{}</td>'.format(formatter(subitem)))
+                html.append('</tr>')
+            html.append('</tbody></table>')
+            return '\n'.join(html)
+        except TypeError:  # not iterable, like None
+            return formatter(items)
+    return _format_nested_list_title
+
 def format_series_fake_title(title, evaluated):
     if len(evaluated.args) >= 3:
         about = evaluated.args[2]
@@ -324,6 +433,21 @@ def format_series_fake_title(title, evaluated):
     else:
         up_to = 6
     return title.format(about, up_to)
+
+def format_truth_table(table, formatter):
+    # table is (variables, [(bool, bool...)] representing combination of values
+    # and result
+    variables, table = table
+    titles = list(map(str, variables))
+    titles.append("Value")
+    def formatter(x):
+        if x is True:
+            return '<span class="true">True</span>'
+        elif x is False:
+            return '<span class="false">False</span>'
+        else:
+            return str(x)
+    return format_nested_list_title(*titles)(table, formatter)
 
 def format_approximator(approximation, formatter):
     obj, digits = approximation
@@ -343,63 +467,131 @@ def format_factorization_diagram(factors, formatter):
         primes.extend([prime] * times)
     return DIAGRAM_CODE.format(primes=primes)
 
-GRAPHING_CODE = """
-<div class="graph"
-     data-function="{function}"
-     data-variable="{variable}"
-     data-xvalues="{xvalues}"
-     data-yvalues="{yvalues}">
+PLOTTING_CODE = """
+<div class="plot"
+     data-variable="{variable}">
+<div class="graphs">{graphs}</div>
 </div>
 """
 
-def format_graph(graph_data, formatter):
-    return GRAPHING_CODE.format(**graph_data)
+def format_plot(plot_data, formatter):
+    return PLOTTING_CODE.format(**plot_data)
 
-def eval_graph(evaluator, components, parameters=None):
+def format_plot_input(result_statement, input_repr, components):
+    if 'input_evaluated' in components:
+        functions = components['input_evaluated']
+        if isinstance(functions, list):
+            functions = ['<span>{}</span>'.format(f) for f in functions]
+            if len(functions) > 1:
+                return 'plot([{}])'.format(', '.join(functions))
+            else:
+                return 'plot({})'.format(functions[0])
+        elif isinstance(functions, dict):
+            return 'plot({})'.format(', '.join(
+                '<span>{}={}</span>'.format(y, x)
+                for y, x in functions.items()))
+    else:
+        return 'plot({})'.format(input_repr)
+
+GRAPH_TYPES = {
+    'xy': [lambda x, y: x, lambda x, y: y],
+    'parametric': [lambda x, y: x, lambda x, y: y],
+    'polar': [lambda x, y: float(y * sympy.cos(x)),
+              lambda x, y: float(y * sympy.sin(x))]
+}
+
+def determine_graph_type(key):
+    if key.startswith('r'):
+        return 'polar'
+    elif key.startswith('p'):
+        return 'parametric'
+    else:
+        return 'xy'
+
+def eval_plot(evaluator, components, parameters=None):
     if parameters is None:
         parameters = {}
 
-    variable = components['variable']
-
     xmin, xmax = parameters.get('xmin', -10), parameters.get('xmax', 10)
-    from sympy.plotting.plot import LineOver1DRangeSeries
-    func = evaluator.get("input_evaluated")
+    pmin, pmax = parameters.get('tmin', 0), parameters.get('tmax', 2 * sympy.pi)
+    tmin, tmax = parameters.get('tmin', 0), parameters.get('tmax', 10)
+    from sympy.plotting.plot import LineOver1DRangeSeries, Parametric2DLineSeries
+    functions = evaluator.get("input_evaluated")
+    if isinstance(functions, sympy.Basic):
+        functions = [(functions, 'xy')]
+    elif isinstance(functions, list):
+        functions = [(f, 'xy') for f in functions]
+    elif isinstance(functions, dict):
+        functions = [(f, determine_graph_type(key)) for key, f in functions.items()]
 
-    free_symbols = func.free_symbols
+    graphs = []
+    for func, graph_type in functions:
+        if graph_type == 'parametric':
+            x_func, y_func = func
+            x_vars, y_vars = x_func.free_symbols, y_func.free_symbols
+            variables = x_vars.union(y_vars)
+            if x_vars != y_vars:
+                raise ValueError("Both functions in a parametric plot must have the same variable")
+        else:
+            variables = func.free_symbols
 
-    if len(free_symbols) != 1 or variable not in free_symbols:
-        raise ValueError("Cannot graph function of multiple variables")
+        if len(variables) > 1:
+            raise ValueError("Cannot plot multivariate function")
+        elif len(variables) == 0:
+            variable = sympy.Symbol('x')
+        else:
+            variable = list(variables)[0]
 
-    try:
-        series = LineOver1DRangeSeries(
-            func, (variable, xmin, xmax),
-            nb_of_points=150)
-        # returns a list of [[x,y], [next_x, next_y]] pairs
-        series = series.get_segments()
-    except TypeError:
-        raise ValueError("Cannot graph function")
+        try:
+            if graph_type == 'xy':
+                graph_range = (variable, xmin, xmax)
+            elif graph_type == 'polar':
+                graph_range = (variable, pmin, pmax)
+            elif graph_type == 'parametric':
+                graph_range = (variable, tmin, tmax)
 
-    xvalues = []
-    yvalues = []
+            if graph_type in ('xy', 'polar'):
+                series = LineOver1DRangeSeries(func, graph_range, nb_of_points=150)
+            elif graph_type == 'parametric':
+                series = Parametric2DLineSeries(x_func, y_func, graph_range, nb_of_points=150)
+            # returns a list of [[x,y], [next_x, next_y]] pairs
+            series = series.get_segments()
+        except TypeError:
+            raise ValueError("Cannot plot function")
 
-    def limit_y(y):
-        CEILING = 1e8
-        if y > CEILING:
-            y = CEILING
-        if y < -CEILING:
-            y = -CEILING
-        return y
+        xvalues = []
+        yvalues = []
 
-    for point in series:
-        xvalues.append(point[0][0])
-        yvalues.append(limit_y(point[0][1]))
-    xvalues.append(series[-1][1][0])
-    yvalues.append(limit_y(series[-1][1][1]))
+        def limit_y(y):
+            CEILING = 1e8
+            if y > CEILING:
+                y = CEILING
+            if y < -CEILING:
+                y = -CEILING
+            return y
+
+        x_transform, y_transform = GRAPH_TYPES[graph_type]
+        series.append([series[-1][1], None])
+        for point in series:
+            if point[0][1] is None:
+                continue
+            x = point[0][0]
+            y = limit_y(point[0][1])
+            xvalues.append(x_transform(x, y))
+            yvalues.append(y_transform(x, y))
+
+        graphs.append({
+            'type': graph_type,
+            'function': sympy.jscode(sympy.sympify(func)),
+            'points': {
+                'x': xvalues,
+                'y': yvalues
+            },
+            'data': None
+        })
     return {
-        'function': sympy.jscode(sympy.sympify(func)),
         'variable': repr(variable),
-        'xvalues': json.dumps(xvalues),
-        'yvalues': json.dumps(yvalues)
+        'graphs': json.dumps(graphs)
     }
 
 def eval_factorization(evaluator, components, parameters=None):
@@ -481,6 +673,17 @@ def eval_function_docs(evaluator, components, parameters=None):
     return docutils.core.publish_parts(docstring, writer_name='html4css1',
                                        settings_overrides={'_disable_config': True})['html_body']
 
+def eval_truth_table(evaluator, components, parameters=None):
+    expr = evaluator.get("input_evaluated")
+    variables = list(sorted(expr.atoms(sympy.Symbol), key=str))
+
+    result = []
+    for combination in itertools.product([True, False], repeat=len(variables)):
+        result.append(combination +(expr.subs(zip(variables, combination)),))
+    return variables, result
+
+
+
 def eval_approximator(evaluator, components, parameters=None):
     if parameters is None:
         raise ValueError
@@ -552,12 +755,14 @@ all_cards = {
         "Digits in base-10 expansion of number",
         "len(str(%s))",
         no_pre_output,
+        multivariate=False,
         format_input_function=format_long_integer),
 
     'factorization': FakeResultCard(
         "Factors less than 100",
         "factorint(%s, limit=100)",
         no_pre_output,
+        multivariate=False,
         format_input_function=format_long_integer,
         format_output_function=format_dict_title("Factor", "Times"),
         eval_method=eval_factorization),
@@ -566,6 +771,7 @@ all_cards = {
         "Factorization Diagram",
         "factorint(%s, limit=256)",
         no_pre_output,
+        multivariate=False,
         format_output_function=format_factorization_diagram,
         eval_method=eval_factorization_diagram),
 
@@ -573,82 +779,97 @@ all_cards = {
         "Floating-point approximation",
         "(%s).evalf({digits})",
         no_pre_output,
+        multivariate=False,
         parameters=['digits']),
 
     'fractional_approximation': ResultCard(
         "Fractional approximation",
         "nsimplify(%s)",
-        no_pre_output),
+        no_pre_output,
+        multivariate=False),
 
     'absolute_value': ResultCard(
         "Absolute value",
         "Abs(%s)",
-        lambda s, *args: sympy.Abs(s, evaluate=False)),
+        lambda s, *args: sympy.Abs(s, evaluate=False),
+        multivariate=False),
 
     'polar_angle': ResultCard(
         "Angle in the complex plane",
         "atan2(*(%s).as_real_imag()).evalf()",
-        lambda s, *args: sympy.atan2(*s.as_real_imag())),
+        lambda s, *args: sympy.atan2(*s.as_real_imag()),
+        multivariate=False),
 
     'conjugate': ResultCard(
         "Complex conjugate",
         "conjugate(%s)",
-        lambda s, *args: sympy.conjugate(s)),
+        lambda s, *args: sympy.conjugate(s),
+        multivariate=False),
 
     'trigexpand': ResultCard(
         "Alternate form",
         "(%s).expand(trig=True)",
-        lambda statement, var, *args: statement),
+        lambda statement, var, *args: statement,
+        multivariate=False),
 
     'trigsimp': ResultCard(
         "Alternate form",
         "trigsimp(%s)",
-        lambda statement, var, *args: statement),
+        lambda statement, var, *args: statement,
+        multivariate=False),
 
     'trigsincos': ResultCard(
         "Alternate form",
         "(%s).rewrite(csc, sin, sec, cos, cot, tan)",
-        lambda statement, var, *args: statement
+        lambda statement, var, *args: statement,
+        multivariate=False
     ),
 
     'trigexp': ResultCard(
         "Alternate form",
         "(%s).rewrite(sin, exp, cos, exp, tan, exp)",
-        lambda statement, var, *args: statement
+        lambda statement, var, *args: statement,
+        multivariate=False
     ),
 
-    'graph': FakeResultCard(
-        "Graph",
+    'plot': FakeResultCard(
+        "Plot",
         "plot(%s)",
         no_pre_output,
-        format_output_function=format_graph,
-        eval_method=eval_graph,
-        parameters=['xmin', 'xmax']),
+        format_input_function=format_plot_input,
+        format_output_function=format_plot,
+        eval_method=eval_plot,
+        parameters=['xmin', 'xmax', 'tmin', 'tmax', 'pmin', 'pmax']),
 
     'function_docs': FakeResultCard(
         "Documentation",
         "help(%s)",
         no_pre_output,
+        multivariate=False,
         eval_method=eval_function_docs,
+        format_input_function=format_function_docs_input,
         format_output_function=format_nothing
     ),
 
     'root_to_polynomial': ResultCard(
         "Polynomial with this root",
         "minpoly(%s)",
-        no_pre_output
+        no_pre_output,
+        multivariate=False
     ),
 
     'matrix_inverse': ResultCard(
         "Inverse of matrix",
         "(%s).inv()",
-        lambda statement, var, *args: sympy.Pow(statement, -1, evaluate=False)
+        lambda statement, var, *args: sympy.Pow(statement, -1, evaluate=False),
+        multivariate=False
     ),
 
     'matrix_eigenvals': ResultCard(
         "Eigenvalues",
         "(%s).eigenvals()",
         no_pre_output,
+        multivariate=False,
         format_output_function=format_dict_title("Eigenvalue", "Multiplicity")
     ),
 
@@ -656,7 +877,31 @@ all_cards = {
         "Eigenvectors",
         "(%s).eigenvects()",
         no_pre_output,
+        multivariate=False,
         format_output_function=format_list
+    ),
+
+    'satisfiable': ResultCard(
+        "Satisfiability",
+        "satisfiable(%s)",
+        no_pre_output,
+        multivariate=False,
+        format_output_function=format_dict_title('Variable', 'Possible Value')
+    ),
+
+    'truth_table': FakeResultCard(
+        "Truth table",
+        "%s",
+        no_pre_output,
+        multivariate=False,
+        eval_method=eval_truth_table,
+        format_output_function=format_truth_table
+    ),
+
+    'doit': ResultCard(
+        "Result",
+        "(%s).doit()",
+        no_pre_output
     ),
 
     'approximator': FakeResultCard(
@@ -691,11 +936,36 @@ all_cards['integral_alternate_fake'] = MultiResultCard(
     get_card('integral_manual_fake')
 )
 
+"""
+Syntax:
+
+(predicate, extract_components, result_cards)
+
+predicate: str or func
+  If a string, names a function that uses this set of result cards.
+  If a function, the function, given the evaluated input, returns True if
+  this set of result cards should be used.
+
+extract_components: None or func
+  If None, use the default function.
+  If a function, specifies a function that parses the input expression into
+  a components dictionary. For instance, for an integral, this function
+  might extract the limits, integrand, and variable.
+
+result_cards: None or list
+  If None, do not show any result cards for this function beyond the
+  automatically generated 'Result' and 'Simplification' cards (if they are
+  applicable).
+  If a list, specifies a list of result cards to display.
+"""
 result_sets = [
     ('integrate', extract_integral, ['integral_alternate_fake', 'intsteps']),
     ('diff', extract_derivative, ['diff', 'diffsteps']),
     ('factorint', extract_first, ['factorization', 'factorizationDiagram']),
-    ('plot', extract_plot, ['graph']),
+    ('help', extract_first, ['function_docs']),
+    ('plot', extract_plot, ['plot']),
+    ('rsolve', None, None),
+    ('product', None, []),  # suppress automatic Result card
     (is_integer, None, ['digits', 'factorization', 'factorizationDiagram']),
     (is_complex, None, ['absolute_value', 'polar_angle', 'conjugate']),
     (is_rational, None, ['float_approximation']),
@@ -704,12 +974,25 @@ result_sets = [
     (is_uncalled_function, None, ['function_docs']),
     (is_trig, None, ['trig_alternate']),
     (is_matrix, None, ['matrix_inverse', 'matrix_eigenvals', 'matrix_eigenvectors']),
-    (is_not_constant_basic, None, ['graph', 'roots', 'diff', 'integral_alternate', 'series'])
+    (is_logic, None, ['satisfiable', 'truth_table']),
+    (is_sum, None, ['doit']),
+    (is_product, None, ['doit']),
+    (is_sum, None, None),
+    (is_product, None, None),
+    (is_not_constant_basic, None, ['plot', 'roots', 'diff', 'integral_alternate', 'series'])
 ]
+
+learn_more_sets = {
+    'rsolve': ['http://en.wikipedia.org/wiki/Recurrence_relation',
+               'http://mathworld.wolfram.com/RecurrenceEquation.html',
+               'http://docs.sympy.org/latest/modules/solvers/solvers.html#recurrence-equtions']
+}
 
 def is_function_handled(function_name):
     """Do any of the result sets handle this specific function?"""
-    return any(name == function_name for (name, _, _) in result_sets)
+    if function_name == "simplify":
+        return True
+    return any(name == function_name for (name, _, cards) in result_sets if cards is not None)
 
 def find_result_set(function_name, input_evaluated):
     """
@@ -721,10 +1004,6 @@ def find_result_set(function_name, input_evaluated):
       for an integral this would extract the integrand and limits of integration.
       This function will always extract the variables.
     - List of result cards.
-    - Flag indicating whether the result cards 'handle' the function call. For
-      instance, 'simplify(x)' will generate a 'Result' card to show the result.
-      But for 'factorint(123)', since one of the result cards already shows the
-      result, this is unnecessary.
     """
     result = []
     result_converter = default_variable
@@ -733,14 +1012,23 @@ def find_result_set(function_name, input_evaluated):
         if predicate == function_name:
             if converter:
                 result_converter = converter
+            if result_cards is None:
+                return result_converter, result
             for card in result_cards:
                 if card not in result:
                     result.append(card)
         elif callable(predicate) and predicate(input_evaluated):
             if converter:
                 result_converter = converter
+            if result_cards is None:
+                return result_converter, result
             for card in result_cards:
                 if card not in result:
                     result.append(card)
 
     return result_converter, result
+
+def find_learn_more_set(function_name):
+    urls = learn_more_sets.get(function_name)
+    if urls:
+        return '<div class="document"><ul>{}</ul></div>'.format('\n'.join('<li><a href="{0}">{0}</a></li>'.format(url) for url in urls))
