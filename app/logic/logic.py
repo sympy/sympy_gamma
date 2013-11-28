@@ -17,9 +17,7 @@ PREEXEC = """from __future__ import division
 from sympy import *
 import sympy
 from sympy.solvers.diophantine import diophantine
-x, y, z = symbols('x,y,z')
-k, m, n = symbols('k,m,n', integer=True)
-f, g, h = map(Function, 'fgh')"""
+"""
 
 
 def mathjax_latex(*args):
