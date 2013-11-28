@@ -34,7 +34,8 @@ def mathjax_latex(*args):
         if (isinstance(obj, sympy.Basic) and
             not obj.free_symbols and not obj.is_Integer and
             not obj.is_Float and
-            obj.is_finite is not False):
+            obj.is_finite is not False and
+            hasattr(obj, 'evalf')):
             tag = '<script type="math/tex; mode=display" data-numeric="true" ' \
                   'data-output-repr="{}" data-approximation="{}">'.format(
                       repr(obj), latex(obj.evalf(15)))
