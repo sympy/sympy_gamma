@@ -158,9 +158,9 @@ class IntegralPrinter(object):
 
             u, v, du, dv = map(lambda f: sympy.Function(f)(rule.symbol), 'u v du dv'.split())
             self.append(self.format_math_display(
-                r"""\int \operatorname{u} \operatorname{dv} dx
+                r"""\int \operatorname{u} \operatorname{dv}
                 = \operatorname{u}\operatorname{v} -
-                \int \operatorname{v} \operatorname{du} dx"""
+                \int \operatorname{v} \operatorname{du}"""
             ))
 
             self.append("Let {} and let {}.".format(
