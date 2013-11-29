@@ -115,7 +115,7 @@ EXAMPLES = [
     ]),
     ('Plotting', [
         [None, ['plot(sin(x) + cos(2x))',
-                ('Multiple plots', 'plot(x, x^2, x^3, x^4)'),
+                ('Multiple plots', 'plot([x, x^2, x^3, x^4])'),
                 ('Polar plots', 'plot(r=1-sin(theta))'),
                 ('Parametric plots', 'plot(x=cos(t), y=sin(t))'),
                 ('Multiple plot types', 'plot(y=x,y1=x^2,r=cos(theta),r1=sin(theta))')]],
