@@ -110,10 +110,11 @@ class IntegralPrinter(object):
 
     def print_Power(self, rule):
         with self.new_step():
-            self.append("The integral of {} is {}:".format(
+            self.append("The integral of {} is {} when {}:".format(
                 self.format_math(rule.symbol ** sympy.Symbol('n')),
                 self.format_math((rule.symbol ** (1 + sympy.Symbol('n'))) /
-                                 (1 + sympy.Symbol('n')))
+                                 (1 + sympy.Symbol('n'))),
+                self.format_math(sympy.Ne(sympy.Symbol('n'), -1)),
             ))
             self.append(
                 self.format_math_display(
