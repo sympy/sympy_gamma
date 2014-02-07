@@ -24,6 +24,8 @@ import urllib2
 import datetime
 import traceback
 
+import urllib
+
 LIVE_URL = '<a href="http://live.sympy.org">SymPy Live</a>'
 LIVE_PROMOTION_MESSAGES = [
     'Need more control? Try ' + LIVE_URL + '.',
@@ -222,9 +224,13 @@ def input(request, user):
                 query = models.Query(text=input, user_id=None)
                 query.put()
 
-
+            url = str(r)
+            notebook_url = urllib.quote( url, safe='')
+            
             # For some reason the |random tag always returns the same result
             return ("result.html", {
+                "notebook_url": notebook_url,
+                "key": key,
                 "input": input,
                 "result": r,
                 "form": form,
