@@ -224,13 +224,13 @@ def input(request, user):
                 query = models.Query(text=input, user_id=None)
                 query.put()
 
+            #encoding the 'r' variable to be passed into the url
             url = str(r)
             notebook_url = urllib.quote( url, safe='')
             
             # For some reason the |random tag always returns the same result
             return ("result.html", {
                 "notebook_url": notebook_url,
-                "key": key,
                 "input": input,
                 "result": r,
                 "form": form,
