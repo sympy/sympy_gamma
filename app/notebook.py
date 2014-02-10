@@ -1,119 +1,103 @@
-#from __future__ import print_function
 from __future__ import absolute_import
 from django.shortcuts import render
-from google.appengine.ext import ndb
-
-from app.models import Notebook
 from sympy import *
-import json
 from string import find
-
 from urllib import unquote
-import ast
 from copy import copy
 
-#---------------------------------------------------------------
-# sample.ipynb is a file initially used to write the result's 
-# notebook to the database.
-#---------------------------------------------------------------
+import json
+import ast
 
-#plot = '%matplotlib inline'
+notebook_format = { "metadata": {"name": ""}, "nbformat": 3, "nbformat_minor": 0, "worksheets": [{ "cells": [],"metadata": {} }]}
 
+code_cell = {"cell_type": "code",  "input": [], "language": "python", "metadata": {}, "outputs": [{ "output_type": "stream","stream": "stdout", "text": []}], "prompt_number": 1 }, 
 
-#notebook_format = { "metadata": {"name": ""}, "nbformat": 3, "nbformat_minor": 0, "worksheets": [{ "cells": [],"metadata": {} }]}
+markdown_cell = {"cell_type": "markdown","metadata": {},"source":[]}, 
 
-#code_cell = {"cell_type": "code",  "input": [], "language": "python", "metadata": {}, "outputs": [{ "output_type": "stream","stream": "stdout", "text": []}], "prompt_number": 1 }, 
-
-#markdown_cell = {"cell_type": "markdown","metadata": {},"source":[]}, 
-
-#heading_cell = {"cell_type": "heading","level": 3,"metadata": {},"source": []},
-
-
+heading_cell = {"cell_type": "heading","level": 3,"metadata": {},"source": []},
 
 def result_pass(request):
 
     ''' This function parses and creates the result's json for nbviewer '''
+
     notebook_format = { "metadata": {"name": ""}, "nbformat": 3, "nbformat_minor": 0, "worksheets": [{ "cells": [],"metadata": {} }]}
     notebook = notebook_format
     result = request.GET.get('result')
     result = unquote(result)
     result = ast.literal_eval(result)
-
     #----------------------------------------------------------
-    # this is in no way completed. we need to implement plotting  
+    # 1)this is in no way completed. we need to implement plotting  
     # and cards. cards can be implemented by using exec 
     # statements like 
     # a = ''' import sympy
     #         x = Symbol('x')
-    #         series(tan(x + 1), x, 0, 10)
+    #         series(tan(x + 1), x, 0, 10)'''
     # for plotting we can use existing support of matplotlib on
     # Google App engine.
+    # 2)Mathjax include the escaping '\\' which is originally '\'
+    # so we need to parse them to display it correctly.
     #-------------------------------------------------------------
+    for i in range(len(result)):
+        cell = result[i]    
     
-    for cell in result:
-        heading_cell = {"cell_type": "heading","level": 3,"metadata": {},"source": []},
-        title = heading_cell[0]
-        title['level'] = 3
-        a = str(cell['title'])
-        title['source'] = [ a ]
-        notebook['worksheets'][0]['cells'].append(title)    
         if 'ambiguity' in cell.keys():
-            pass
-        elif 'card' in cell.keys():    
-            pass
-            
+            ambiguity = copy(markdown_cell[0])
+            description = heading_cell[0]
+            card_link = cell['ambiguity']
+            link = '<p>Did you mean: <a href="/input/?i=' + str(card_link) + '>"' + str(card_link) + '</a>?</p>'
+            ambiguity['source'] = link
+            description['source'] = cell['description']
+            notebook['worksheets'][0]['cells'].append(ambiguity)
+            notebook['worksheets'][0]['cells'].append(description)
+
         else:
+            title = copy(heading_cell[0])
+            title['level'] = 3
+            a = str(cell['title'])
+            title['source'] = [ a ]
+            notebook['worksheets'][0]['cells'].append(title)
     
             if 'input' in cell.keys():
-                #---------------------------------------------------------------------
-                # i have tried defining the variables beforehand but somehow 
-                # these tuples are not getting copied. they are just the pointers to 
-                # the initial variables.
-                #---------------------------------------------------------------------
-                heading_cell = {"cell_type": "heading","level": 3,"metadata": {},"source": []},
-                inputs = heading_cell[0]
+                inputs = copy(heading_cell[0])
                 inputs['level'] = 3
                 inputs['source'] = [ str(cell['input']) ]
                 notebook['worksheets'][0]['cells'].append(inputs)
+
             if 'output' in cell.keys():
-                markdown_cell = {"cell_type": "markdown","metadata": {},"source":[]}, 
-                output = markdown_cell[0]
-                if 'href' in cell['output']:
-                    pass
-                else:
-                    start = find(cell['output'], '>')
-                    end = find(cell['output'], '</')
-                    mathjax = cell['output'][ start+1: end ]
-                            
-                    mathjax = '$$' + str(mathjax) + '$$'  
-                    output['source'] = [mathjax]
-                    notebook['worksheets'][0]['cells'].append(output)
-                    
-            if 'pre_output' in cell.keys():
-                heading_cell = {"cell_type": "heading","level": 3,"metadata": {},"source": []},
-                pre_output = heading_cell[0]
-                if cell['pre_output'] != '':
-                    mathjax1 = cell['pre_output']
-                    mathjax1 = mathjax1.replace('\\\\','\\')
-                    mathjax1 = '$$' + str(mathjax1) + '$$'
-                    output['source'] = [mathjax1]
+                output = copy(markdown_cell[0])
+                #output['source'] = html_mathjax(cell['output'])
+                output['source'] = cell['output']
+                notebook['worksheets'][0]['cells'].append(output)
+
+                if 'pre_output' in cell.keys():
+                    pre_output = copy(markdown_cell[0])
+                    #pre_output['source'] = correct_mathjax(cell['pre_output'])
+                    pre_output['source'] = cell['pre_output']
                     notebook['worksheets'][0]['cells'].append(pre_output)
-                        
-        notebook = json.dumps(notebook)         
+                
+            if 'card' in cell.keys():
+                if 'pre_output' in cell.keys():
+                    cell_pre_output = copy(markdown_cell[0])
+                    cell_pre_output['source'] = cell['pre_output']
+                    notebook['worksheets'][0]['cells'].append(cell_pre_output)
+
+                if 'cell_output' in cell.keys():
+                    cell_output = copy(markdown_cell[0])
+                    cell_output['source'] = cell['cell_output']
+                    notebook['worksheets'][0]['cells'].append(cell_output)
+                else:
+                    pass
+
+    notebook = json.dumps(notebook)         
         
-        return render(request, 'result_notebook.html',
+    return render(request, 'result_notebook.html',
                       {'result': result,
                        'notebook': notebook})
+
+
+def html_mathjax(html_mathjax):
+    ''' removes extra '\n' and '\\' in the output.'''
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+def correct_mathjax(mathjax):
+    ''' removes extra '\n' and '\\' in the pre_output'''
     
