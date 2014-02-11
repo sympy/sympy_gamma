@@ -23,12 +23,12 @@
             <div class="foot">
                 <p>See what <a class="wolfram"
                 href="http://www.wolframalpha.com/input/?i={{input|urlencode}}">
-                    Wolfram|Alpha</a> has to say.<p>
+                    Wolfram|Alpha</a> has to say.</p>
                 <p>See the results as IPython <a class="notebook"
-                href="http://nbviewer.ipython.org/url/sympygamma.com/result.ipynb?=result{{ result }}">Notebook</a></p>
-                <p>The 
-		        <a href="{% url app.notebook.result_pass %}?result={{ notebook_url }}">json</a>
-		        of IPython Notebook</p>
+                href="http://nbviewer.ipython.org/url/sympygamma.com/result.ipynb?=result{{ result }}">
+                    Notebook</a></p>
+                <p>The <a href="{% url app.notebook.result_pass %}?result={{ notebook_url }}">json</a>
+		            of IPython Notebook</p>
                 
 
                 <p>{{ promote_live|safe }}</p>
