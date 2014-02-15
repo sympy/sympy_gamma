@@ -60,9 +60,8 @@ def result_pass(request):
                 notebook['worksheets'][0]['cells'].append(inputs)
             if 'output' in cell.keys():
                 output = copy(markdown_cell[0])
-                output['source'] = defaultfilters.escape(cell['output'])
-                test = cell['output']
-                #output['source'] = cell['output']
+                #output['source'] = defaultfilters.escape(cell['output'])
+                output['source'] = cell['output']
                 notebook['worksheets'][0]['cells'].append(output)
                 if 'pre_output' in cell.keys():
                     pre_output = copy(markdown_cell[0])
@@ -81,10 +80,9 @@ def result_pass(request):
             else:
                     pass
 
-    
     notebook = json.dumps(notebook)
     return render(request, 'result_notebook.html',
-                      {'result': result,'test':test,
+                      {'result': result,
                        'notebook': notebook,
                        'result': result})
 
