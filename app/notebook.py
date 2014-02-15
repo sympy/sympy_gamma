@@ -65,7 +65,7 @@ def result_pass(request):
                 strip = strip[a+1:]
                 b = strip.find('<')
                 strip = strip[:b]
-                output['source'] = strip
+                output['source'] = '$$' + str(strip) + '$$'
                 notebook['worksheets'][0]['cells'].append(output)
                 if 'pre_output' in cell.keys():
                     pre_output = copy(markdown_cell[0])
