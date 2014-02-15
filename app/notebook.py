@@ -60,8 +60,12 @@ def result_pass(request):
                 notebook['worksheets'][0]['cells'].append(inputs)
             if 'output' in cell.keys():
                 output = copy(markdown_cell[0])
-                #output['source'] = defaultfilters.escape(cell['output'])
-                output['source'] = cell['output']
+                strip = cell['output']
+                a = strip.find('>')
+                strip = strip[a+1:]
+                b = strip.find('<')
+                strip = strip[:b]
+                output['source'] = strip
                 notebook['worksheets'][0]['cells'].append(output)
                 if 'pre_output' in cell.keys():
                     pre_output = copy(markdown_cell[0])
