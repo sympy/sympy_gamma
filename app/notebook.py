@@ -60,27 +60,36 @@ def result_pass(request):
                 notebook['worksheets'][0]['cells'].append(inputs)
             if 'output' in cell.keys():
                 output = copy(markdown_cell[0])
-                strip = cell['output']
-                a = strip.find('>')
-                strip = strip[a+1:]
-                b = strip.find('<')
-                strip = strip[:b]
-                output['source'] = '$$' + str(strip) + '$$'
-                notebook['worksheets'][0]['cells'].append(output)
+                if cell['output'] != "":
+                    strip = cell['output']
+                    a = strip.find('>')
+                    strip = strip[a+1:]
+                    b = strip.find('<')
+                    strip = strip[:b]
+                    output['source'] = '$$' + str(strip) + '$$'
+                    notebook['worksheets'][0]['cells'].append(output)
                 if 'pre_output' in cell.keys():
-                    pre_output = copy(markdown_cell[0])
-                    #pre_output['source'] = correct_mathjax(cell['pre_output'])
-                    pre_output['source'] = cell['pre_output']
-                    notebook['worksheets'][0]['cells'].append(pre_output)
+                    if cell['pre_output'] !="":
+                        pre_output = copy(markdown_cell[0])
+                        #pre_output['source'] = correct_mathjax(cell['pre_output'])
+                        pre_output['source'] = '$$'+str(cell['pre_output'])+'$$'
+                        notebook['worksheets'][0]['cells'].append(pre_output)
             if 'card' in cell.keys():
                 if 'pre_output' in cell.keys():
-                    cell_pre_output = copy(markdown_cell[0])
-                    cell_pre_output['source'] = cell['pre_output']
-                    notebook['worksheets'][0]['cells'].append(cell_pre_output)
+                    if cell['pre_output'] != "":
+                        cell_pre_output = copy(markdown_cell[0])
+                        cell_pre_output['source'] = '$$'+str(cell['pre_output'])+'$$'
+                        notebook['worksheets'][0]['cells'].append(cell_pre_output)
             if 'cell_output' in cell.keys():
+                if cell['cell_output'] != "":
                     cell_output = copy(markdown_cell[0])
                     cell_output['source'] = cell['cell_output']
                     notebook['worksheets'][0]['cells'].append(cell_output)
+            elif 'pre_output' in cell.keys():
+                if cell['pre_output'] != "":
+                    pre_output = copy(markdown_cell[0])
+                    pre_output['source'] = '$$' + str(cell['pre_output']) + '$$'
+                    notebook['worksheets'][0]['cells'].append(pre_output)
             else:
                     pass
 
