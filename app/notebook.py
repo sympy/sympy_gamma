@@ -6,7 +6,7 @@ from urllib import unquote
 from copy import copy
 from django.template import defaultfilters
 from django.utils import simplejson
-from logic import Eval, SymPyGamma
+from app.logic import Eval, SymPyGamma
 import json
 import ast
 
@@ -19,11 +19,11 @@ def result_pass(request):
     ''' This function parses and creates the result's json for nbviewer '''
     notebook_format = { "metadata": {"name": ""}, "nbformat": 3, "nbformat_minor": 0, "worksheets": [{ "cells": [],"metadata": {} }]}
     notebook = notebook_format
-    input = request.GET.get('result')
-    input = unquote(result)
-    input = ast.literal_eval(result)
+    inp = request.GET.get('i')
+    #inp = unquote(inp)
+    #inp = ast.literal_eval(inp)
     g = SymPyGamma()
-    result = g.eval(input)
+    result = g.eval(inp)
     #----------------------------------------------------------
     # 1)this is in no way completed. we need to implement plotting
     # and cards. cards can be implemented by using exec
@@ -36,8 +36,8 @@ def result_pass(request):
     # 2)Mathjax include the escaping '\\' which is originally '\'
     # so we need to parse them to display it correctly.
     #-------------------------------------------------------------
-    for i in range(len(result)):
-        cell = result[i]
+    for q in range(len(result)):
+        cell = result[q]
         if 'ambiguity' in cell.keys():
             ambiguity = copy(markdown_cell[0])
             description = heading_cell[0]
@@ -81,7 +81,8 @@ def result_pass(request):
             else:
                     pass
 
-    notebook = json.dumps(notebook, indent=4 * ' ')
+    
+    notebook = json.dumps(notebook)
     return render(request, 'result_notebook.html',
                       {'result': result,'test':test,
                        'notebook': notebook,
