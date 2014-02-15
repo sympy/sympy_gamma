@@ -6,7 +6,7 @@ from urllib import unquote
 from copy import copy
 from django.template import defaultfilters
 from django.utils import simplejson
-
+from logic import Eval, SymPyGamma
 import json
 import ast
 
@@ -19,9 +19,11 @@ def result_pass(request):
     ''' This function parses and creates the result's json for nbviewer '''
     notebook_format = { "metadata": {"name": ""}, "nbformat": 3, "nbformat_minor": 0, "worksheets": [{ "cells": [],"metadata": {} }]}
     notebook = notebook_format
-    result = request.GET.get('result')
-    result = unquote(result)
-    result = ast.literal_eval(result)
+    input = request.GET.get('result')
+    input = unquote(result)
+    input = ast.literal_eval(result)
+    g = SymPyGamma()
+    result = g.eval(input)
     #----------------------------------------------------------
     # 1)this is in no way completed. we need to implement plotting
     # and cards. cards can be implemented by using exec
