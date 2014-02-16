@@ -1,14 +1,9 @@
 from __future__ import absolute_import
 from django.shortcuts import render
-from sympy import *
 from string import find
-from urllib import unquote
 from copy import copy
-from django.template import defaultfilters
-from django.utils import simplejson
-from app.logic import Eval, SymPyGamma
+from app.logic import SymPyGamma
 import json
-import ast
 
 notebook_format = { "metadata": {"name": ""}, "nbformat": 3, "nbformat_minor": 0, "worksheets": [{ "cells": [],"metadata": {} }]}
 code_cell = {"cell_type": "code",  "input": [], "language": "python", "metadata": {}, "outputs": [{ "output_type": "stream","stream": "stdout", "text": []}], "prompt_number": 1 },
@@ -20,8 +15,6 @@ def result_pass(request):
     notebook_format = { "metadata": {"name": ""}, "nbformat": 3, "nbformat_minor": 0, "worksheets": [{ "cells": [],"metadata": {} }]}
     notebook = notebook_format
     inp = request.GET.get('i')
-    #inp = unquote(inp)
-    #inp = ast.literal_eval(inp)
     g = SymPyGamma()
     result = g.eval(inp)
     #----------------------------------------------------------
