@@ -71,7 +71,6 @@ def result_pass(request):
                 if 'pre_output' in cell.keys():
                     if cell['pre_output'] !="":
                         pre_output = copy(markdown_cell[0])
-                        #pre_output['source'] = correct_mathjax(cell['pre_output'])
                         pre_output['source'] = '$$'+str(cell['pre_output'])+'$$'
                         notebook['worksheets'][0]['cells'].append(pre_output)
             if 'card' in cell.keys():
@@ -98,10 +97,3 @@ def result_pass(request):
                       {'result': result,
                        'notebook': notebook,
                        'result': result})
-
-
-def html_mathjax(html_mathjax):
-    ''' removes extra '\n' and '\\' in the output.'''
-
-def correct_mathjax(mathjax):
-    ''' removes extra '\n' and '\\' in the pre_output'''
