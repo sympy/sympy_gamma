@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from django.shortcuts import render
-from string import find
 from copy import copy
 from app.logic import SymPyGamma
 import json
