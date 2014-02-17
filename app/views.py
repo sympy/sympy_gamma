@@ -24,7 +24,6 @@ import urllib2
 import datetime
 import traceback
 
-import urllib
 
 LIVE_URL = '<a href="http://live.sympy.org">SymPy Live</a>'
 LIVE_PROMOTION_MESSAGES = [
