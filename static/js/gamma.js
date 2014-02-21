@@ -32,6 +32,7 @@ function setupExamples() {
             createCookie(header.html(), contents.is(':visible'), 365);
         });
         header.toggleClass('shown');
+        header.siblings('i').toggleClass('shown');
     });
 }
 
