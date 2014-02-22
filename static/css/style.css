@@ -368,9 +368,11 @@ h1 a img {
   cursor: pointer;
   font-size: 100%;
   padding: 0.5em 0.25em;
+  display: inline-block;
 }
 
-.example-group h3 i {
+.example-group i {
+  cursor: pointer;
   display: inline-block;
   margin: 0 0.25em;
   font-size: 1.25em;
@@ -380,7 +382,7 @@ h1 a img {
   border-bottom: 1px solid #777;
 }
 
-.example-group h3.shown i {
+.example-group i.shown {
   -moz-transform: rotate(180deg);
   -webkit-transform: rotate(180deg);
   -o-transform: rotate(180deg);
