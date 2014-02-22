@@ -24,7 +24,7 @@ function setupExamples() {
         }
     });
 
-    $('.example-group h3').click(function(e) {
+    $('.example-group').click(function(e) {
         var header = $(e.target);
         var contents = header.siblings('div.contents');
 
