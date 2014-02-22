@@ -382,7 +382,7 @@ def format_dict_title(*title):
                 '<thead><tr><th>{}</th><th>{}</th></tr></thead>'.format(*title),
                 '<tbody>']
         try:
-            for key, val in dictionary.iteritems():
+            for key, val in sorted(dictionary.iteritems()):
                 html.append('<tr><td>{}</td><td>{}</td></tr>'.format(key, val))
         except AttributeError, TypeError:  # not iterable/not a dict
             return formatter(dictionary)
