@@ -368,13 +368,12 @@ h1 a img {
   cursor: pointer;
   font-size: 100%;
   padding: 0.5em 0.25em;
-  display: inline-block;
 }
 
 .example-group i {
   cursor: pointer;
-  display: inline-block;
-  margin: 0 0.25em;
+  float: left;
+  margin: 0.3em 0.25em;
   font-size: 1.25em;
 }
 
