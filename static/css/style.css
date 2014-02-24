@@ -391,6 +391,7 @@ h1 a img {
 }
 
 .example-group .contents {
+  clear:both;
   padding: 0.5em 0.5em;
 }
 
