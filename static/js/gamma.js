@@ -24,7 +24,7 @@ function setupExamples() {
         }
     });
 
-    $('.example-group h3').click(function(e) {
+    $('.example-group').click(function(e) {
         var header = $(e.target);
         var contents = header.siblings('div.contents');
 
@@ -32,6 +32,7 @@ function setupExamples() {
             createCookie(header.html(), contents.is(':visible'), 365);
         });
         header.toggleClass('shown');
+        header.siblings('i').toggleClass('shown');
     });
 }
 
