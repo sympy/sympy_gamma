@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from django.http import HttpResponse
 from django.shortcuts import render
 from copy import copy
 from app.logic import SymPyGamma
@@ -8,6 +9,16 @@ notebook_format = { "metadata": {"name": ""}, "nbformat": 3, "nbformat_minor": 0
 code_cell = {"cell_type": "code",  "input": [], "language": "python", "metadata": {}, "outputs": [{ "output_type": "stream","stream": "stdout", "text": []}], "prompt_number": 1 },
 markdown_cell = {"cell_type": "markdown","metadata": {},"source":[]},
 heading_cell = {"cell_type": "heading","level": 3,"metadata": {},"source": []},
+
+#<p id="heading">SymPy</p>   #styling for notebook to center it.
+#<style>
+#    #heading {
+#        text-align:center;
+#        font-size:40px;
+#        border-bottom: 1px solid black;
+#    }
+#</style>
+
 
 def result_pass(request):
     ''' This function parses and creates the result's json for nbviewer '''
@@ -25,8 +36,6 @@ def result_pass(request):
     #         series(tan(x + 1), x, 0, 10)'''
     # for plotting we can use existing support of matplotlib on
     # Google App engine.
-    # 2)Mathjax include the escaping '\\' which is originally '\'
-    # so we need to parse them to display it correctly.
     #-------------------------------------------------------------
     for q in range(len(result)):
         cell = result[q]
@@ -85,7 +94,8 @@ def result_pass(request):
                     pass
 
     notebook = json.dumps(notebook)
-    return render(request, 'result_notebook.html',
+    return render(request, 'result_notebook.ipynb',
                       {'result': result,
                        'notebook': notebook,
-                       'result': result})
+                       'result': result},
+                        content_type = "text/plain")
