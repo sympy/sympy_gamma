@@ -3,6 +3,7 @@ import json
 import itertools
 import sympy
 from sympy.core.function import FunctionClass
+from sympy.core.symbol import Symbol
 import docutils.core
 import diffsteps
 import intsteps
@@ -382,7 +383,10 @@ def format_dict_title(*title):
                 '<thead><tr><th>{}</th><th>{}</th></tr></thead>'.format(*title),
                 '<tbody>']
         try:
-            for key, val in sorted(dictionary.iteritems()):
+            fdict = dictionary.iteritems()
+            if not any(isinstance(i,Symbol) for i in dictionary.keys()):
+                fdict = sorted(dictionary.iteritems())
+            for key, val in fdict:
                 html.append('<tr><td>{}</td><td>{}</td></tr>'.format(key, val))
         except AttributeError, TypeError:  # not iterable/not a dict
             return formatter(dictionary)
