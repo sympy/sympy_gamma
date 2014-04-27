@@ -384,9 +384,8 @@ def format_dict_title(*title):
                 '<tbody>']
         try:
             fdict = dictionary.iteritems()
-            for key, val in dictionary.iteritems():
-                if not isinstance(key, Symbol): #sort it when can be sorted
-                    fdict = sorted(dictionary.iteritems())
+            if not any(isinstance(i,Symbol) for i in dictionary.keys()):
+                fdict = sorted(dictionary.iteritems())
             for key, val in fdict:
                 html.append('<tr><td>{}</td><td>{}</td></tr>'.format(key, val))
         except AttributeError, TypeError:  # not iterable/not a dict
