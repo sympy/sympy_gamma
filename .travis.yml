@@ -1,8 +1,16 @@
 language: python
 python:
   - "2.7"
+
+env:
+  - PYTHONPATH=$(pwd)
+  
 install: "pip install -r requirements.txt --use-mirrors"
 script: python travis.py
+
 before_script:
+  - echo $PYTHONPATH
   - wget https://commondatastorage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.4.zip -nv
   - unzip -q google_appengine_1.9.4.zip
+  - python dev_appserver.py .
+  - sleep 10
