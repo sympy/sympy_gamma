@@ -9,7 +9,7 @@ virtualenv:
 
 before_install:
   - sudo apt-get install -qq python-numpy
-  - sudo npm install -g casperjs
+  - npm install casperjs
 install: "pip install -r requirements.txt --use-mirrors"
 
 before_script:
