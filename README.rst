@@ -46,6 +46,14 @@ We use submodules to include external libraries in sympy_gamma::
 This is sufficient to clone appropriate repositories in correct versions
 into sympy_gamma (see git documentation on submodules for information).
 
+Generate a configuration file for App Engine (needed to run the development
+web server)::
+
+  $ python deploy.py --generate-only --generate-test 1000
+
+(the number does not matter unless you are deploying, see below). **DO not**
+commit the generated ``app.yaml`` file.
+
 Development server
 ------------------
 
@@ -67,16 +75,29 @@ This is a local server that runs on port 8080 (use ``--port`` option to
 change this). Open a web browser and go to http://localhost:8080. You
 should see GUI of SymPy Gamma.
 
-Uploading to GAE
-----------------
+Uploading to GAE (Manually)
+---------------------------
 
-Before updating the the sympy_gamma app (the official one), you need to do two
-things.  First you need to bump the version in the ``app.yaml`` file.  Just
-change the second line ("version") to one more, and commit it (``git commit
-app.yaml -m "Bump version to NN"``, where ``NN`` is the new version) and push
-it.  Second, you need to go to the ``Versions`` section of the sympy_gamma
-dashboard at appspot.com and delete the oldest version, as we can only upload
-ten versions at a time.
+Travis-CI is used to deploy automatically to the official server. To upload
+the application manually, you need to do a few things.  First, tag the
+current commit with the App Engine application version (this is not
+necessary unless you are deploying to the official server)::
+
+  $ git tag version-42
+
+Second, you need to generate an ``app.yaml`` (App Engine configuration) file
+using ``deploy.py``::
+
+  $ python deploy.py --generate-only --generate-production
+
+The script will determine the version from the tag; it can also be manually
+specified. You will also want to change the application name if you are not
+deploying to the test application. **DO not** commit the generated
+``app.yaml`` file.
+
+Second, you need to go to the ``Versions`` section of the
+sympy_gamma dashboard at appspot.com and delete the oldest version, as we
+can only upload ten versions at a time.
 
 Assuming that sympy_gamma works properly (also across different mainstream web
 browsers), you can upload your changes to Google App Engine::
@@ -90,6 +111,11 @@ it should just work (follow the log that comes up to see.
 This requires admin privileges to http://sympy-gamma-hrd.appspot.com. If you
 don't have access to this App Engine application, but want to test it, see
 the instructions in the `Testing on the App Engine`_ section below.
+
+The deploy script can generate the configuration and deploy in one step if
+given the App Engine SDK location::
+
+  $ SDK_LOCATION=/path/to/sdk python deploy.py --generate-production
 
 Finally, go to http://NN.sympy-gamma-hrd.appspot.com, where ``NN`` is the
 version you just uploaded, and make sure that it works.  If it does, go to
@@ -155,6 +181,11 @@ sure to test your changes to the server part, if it runs properly on 2.5.
 Also don't use any modules that aren't supported by GAE. Note that GAE now
 supports Python 2.7 and that this is what is currently deployed.
 
+If the App Engine configuration needs to be changed (e.g. to update the
+NumPy version), change ``app.yaml.template`` and generate again. The
+Travis-CI script uses this to generate and deploy testing/production
+versions automatically.
+
 Pulling changes
 ---------------
 
@@ -165,10 +196,12 @@ In projects that don't use submodules, pulling changes boils down to::
 in the simplest case. SymPy Gamma, however, requires additional effort::
 
     $ git submodule update
+    $ python deploy.py --generate-only --generate-test 1000
 
-The above command assures that if there were any changes to submodules
+The former command assures that if there were any changes to submodules
 of the super-project, then those submodules will get updated to new
-versions. This is related to the following section.
+versions. This is related to the following section. The latter command
+regenerates the configuration.
 
 Updating SymPy
 --------------
