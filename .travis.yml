@@ -15,6 +15,8 @@ install: "pip install -r requirements.txt --use-mirrors"
 before_script:
   - wget https://commondatastorage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.4.zip -nv
   - unzip -q google_appengine_1.9.4.zip
-  - python google_appengine/dev_appserver.py --skip_sdk_update_check 1 . &
+  - python $SDK_LOCATION/dev_appserver.py --skip_sdk_update_check 1 . &> server.txt &
   - sleep 10
-script: python travis.py
+script:
+  - python travis.py
+  - cat server.txt
