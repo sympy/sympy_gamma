@@ -12,7 +12,8 @@ DEPLOY_COMMAND = ('python2 $SDK_LOCATION/appcfg.py '
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate an App Engine app.yaml and optionally deploy this application.')
     parser.add_argument('--generate-only',
-                        help="Only generate app.yaml. Do not deploy.")
+                        help="Only generate app.yaml. Do not deploy.",
+                        action='store_true')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--generate-test',
