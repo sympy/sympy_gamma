@@ -33,7 +33,9 @@ if __name__ == '__main__':
     deploy_app = not args.generate_only
 
     config_type = 'test'
-    if args.generate_production > 0 or os.environ.get('TRAVIS_PULL_REQUEST') == 'false':
+    if (args.generate_production > 0 or
+        (os.environ.get('TRAVIS_PULL_REQUEST') == 'false' and
+         args.generate_test < 0)):
         config_type = 'production'
 
     application = version = None
