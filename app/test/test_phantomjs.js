@@ -44,8 +44,23 @@ casper.test.begin("All cards load", function(test) {
         ["absolute_value", { variable: "None", expression: "42" }],
         ["polar_angle", { variable: "None", expression: "2 + 3I" }],
         ["conjugate", { variable: "None", expression: "2 + 3I" }],
-        ["integral_alternate_fake", { variable: "x", expression: "integrate(x)" }],
-        //["", { variable: "x", expression: "x**2" }],
+        ["trigexpand", { variable: "x", expression: "sin(x)" }],
+        ["trigsimp", { variable: "x", expression: "sin(x)" }],
+        ["trigsincos", { variable: "x", expression: "sin(x)" }],
+        ["trigexp", { variable: "x", expression: "sin(x)" }],
+        ["plot", { variable: "x", expression: "sin(x)" }],
+        ["function_docs", { variable: "None", expression: "plot" }],
+        ["root_to_polynomial", { variable: "None", expression: "2 + 3I" }],
+        ["matrix_inverse", { variable: "None", expression: "Matrix([[1,2],[3,4]])" }],
+        ["matrix_eigenvals", { variable: "None", expression: "Matrix([[1,2],[3,4]])" }],
+        ["matrix_eigenvectors", { variable: "None", expression: "Matrix([[1,2],[3,4]])" }],
+        ["satisfiable", { variable: "x", expression: "x | y" }],
+        ["truth_table", { variable: "x", expression: "x | y" }],
+        ["doit", { variable: "k", expression: "Sum(k,(k,1,m))" }],
+        ["approximator", { variable: "x", expression: "pi", digits: "50" }],
+        ["trig_alternate", { variable: "x", expression: "sin(x)" }],
+        ["integral_alternate", { variable: "x", expression: "x**2" }],
+        ["integral_alternate_fake", { variable: "x", expression: "integrate(x)" }]
     ], function(self, data) {
         var card_name = data[0];
         var params = data[1];
