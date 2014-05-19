@@ -53,7 +53,7 @@ if __name__ == '__main__':
         stdin, stdout = git_process.communicate()
         if not stdin and args.generate_production <= 0:
             print "ERROR: Could not determine version to deploy."
-            print "Either tag the current commit as 'version-VERSION' or provide" + \
+            print "Either tag the current commit as 'version-VERSION' or provide " + \
                 "--generate-production VERSION."
             sys.exit(1)
 
