@@ -43,7 +43,7 @@ if __name__ == '__main__':
     application = version = None
     if config_type == 'production':
         print "Generating production configuration."
-        application = 'sympy-gamma-li'
+        application = 'sympy-gamma-hrd'
         # On main branch. Get the tag corresponding to the current commit;
         # if the tag does not exist, do not deploy.
         git_process = subprocess.Popen(TAG_COMMAND,
