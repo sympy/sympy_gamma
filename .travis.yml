@@ -5,7 +5,7 @@ python:
 env:
   global:
     - PYTHONPATH=$(pwd)
-    - SDK_LOCATION=$(pwd)/google_appengine
+    - SDK_LOCATION="$TRAVIS_BUILD_DIR/google_appengine"
     # encrypted $OAUTH_REFRESH_TOKEN needed for deployment
     - secure: "ePdMNCGbXplQwe+Y21rGMP01bnY+nssISc9Bhp2/QJ0pGw8RsTrc3LoCpQm2TPNkAEiwV3+NLoK4LuKnB6dg7DOLfAW9fD+7MyKl92Wio1vwIlEUxhhYldPXdBiOUND548Qyzty7ENkIrMNiMfxvUsKiKKwszoRrt8TAfZ2XpUc="
 virtualenv:
