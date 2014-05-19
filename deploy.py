@@ -8,6 +8,8 @@ import subprocess
 TAG_COMMAND = 'git describe --exact-match HEAD --tags'
 DEPLOY_COMMAND = ('python2 $SDK_LOCATION/appcfg.py '
                   '--oauth2_refresh_token=$OAUTH_REFRESH_TOKEN update .')
+ROLLBACK_COMMAND = ('python2 $SDK_LOCATION/appcfg.py '
+                  '--oauth2_refresh_token=$OAUTH_REFRESH_TOKEN rollback .')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate an App Engine app.yaml and optionally deploy this application.')
@@ -92,4 +94,5 @@ if __name__ == '__main__':
         if return_code == 0:
             print "Deployed application."
         else:
-            print "Could not deploy application."
+            print "Could not deploy application. Running appcfg rollback..."
+            subprocess.call(ROLLBACK_COMMAND, shell=True)
