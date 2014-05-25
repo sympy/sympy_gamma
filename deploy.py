@@ -89,10 +89,13 @@ if __name__ == '__main__':
 
     print "Generated configuration."
     if deploy_app:
-        print "Deploying..."
-        return_code = subprocess.call(DEPLOY_COMMAND, shell=True)
-        if return_code == 0:
-            print "Deployed application."
+        if os.environ.get('OAUTH_REFRESH_TOKEN'):
+            print "Deploying..."
+            return_code = subprocess.call(DEPLOY_COMMAND, shell=True)
+            if return_code == 0:
+                print "Deployed application."
+            else:
+                print "Could not deploy application. Running appcfg rollback..."
+                subprocess.call(ROLLBACK_COMMAND, shell=True)
         else:
-            print "Could not deploy application. Running appcfg rollback..."
-            subprocess.call(ROLLBACK_COMMAND, shell=True)
+            print "No credentials found for deployment."
