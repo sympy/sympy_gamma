@@ -25,8 +25,8 @@
                 href="http://www.wolframalpha.com/input/?i={{input|urlencode}}">
                     Wolfram|Alpha</a> has to say.</p>
                 <p>See the results as IPython <a class="notebook"
-                href="http://nbviewer.ipython.org/url/sympygamma.com/result.ipynb?input={{ input }}">
-                    Notebook Viewer</a> or export to an IPython Notebook <a href="{% url app.notebook.result_pass %}?i={{ input }}">file</a></p>
+                href="http://nbviewer.ipython.org/url/sympygamma.com/result?input={{ input }}">
+                    Notebook Viewer</a> or export to an IPython Notebook <a href="{% url app.notebook.result_json %}?i={{ input }}">file</a></p>
                 
 
                 <p>{{ promote_live|safe }}</p>
