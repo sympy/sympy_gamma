@@ -32,82 +32,70 @@ def result_json(request):
     notebook = copy(notebook_format)
 
     for cell in result:
-        if 'ambiguity' in cell.keys():
+        title = copy(heading_cell[0])
+        title['level'] = 3
+        a = str(cell['title'])
+        title['source'] = [a]
+        notebook['worksheets'][0]['cells'].append(title)
 
-            ambiguity = copy(markdown_cell[0])
-            card_link = cell['ambiguity']
-            link = '<p>Did you mean: <a href="http://sympygamma.com/input/?i=' + str(card_link) + '>"' + str(card_link) + '</a>?</p>'
-            ambiguity['source'] = [link]
-            notebook['worksheets'][0]['cells'].append(ambiguity)
+        if 'input' in cell.keys():
+            inputs = copy(heading_cell[0])
+            inputs['level'] = 4
+            inputs['source'] = [str(cell['input'])]
+            notebook['worksheets'][0]['cells'].append(inputs)
 
-            if cell['description'] != '':
-                description = heading_cell[0]
-                description['source'] = [cell['description']]
-                notebook['worksheets'][0]['cells'].append(description)
+        if 'output' in cell.keys():
+            output = copy(markdown_cell[0])
 
-        else:
-            title = copy(heading_cell[0])
-            title['level'] = 5
-            a = str(cell['title'])
-            title['source'] = [a]
-            notebook['worksheets'][0]['cells'].append(title)
+            if 'pre_output' in cell.keys():
+                if cell['pre_output'] !="":
+                    pre_output = copy(markdown_cell[0])
+                    pre_output['source'] = ['$$'+str(cell['pre_output'])+'$$']
+                    notebook['worksheets'][0]['cells'].append(pre_output)
 
-            if 'input' in cell.keys():
-                inputs = copy(heading_cell[0])
-                inputs['level'] = 5
-                inputs['source'] = [str(cell['input'])]
-                notebook['worksheets'][0]['cells'].append(inputs)
+            if cell['output'] != "" and 'script' in cell['output']:
+                output['source'] = [cell['output']]
+                notebook['worksheets'][0]['cells'].append(output)
 
-            if 'output' in cell.keys():
-                output = copy(markdown_cell[0])
-
-                if 'pre_output' in cell.keys():
-                    if cell['pre_output'] !="":
-                        pre_output = copy(markdown_cell[0])
-                        pre_output['source'] = ['$$'+str(cell['pre_output'])+'$$']
-                        notebook['worksheets'][0]['cells'].append(pre_output)
-
-                if cell['output'] != "" and 'script' in cell['output']:
-                    output['source'] = [cell['output']]
-                    notebook['worksheets'][0]['cells'].append(output)
-
-            if 'card' in cell.keys():
+        if 'card' in cell.keys():
+            if cell['card'] != 'plot':
                 card_name = cell['card']
                 variable = cell['var']
-
+                parameters = {}
                 if 'pre_output' in cell.keys():
                     if cell['pre_output'] != '':
                         cell_pre_output = copy(markdown_cell[0])
                         cell_pre_output['source'] = ['$$'+str(cell['pre_output'])+'$$']
                         notebook['worksheets'][0]['cells'].append(cell_pre_output)
-                # using "format" instread of string catenation returns entire HTML source.
+
                 try:
-                    card_json = (urllib2.urlopen('http://sympygamma.com/card/'+ str(card_name)
-                                + '?variable=' + str(variable) + '&expression=' + str(exp))).read()
-                    card_json = json.loads(card_json)
+                    card_json = g.eval_card(card_name, exp, variable, parameters)
+                    #card_json = json.loads(card_json)
                     card_result = copy(markdown_cell[0])
                     card_result['source'] = [card_json['output']]
                     notebook['worksheets'][0]['cells'].append(card_result)
                 except:
-                    pass
-
-            if 'cell_output' in cell.keys():
-                if cell['cell_output'] != "":
-                    cell_output = copy(markdown_cell[0])
-                    cell_output['source'] = [cell['cell_output']]
-                    notebook['worksheets'][0]['cells'].append(cell_output)
-
-            elif 'pre_output' in cell.keys():
-                if cell['pre_output'] != "":
-                    pre_output = copy(markdown_cell[0])
-                    pre_output['source'] = ['$$' + str(cell['pre_output']) + '$$']
-                    notebook['worksheets'][0]['cells'].append(pre_output)
-
+                    card_error = copy(markdown_cell[0])
+                    card_error['source'] = ['Errored']
+                    notebook['worksheets'][0]['cells'].append(card_error)
             else:
-                    pass
+                card_plot = copy(markdown_cell[0])
+                card_plot['source'] = ['Plotting is not yet implemented.']
+                notebook['worksheets'][0]['cells'].append(card_plot)
+
+
+
+        if 'cell_output' in cell.keys():
+            if cell['cell_output'] != "":
+                cell_output = copy(markdown_cell[0])
+                cell_output['source'] = [cell['cell_output']]
+                notebook['worksheets'][0]['cells'].append(cell_output)
+
+        else:
+                pass
 
     notebook_json = json.dumps(notebook)
-    response =  HttpResponse(notebook_json, content_type = 'application/json')
-    #Comment following line to stop the file from being downloaded.
-    response['Content-Disposition'] = 'attachment; filename=gamma.ipynb'
+    response =  HttpResponse(notebook_json, content_type = 'text/plain')
+
+    #response['Content-Disposition'] = 'attachment; filename=gamma.ipynb'
     return response
