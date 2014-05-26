@@ -200,7 +200,7 @@ def input(request, user):
         form = SearchForm(request.GET)
         if form.is_valid():
             input = form.cleaned_data["i"]
-
+            export_notebook = urllib2.quote(str(input))
             if input.strip().lower() in ('random', 'example', 'random example'):
                 return redirect('/random')
 
@@ -225,6 +225,7 @@ def input(request, user):
             # For some reason the |random tag always returns the same result
             return ("result.html", {
                 "input": input,
+                "export_notebook": export_notebook,
                 "result": r,
                 "form": form,
                 "MEDIA_URL": settings.MEDIA_URL,
