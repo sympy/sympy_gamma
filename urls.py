@@ -12,7 +12,7 @@ urlpatterns = patterns(
     # Example:
     # (r'^notebook/', include('notebook.foo.urls')),
     (r'^$', 'app.views.index'),
-    (r'^result/$', 'app.notebook.result_json'),
+    (r'^export_notebook/$', 'app.notebook.result_json'),
     (r'^input/', 'app.views.input'),
     (r'^about/$', 'app.views.about'),
     (r'^random', 'app.views.random_example'),
