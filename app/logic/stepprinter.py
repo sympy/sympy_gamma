@@ -88,6 +88,7 @@ class HTMLPrinter(LaTeXPrinter):
     def __init__(self):
         super(HTMLPrinter, self).__init__()
         self.lines = ['<ol>']
+        self.u_var_counter = 0
 
     def format_math(self, math):
         return '<script type="math/tex; mode=inline">{}</script>'.format(
@@ -121,7 +122,13 @@ class HTMLPrinter(LaTeXPrinter):
 
     @contextmanager
     def new_u_vars(self):
-        self.u, self.du = sympy.Symbol('u'), sympy.Symbol('du')
+        variable = ['u', 'v'][self.u_var_counter % 2]
+        if self.u_var_counter > 1:
+            variable += str(self.u_var_counter - 1)
+
+        self.u_var_counter += 1
+
+        self.u, self.du = sympy.Symbol(variable), sympy.Symbol('d' + variable)
         yield self.u, self.du
 
     def append(self, text):
