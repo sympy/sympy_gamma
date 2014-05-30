@@ -208,4 +208,6 @@ $(document).ready(function() {
     if (screen.width <= 1024) {
         setupMobileKeyboard();
     }
+
+    $('#id_i').focus();
 });
