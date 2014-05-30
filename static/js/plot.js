@@ -684,46 +684,38 @@ function setupPlots() {
             plot.option(option, node.prop('checked'));
             plot.update();
         });
-        moreContent.find('#plot-x-min').change(function() {
-            var xmin = parseInt($(this).val(), 10);
-            var xmax = moreContentR.get('x')[1];
-            if (xmin >= xmax) {
-                xmin = xmax - 1;
-                $(this).val(xmin);
-            }
-            plot.scales.x.domain([xmin, xmax]);
-            plot.resize({ updateZoom: true });
-        });
-        moreContent.find('#plot-x-max').change(function() {
-            var xmin = moreContentR.get('x')[0];
-            var xmax = parseInt($(this).val(), 10);
-            if (xmax <= xmin) {
-                xmax = xmin + 1
-                $(this).val(xmax);
-            }
-            plot.scales.x.domain([xmin, xmax]);
-            plot.resize({ updateZoom: true });
-        });
-        moreContent.find('#plot-y-min').change(function() {
-            var ymin = parseInt($(this).val(), 10);
-            var ymax = moreContentR.get('y')[1];
-            if (ymin >= ymax) {
-                ymin = ymax - 1;
-                $(this).val(ymin);
-            }
-            plot.scales.y.domain([ymin, ymax]);
-            plot.resize({ updateZoom: true });
-        });
-        moreContent.find('#plot-y-max').change(function() {
-            var ymin = moreContentR.get('y')[0];
-            var ymax = parseInt($(this).val(), 10);
-            if (ymax <= ymin) {
-                ymax = ymin + 1
-                $(this).val(ymax);
-            }
-            plot.scales.y.domain([ymin, ymax]);
-            plot.resize({ updateZoom: true });
-        });
+        var setupDomainUpdate = function(minEl, maxEl, scale) {
+            minEl.change(function() {
+                var min = parseInt($(this).val(), 10);
+                var max = moreContentR.get(scale)[1];
+                if (min >= max) {
+                    min = max - 1;
+                    $(this).val(min);
+                }
+                plot.scales[scale].domain([min, max]);
+                plot.resize({ updateZoom: true });
+                if (scale === 'x') {
+                    plot.retrieveData(plot.scales.x);
+                }
+            });
+            maxEl.change(function() {
+                var min = moreContentR.get(scale)[0];
+                var max = parseInt($(this).val(), 10);
+                if (max <= min) {
+                    max = min + 1
+                    $(this).val(max);
+                }
+                plot.scales[scale].domain([min, max]);
+                plot.resize({ updateZoom: true });
+                if (scale === 'x') {
+                    plot.retrieveData(plot.scales.x);
+                }
+            });
+        }
+        setupDomainUpdate(moreContent.find('#plot-x-min'),
+                          moreContent.find('#plot-x-max'), 'x');
+        setupDomainUpdate(moreContent.find('#plot-y-min'),
+                          moreContent.find('#plot-y-max'), 'y');
 
         $(moreContentR.el).find('input[type="checkbox"]').each(function() {
             var option = $(this).attr('id').slice(5);
