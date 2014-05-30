@@ -1,0 +1,34 @@
+{% verbatim %}
+<script id="plot-suboptions-template" type="text/ractive">
+  <div>
+    <h2>Plot Options</h2>
+    <div>
+      <input type="checkbox" id="plot-grid" on-click="option-toggled"><label for="plot-grid">Show grid</label>
+    </div>
+    <div>
+      <input type="checkbox" id="plot-axes" on-click="option-toggled"><label for="plot-axes">Show axes</label>
+    </div>
+    <div>
+      <input type="checkbox" id="plot-points" on-click="option-toggled"><label for="plot-points">Show points</label>
+    </div>
+    <div>
+      <input type="checkbox" id="plot-path" on-click="option-toggled"><label for="plot-path">Show path</label>
+    </div>
+  </div>
+  <div>
+    <h2>View Window</h2>
+    <div>
+      <label for="plot-x-min">X min:</label> <input type="number" id="plot-x-min" value="{{ x[0] }}" />
+      <label for="plot-x-max">X max:</label> <input type="number" id="plot-x-max" value="{{ x[1] }}" />
+    </div>
+    <div>
+      <label for="plot-y-min">Y min:</label> <input type="number" id="plot-y-min" value="{{ y[0] }}" />
+      <label for="plot-y-max">Y max:</label> <input type="number" id="plot-y-max" value="{{ y[1] }}" />
+    </div>
+  </div>
+  <div>
+    <h2>Export</h2>
+    <a href-lang="image/svg+xml" href="{{ svg_data_uri }}">SVG</a>
+  </div>
+</script>
+{% endverbatim %}

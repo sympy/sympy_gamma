@@ -17,6 +17,28 @@ var __extend = function(parent, child) {
 }
 
 
+// Monkeypatches d3.scale.linear object to fire events when domain is
+// changed (used for data binding)
+function patchScale(scale) {
+    var originalDomain = scale.domain;
+    var dispatcher = d3.dispatch("domainchange");
+    scale.domain = function(x) {
+        var result;
+        if (arguments.length) {
+            result = originalDomain.call(scale, x);
+            if (typeof x._ractive === "undefined") {
+                dispatcher.domainchange.call(scale, x);
+            }
+        }
+        else {
+            result = originalDomain.call(scale);
+        }
+        return result;
+    };
+    return dispatcher;
+}
+
+
 var PlotBackend = (function() {
     function PlotBackend(plot, container) {
         this.plot = plot;
@@ -320,6 +342,7 @@ var Plot2D = (function() {
             points: false,
             path: true
         };
+        this.event = d3.dispatch("xdomainchange", "ydomainchange");
 
         for (var opt in this.options) {
             if (!this.options.hasOwnProperty(opt)) {
@@ -349,6 +372,12 @@ var Plot2D = (function() {
                 x: d3.scale.linear(),
                 y: d3.scale.linear()
             };
+            patchScale(this.scales.x).on('domainchange', $.proxy(function(domain) {
+                this.event.xdomainchange.call(this, domain);
+            },this));
+            patchScale(this.scales.y).on('domainchange', $.proxy(function(domain) {
+                this.event.ydomainchange.call(this, domain);
+            },this));
         }
         this.scales.x.domain([-10, 10]).range([10, this.width() - 10]);
         this.scales.y.domain(this.calculateYRange()).range([this.height() - 10, 10]);
@@ -603,32 +632,106 @@ function setupPlots() {
         var moreButton = $('<button><i class="icon-angle-down"></i> More...</button>')
             .addClass('card_options_toggle')
             .addClass('card_options_more');
-        var moreContent = $('<div/>');
+        // var moreContent = $('<div/>');
 
-        var options = $.map(['grid', 'axes', 'points', 'path'], function(opt) {
-            var opt = opt;
-            return $('<div/>').append([
-                $('<input type="checkbox" id="plot-' + opt + '" />')
-                    .click(function(e) {
-                        plot.option(opt, $(e.target).prop('checked'));
-                        plot.update();
-                    })
-                    .prop('checked', plot.option(opt)),
-                $('<label for="plot-'+ opt + '">Show ' + opt + '</label>'),
-            ]);
+        // var options = $.map(['grid', 'axes', 'points', 'path'], function(opt) {
+        //     var opt = opt;
+        //     return $('<div/>').append([
+        //         $('<input type="checkbox" id="plot-' + opt + '" />')
+        //             .click(function(e) {
+        //                 plot.option(opt, $(e.target).prop('checked'));
+        //                 plot.update();
+        //             })
+        //             .prop('checked', plot.option(opt)),
+        //         $('<label for="plot-'+ opt + '">Show ' + opt + '</label>'),
+        //     ]);
+        // });
+
+        // moreContent.append([
+        //     $('<div/>').append($('<h2>Plot Options</h2>')).append(options),
+        //     $('<div/>').append([
+        //         $('<h2>View Window</h2>'),
+        //     ]),
+        //     $('<div/>').append([
+        //         $('<h2>Export</h2>'),
+        //         $('<a href-lang="image/svg+xml">SVG</a>').click(function() {
+        //             $(this).attr('href', plot.asDataURI())
+        //         }).attr('href', plot.asDataURI())
+        //     ])
+        // ]);
+
+        var moreContent = $("<div>");
+        var moreContentR = new Ractive({
+            el: moreContent,
+            template: '#plot-suboptions-template',
+            data: {
+                x: plot.scales.x.domain(),
+                y: plot.scales.y.domain()
+            },
+            twoway: false
         });
 
-        moreContent.append([
-            $('<div/>').append([
-                $('<h2>Export</h2>'),
-                $('<a href-lang="image/svg+xml">SVG</a>').click(function() {
-                    $(this).attr('href', plot.asDataURI())
-                }).attr('href', plot.asDataURI())
-            ]),
-            $('<div/>').append($('<h2>Plot Options</h2>')).append(options)
-        ]);
+        plot.event.on('xdomainchange', function(domain) {
+            moreContentR.set('x', domain);
+        });
+        plot.event.on('ydomainchange', function(domain) {
+            moreContentR.set('y', domain);
+        });
+
+        moreContentR.on('option-toggled', function(e) {
+            var node = $(e.node);
+            var option = node.attr('id').slice(5);
+            plot.option(option, node.prop('checked'));
+            plot.update();
+        });
+        moreContent.find('#plot-x-min').change(function() {
+            var xmin = parseInt($(this).val(), 10);
+            var xmax = moreContentR.get('x')[1];
+            if (xmin >= xmax) {
+                xmin = xmax - 1;
+                $(this).val(xmin);
+            }
+            plot.scales.x.domain([xmin, xmax]);
+            plot.resize({ updateZoom: true });
+        });
+        moreContent.find('#plot-x-max').change(function() {
+            var xmin = moreContentR.get('x')[0];
+            var xmax = parseInt($(this).val(), 10);
+            if (xmax <= xmin) {
+                xmax = xmin + 1
+                $(this).val(xmax);
+            }
+            plot.scales.x.domain([xmin, xmax]);
+            plot.resize({ updateZoom: true });
+        });
+        moreContent.find('#plot-y-min').change(function() {
+            var ymin = parseInt($(this).val(), 10);
+            var ymax = moreContentR.get('y')[1];
+            if (ymin >= ymax) {
+                ymin = ymax - 1;
+                $(this).val(ymin);
+            }
+            plot.scales.y.domain([ymin, ymax]);
+            plot.resize({ updateZoom: true });
+        });
+        moreContent.find('#plot-y-max').change(function() {
+            var ymin = moreContentR.get('y')[0];
+            var ymax = parseInt($(this).val(), 10);
+            if (ymax <= ymin) {
+                ymax = ymin + 1
+                $(this).val(ymax);
+            }
+            plot.scales.y.domain([ymin, ymax]);
+            plot.resize({ updateZoom: true });
+        });
+
+        $(moreContentR.el).find('input[type="checkbox"]').each(function() {
+            var option = $(this).attr('id').slice(5);
+            $(this).prop('checked', plot.option(option));
+        });
 
         moreContent.hide();
+
         moreButton.click(function() {
             moreContent.slideToggle();
             moreButton.toggleClass('open');
