@@ -7,8 +7,8 @@ from stepprinter import functionnames, Rule, replace_u_var
 from sympy.integrals.manualintegrate import (
     manualintegrate, _manualintegrate, integral_steps, evaluates,
     ConstantRule, ConstantTimesRule, PowerRule, AddRule, URule,
-    PartsRule, CyclicPartsRule, TrigRule, ExpRule, LogRule, ArctanRule,
-    AlternativeRule, DontKnowRule, RewriteRule
+    PartsRule, CyclicPartsRule, TrigRule, ExpRule, ReciprocalRule, ArctanRule,
+    AlternativeRule, DontKnowRule, RewriteRule, PiecewiseRule, HeavisideRule
 )
 
 # Need this to break loops
@@ -72,8 +72,8 @@ class IntegralPrinter(object):
             self.print_Trig(rule)
         elif isinstance(rule, ExpRule):
             self.print_Exp(rule)
-        elif isinstance(rule, LogRule):
-            self.print_Log(rule)
+        elif isinstance(rule, ReciprocalRule):
+            self.print_Reciprocal(rule)
         elif isinstance(rule, ArctanRule):
             self.print_Arctan(rule)
         elif isinstance(rule, AlternativeRule):
@@ -82,6 +82,10 @@ class IntegralPrinter(object):
             self.print_DontKnow(rule)
         elif isinstance(rule, RewriteRule):
             self.print_Rewrite(rule)
+        elif isinstance(rule, PiecewiseRule):
+            self.print_Piecewise(rule)
+        elif isinstance(rule, HeavisideRule):
+            self.print_Heaviside(rule)
         else:
             self.append(repr(rule))
 
@@ -256,7 +260,7 @@ class IntegralPrinter(object):
                 sympy.Eq(sympy.Integral(rule.context, rule.symbol),
                        _manualintegrate(rule))))
 
-    def print_Log(self, rule):
+    def print_Reciprocal(self, rule):
         with self.new_step():
             self.append("The integral of {} is {}.".format(
                 self.format_math(1 / rule.func),
@@ -276,6 +280,26 @@ class IntegralPrinter(object):
             self.append(self.format_math_display(
                 sympy.Eq(rule.context, rule.rewritten)))
             self.print_rule(rule.substep)
+
+    def print_Piecewise(self, rule):
+        with self.new_step():
+            self.append("This integral must be done piecewise.")
+            for subrule, condition in rule.subfunctions:
+                with self.new_level():
+                    if condition is True:
+                        self.append("For other points in the domain:")
+                    else:
+                        self.append("For the interval where {}:".format(
+                            self.format_math(condition)
+                        ))
+                    self.print_rule(subrule)
+
+    def print_Heaviside(self, rule):
+        with self.new_step():
+            self.append("The integral of {} is {}.".format(
+                self.format_math(sympy.Heaviside(rule.symbol)),
+                self.format_math(rule.symbol * sympy.Heaviside(rule.symbol))
+            ))
 
     def print_DontKnow(self, rule):
         with self.new_step():
