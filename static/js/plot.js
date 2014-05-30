@@ -318,13 +318,58 @@ var D3Backend = (function(_parent) {
         }, this));
     };
 
-    D3Backend.prototype.asDataURI = function() {
+    D3Backend.prototype.asSVG = function() {
         // http://stackoverflow.com/questions/2483919
         this.hideCrosshair();
         var serializer = new XMLSerializer();
-        var svgData = window.btoa(serializer.serializeToString(this.svg[0][0]));
+        var svgData = serializer.serializeToString(this.svg[0][0]);
         this.showCrosshair();
-        return 'data:image/svg+xml;base64,\n' + svgData;
+        return svgData;
+    };
+
+    D3Backend.prototype.asBlob = function(format) {
+        var result = new $.Deferred();
+        if (format === "SVG") {
+            result.resolve(new Blob(
+                [this.asSVG()],
+                { type: this.supportedImageFormats.SVG.mimeType }
+            ));
+        }
+        else if (format === "PNG") {
+            var svg = this.asSVG();
+            svg = 'data:image/svg+xml;base64,\n' + window.btoa(svg);
+            var canvas = $("<canvas></canvas>");
+            canvas.attr({
+                width: this.plot.width(),
+                height: this.plot.height()
+            });
+            var context = canvas[0].getContext("2d");
+            var image = new Image(this.plot.width(), this.plot.height());
+            image.src = svg;
+            image.onload = $.proxy(function() {
+                context.drawImage(image, 0, 0);
+                // TODO: make sure slice is robust across browsers
+                var pngdata = window.atob(canvas[0].toDataURL("image/png").slice(22));
+                var buffer = new ArrayBuffer(pngdata.length);
+                var view = new Uint8Array(buffer);
+                for (var i = 0; i < view.length; i++) {
+                    view[i] = pngdata.charCodeAt(i);
+                }
+                result.resolve(new Blob(
+                    [view],
+                    { type: this.supportedImageFormats.PNG.mimeType }
+                ));
+            }, this);
+        }
+        else {
+            throw "D3Backend: Unknown export format: " + format;
+        }
+        return result;
+    };
+
+    D3Backend.prototype.supportedImageFormats = {
+        SVG: { mimeType: 'image/svg+xml' },
+        PNG: { mimeType: 'image/png' }
     };
 
     return D3Backend;
@@ -568,8 +613,10 @@ var Plot2D = (function() {
         createCookie(opt, value, 365);
     };
 
-    Plot2D.prototype.asDataURI = function() {
-        return this._backend.asDataURI();
+    Plot2D.prototype.generateDownload = function(format, callback) {
+        this._backend.asBlob(format).then(function(blob) {
+            callback(blob);
+        });
     }
 
     return Plot2D;
@@ -639,11 +686,12 @@ function setupPlots() {
             template: '#plot-suboptions-template',
             data: {
                 x: plot.scales.x.domain(),
-                y: plot.scales.y.domain()
+                y: plot.scales.y.domain(),
+                supportedImageFormats: plot._backend.supportedImageFormats
             },
             twoway: false
         });
-
+        console.log(moreContentR.data)
         plot.event.on('xdomainchange', function(domain) {
             moreContentR.set('x', domain);
         });
@@ -689,9 +737,21 @@ function setupPlots() {
                           moreContent.find('#plot-x-max'), 'x');
         setupDomainUpdate(moreContent.find('#plot-y-min'),
                           moreContent.find('#plot-y-max'), 'y');
-        moreContent.find('#export-svg').click(function() {
-            $(this).attr('href', plot.asDataURI());
-        }).attr('href', plot.asDataURI());
+        moreContent.find('button.export').click(function(e) {
+            e.preventDefault();
+            var format = $(this).text()
+            plot.generateDownload(format, function(blob) {
+                moreContent.find('a.export').remove();
+                moreContent.find('button.export:last-child').after(
+                    $('<a class="export">Download</a>').attr({
+                        href: window.URL.createObjectURL(blob),
+                        download: "export." + format.toLowerCase()
+                    }).click(function() {
+                        $(this).remove();
+                    })
+                );
+            });
+        });
 
         $(moreContentR.el).find('input[type="checkbox"]').each(function() {
             var option = $(this).attr('id').slice(5);

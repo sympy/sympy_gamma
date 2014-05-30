@@ -28,7 +28,9 @@
   </div>
   <div>
     <h2>Export</h2>
-    <a href-lang="image/svg+xml" href="" id="export-svg">SVG</a>
+    {{ #supportedImageFormats:format }}
+    <button class="export">{{ format }}</button>
+    {{ /supportedImageFormats }}
   </div>
 </script>
 {% endverbatim %}

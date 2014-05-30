@@ -542,6 +542,10 @@ button {
   stroke-width: 3;
 }
 
+button.export {
+  display: inline-block;
+}
+
 .help {
   margin: 0;
   padding: 0;
