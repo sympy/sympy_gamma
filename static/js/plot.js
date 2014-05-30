@@ -632,33 +632,6 @@ function setupPlots() {
         var moreButton = $('<button><i class="icon-angle-down"></i> More...</button>')
             .addClass('card_options_toggle')
             .addClass('card_options_more');
-        // var moreContent = $('<div/>');
-
-        // var options = $.map(['grid', 'axes', 'points', 'path'], function(opt) {
-        //     var opt = opt;
-        //     return $('<div/>').append([
-        //         $('<input type="checkbox" id="plot-' + opt + '" />')
-        //             .click(function(e) {
-        //                 plot.option(opt, $(e.target).prop('checked'));
-        //                 plot.update();
-        //             })
-        //             .prop('checked', plot.option(opt)),
-        //         $('<label for="plot-'+ opt + '">Show ' + opt + '</label>'),
-        //     ]);
-        // });
-
-        // moreContent.append([
-        //     $('<div/>').append($('<h2>Plot Options</h2>')).append(options),
-        //     $('<div/>').append([
-        //         $('<h2>View Window</h2>'),
-        //     ]),
-        //     $('<div/>').append([
-        //         $('<h2>Export</h2>'),
-        //         $('<a href-lang="image/svg+xml">SVG</a>').click(function() {
-        //             $(this).attr('href', plot.asDataURI())
-        //         }).attr('href', plot.asDataURI())
-        //     ])
-        // ]);
 
         var moreContent = $("<div>");
         var moreContentR = new Ractive({
@@ -716,6 +689,9 @@ function setupPlots() {
                           moreContent.find('#plot-x-max'), 'x');
         setupDomainUpdate(moreContent.find('#plot-y-min'),
                           moreContent.find('#plot-y-max'), 'y');
+        moreContent.find('#export-svg').click(function() {
+            $(this).attr('href', plot.asDataURI());
+        }).attr('href', plot.asDataURI());
 
         $(moreContentR.el).find('input[type="checkbox"]').each(function() {
             var option = $(this).attr('id').slice(5);
