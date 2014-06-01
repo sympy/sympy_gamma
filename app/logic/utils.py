@@ -245,6 +245,11 @@ def format_help(node, visitor):
         return r'\mathrm{Show~documentation~for~}' + function.__name__
     return r'\mathrm{Show~documentation~(requires~1~argument)}'
 
+@LatexVisitor.formats_function('series')
+def format_help(node, visitor):
+    expr = visitor.evaluator.eval_node(node.args[0])
+    return r'\mathrm{Series~expansion~of~}' + sympy.latex(expr)
+
 class TopCallVisitor(ast.NodeVisitor):
     def __init__(self):
         super(TopCallVisitor, self).__init__()
