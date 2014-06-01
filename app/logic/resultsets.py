@@ -970,6 +970,7 @@ result_sets = [
     ('plot', extract_plot, ['plot']),
     ('rsolve', None, None),
     ('product', None, []),  # suppress automatic Result card
+    ('series', None, None),
     (is_integer, None, ['digits', 'factorization', 'factorizationDiagram']),
     (is_complex, None, ['absolute_value', 'polar_angle', 'conjugate']),
     (is_rational, None, ['float_approximation']),
