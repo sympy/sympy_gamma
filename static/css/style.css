@@ -478,6 +478,13 @@ p {
   filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#552634, endColorstr=#40252D);
 }
 
+#random-example {
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 7px;
+  padding: 5px 7px 6px 6px;
+  margin-bottom: 0;
+}
 /* Plots */
 
 /* Formatting for the input line */
