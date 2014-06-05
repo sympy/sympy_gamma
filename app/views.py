@@ -201,6 +201,7 @@ def input(request, user):
         if form.is_valid():
             input = form.cleaned_data["i"]
             export_notebook = urllib2.quote(str(input))
+            encoded_export_notebook = urllib2.quote(str(export_notebook)) #encoding twice for nbviewer.
             if input.strip().lower() in ('random', 'example', 'random example'):
                 return redirect('/random')
 
@@ -225,6 +226,7 @@ def input(request, user):
             # For some reason the |random tag always returns the same result
             return ("result.html", {
                 "input": input,
+                "encoded_export_notebook": encoded_export_notebook,
                 "export_notebook": export_notebook,
                 "result": r,
                 "form": form,
