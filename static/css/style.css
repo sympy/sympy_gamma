@@ -478,7 +478,7 @@ p {
   filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#552634, endColorstr=#40252D);
 }
 
-#random-example {
+#clear-all-recent, #random-example {
   text-decoration: none;
   display: inline-block;
   margin-top: 7px;
