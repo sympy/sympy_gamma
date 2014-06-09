@@ -449,7 +449,7 @@ p {
   padding: 0px 8px;
 }
 
-button {
+#random-example, button {
   cursor: pointer;
   display: block;
   font-family: 'Open Sans', sans-serif;
@@ -467,7 +467,7 @@ button {
   filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#40252D, endColorstr=#370C19);
 }
 
-button:hover {
+#random-example:hover, button:hover {
   background-color: #552634;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #552634), color-stop(100%, #40252D));
   background-image: -webkit-linear-gradient(top, #552634, #40252D);
@@ -478,6 +478,18 @@ button:hover {
   filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#552634, endColorstr=#40252D);
 }
 
+button {
+  height: 32px;
+}
+
+#random-example {
+  height: 25px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 0.45em;
+  padding: 0.45em 0.45em 0 0.45em;
+  margin-bottom: 0;
+}
 /* Plots */
 
 /* Formatting for the input line */

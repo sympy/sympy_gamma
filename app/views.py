@@ -9,8 +9,8 @@ from google.appengine.api import users
 from google.appengine.runtime import DeadlineExceededError
 
 import sympy
-from logic import Eval, SymPyGamma
-from logic.logic import mathjax_latex
+from logic.utils import Eval
+from logic.logic import SymPyGamma, mathjax_latex
 from logic.resultsets import get_card, find_result_set
 
 import settings
