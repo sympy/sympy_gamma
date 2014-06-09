@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from django.http import HttpResponse
 from copy import copy
-from app.logic import SymPyGamma
+from app.logic.logic import SymPyGamma
 from app.views import eval_card
 from HTMLParser import HTMLParser
 import json
@@ -115,8 +115,11 @@ def result_json(request):
                             notebook['worksheets'][0]['cells'].append(card_heading)
 
                             card_json_output = card_json_output.split(card_cell_input)
-                            if card_json_output[1][:7] == '\n</div>':
-                                card_json_output[1] = card_json_output[1][7:]
+                            try:
+                                if card_json_output[1][:7] == '\n</div>':
+                                    card_json_output[1] = card_json_output[1][7:]
+                            except:
+                                pass
 
                             card_result = copy(markdown_cell[0])
                             card_result['source'] = [card_json_output[1]]
