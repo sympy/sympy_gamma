@@ -30,3 +30,6 @@ my/
 
 # Backup files
 *~
+
+# Generated app.yaml
+app.yaml
