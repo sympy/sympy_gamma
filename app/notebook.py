@@ -6,6 +6,7 @@ from app.views import eval_card
 from HTMLParser import HTMLParser
 import json
 import urllib2
+import traceback
 
 #for testing
 output_test = []
@@ -92,60 +93,60 @@ def result_json(request):
                         cell_pre_output['source'] = ['$$'+str(cell['pre_output'])+ '=$$']
                         notebook['worksheets'][0]['cells'].append(cell_pre_output)
 
-                #try:
-                card_json = g.eval_card(card_name, exp, variable, parameters)
-                card_json_output = card_json['output']
+                try:
+                    card_json = g.eval_card(card_name, exp, variable, parameters)
+                    card_json_output = card_json['output']
 
-                parser = Parser()
-                parser.feed(card_json_output)
-                parsed_cell_inputs = parser.cell_input #list of data values with <div class='cell_input'>
+                    parser = Parser()
+                    parser.feed(card_json_output)
+                    parsed_cell_inputs = parser.cell_input #list of data values with <div class='cell_input'>
 
-#-------------------------------------------------------------------
-#-------------------------------------------------------------------
+    #-------------------------------------------------------------------
+    #-------------------------------------------------------------------
 
-                for card_cell_input in parsed_cell_inputs:
-                    #output_test.append(card_cell_input)   #for testing
-
-
-                    if card_cell_input != '\n' and card_cell_input != '</div>' and card_cell_input != '\\':
+                    for card_cell_input in parsed_cell_inputs:
+                        #output_test.append(card_cell_input)   #for testing
 
 
-                        if card_cell_input[:1] == '\n':
-                            card_cell_input = card_cell_input[1:]
-                        if card_cell_input[-1:] == '\n':
-                            card_cell_input = card_cell_input[:-1]
-
-                        #output_test.append(card_cell_input)
-                        card_heading = copy(code_cell[0])
-                        card_heading['input'] = [card_cell_input]
-                        card_heading['prompt_number'] = prompt_number
-                        prompt_number = prompt_number + 1
-                        notebook['worksheets'][0]['cells'].append(card_heading)
-
-                        card_json_output = card_json_output.split(card_cell_input)
-                        if card_json_output[1][:7] == '\n</div>':
-                            card_json_output[1] = card_json_output[1][7:]
-
-                        card_result = copy(markdown_cell[0])
-                        card_result['source'] = [card_json_output[1]]
-                        notebook['worksheets'][0]['cells'].append(card_result)  #storing output after input
+                        if card_cell_input != '\n' and card_cell_input != '</div>' and card_cell_input != '\\':
 
 
-                    if len(card_json_output) > 1 :
-                        card_json_output = card_json_output[1]
-                    else:
-                        card_json_output = card_json_output[0]
+                            if card_cell_input[:1] == '\n':
+                                card_cell_input = card_cell_input[1:]
+                            if card_cell_input[-1:] == '\n':
+                                card_cell_input = card_cell_input[:-1]
+
+                            #output_test.append(card_cell_input)
+                            card_heading = copy(code_cell[0])
+                            card_heading['input'] = [card_cell_input]
+                            card_heading['prompt_number'] = prompt_number
+                            prompt_number = prompt_number + 1
+                            notebook['worksheets'][0]['cells'].append(card_heading)
+
+                            card_json_output = card_json_output.split(card_cell_input)
+                            if card_json_output[1][:7] == '\n</div>':
+                                card_json_output[1] = card_json_output[1][7:]
+
+                            card_result = copy(markdown_cell[0])
+                            card_result['source'] = [card_json_output[1]]
+                            notebook['worksheets'][0]['cells'].append(card_result)  #storing output after input
 
 
-                if card_json_output != '<':
+                        if len(card_json_output) > 1 :
+                            card_json_output = card_json_output[1]
+                        else:
+                            card_json_output = card_json_output[0]
 
-                    card_last_result = copy(markdown_cell[0])
-                    card_last_result['source'] = [card_json_output]
-                    notebook['worksheets'][0]['cells'].append(card_last_result)
-                #except:
-                #    card_error = copy(markdown_cell[0])
-                #    card_error['source'] = ['Errored']
-                #    notebook['worksheets'][0]['cells'].append(card_error)
+
+                    if card_json_output != '<':
+
+                        card_last_result = copy(markdown_cell[0])
+                        card_last_result['source'] = [card_json_output]
+                        notebook['worksheets'][0]['cells'].append(card_last_result)
+                except:
+                    card_error = copy(markdown_cell[0])
+                    card_error['source'] = [traceback.format_exc(1)]
+                    notebook['worksheets'][0]['cells'].append(card_error)
             else:
                 card_plot = copy(markdown_cell[0])
                 card_plot['source'] = ['Plotting is not yet implemented.']
@@ -158,6 +159,11 @@ def result_json(request):
                 cell_output = copy(markdown_cell[0])
                 cell_output['source'] = [cell['cell_output']]
                 notebook['worksheets'][0]['cells'].append(cell_output)
+
+        if 'error' in cell.keys():
+            cell_error = copy(markdown_cell[0])
+            cell_error['source'] = [cell['error']]
+            notebook['worksheets'][0]['cells'].append(cell_error)
 
         else:
                 pass
