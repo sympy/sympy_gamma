@@ -479,15 +479,15 @@ p {
 }
 
 button {
-  height: 30px;
+  height: 32px;
 }
 
 #random-example {
-  height: 23px;
+  height: 25px;
   text-decoration: none;
   display: inline-block;
   margin-top: 0.45em;
-  padding: 0.45em 0.25em 0 0.27em;
+  padding: 0.45em 0.45em 0 0.45em;
   margin-bottom: 0;
 }
 /* Plots */
