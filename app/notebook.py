@@ -7,6 +7,9 @@ from HTMLParser import HTMLParser
 import json
 import urllib2
 
+#for testing
+output_test = []
+
 #styling for notebook
 styling = '''<style>
 li{ list-style-type:none;
@@ -92,23 +95,41 @@ def result_json(request):
                 #try:
                 card_json = g.eval_card(card_name, exp, variable, parameters)
                 card_json_output = card_json['output']
-                card_json_output = card_json_output[10:-12] #striping ul and li tags
+
                 parser = Parser()
                 parser.feed(card_json_output)
                 parsed_cell_inputs = parser.cell_input #list of data values with <div class='cell_input'>
 
-                for card_cell_input in parsed_cell_inputs:
-                    if card_cell_input != '\n' and card_cell_input != '</div>' and card_cell_input != '\\':
-                        card_json_output = card_json_output.split(card_cell_input)
-                        card_result = copy(markdown_cell[0])
-                        card_result['source'] = [card_json_output[0] + '</div>']
-                        notebook['worksheets'][0]['cells'].append(card_result)
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
 
+                for card_cell_input in parsed_cell_inputs:
+                    #output_test.append(card_cell_input)   #for testing
+
+
+                    if card_cell_input != '\n' and card_cell_input != '</div>' and card_cell_input != '\\':
+
+
+                        if card_cell_input[:1] == '\n':
+                            card_cell_input = card_cell_input[1:]
+                        if card_cell_input[-1:] == '\n':
+                            card_cell_input = card_cell_input[:-1]
+
+                        #output_test.append(card_cell_input)
                         card_heading = copy(code_cell[0])
                         card_heading['input'] = [card_cell_input]
                         card_heading['prompt_number'] = prompt_number
                         prompt_number = prompt_number + 1
                         notebook['worksheets'][0]['cells'].append(card_heading)
+
+                        card_json_output = card_json_output.split(card_cell_input)
+                        if card_json_output[1][:7] == '\n</div>':
+                            card_json_output[1] = card_json_output[1][7:]
+
+                        card_result = copy(markdown_cell[0])
+                        card_result['source'] = [card_json_output[1]]
+                        notebook['worksheets'][0]['cells'].append(card_result)  #storing output after input
+
 
                     if len(card_json_output) > 1 :
                         card_json_output = card_json_output[1]
@@ -116,9 +137,11 @@ def result_json(request):
                         card_json_output = card_json_output[0]
 
 
-                card_last_result = copy(markdown_cell[0])
-                card_last_result['source'] = [card_json_output]
-                notebook['worksheets'][0]['cells'].append(card_last_result)
+                if card_json_output != '<':
+
+                    card_last_result = copy(markdown_cell[0])
+                    card_last_result['source'] = [card_json_output]
+                    notebook['worksheets'][0]['cells'].append(card_last_result)
                 #except:
                 #    card_error = copy(markdown_cell[0])
                 #    card_error['source'] = ['Errored']
@@ -148,5 +171,5 @@ def result_json(request):
     response =  HttpResponse(notebook_json, content_type = 'text/plain')
     #response['Content-Disposition'] = 'attachment; filename=gamma.ipynb'
     return response
-
+    #return HttpResponse(output_test, content_type = 'text/plain')
 
