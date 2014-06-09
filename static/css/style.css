@@ -478,11 +478,16 @@ p {
   filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#552634, endColorstr=#40252D);
 }
 
-#clear-all-recent, #random-example {
+button {
+  height: 30px;
+}
+
+#random-example {
+  height: 23px;
   text-decoration: none;
   display: inline-block;
-  margin-top: 7px;
-  padding: 5px 7px 6px 6px;
+  margin-top: 0.45em;
+  padding: 0.45em 0.25em 0 0.27em;
   margin-bottom: 0;
 }
 /* Plots */
