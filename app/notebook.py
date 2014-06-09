@@ -8,9 +8,6 @@ import json
 import urllib2
 import traceback
 
-#for testing
-output_test = []
-
 #styling for notebook
 styling = '''<style>
 li{ list-style-type:none;
@@ -101,22 +98,16 @@ def result_json(request):
                     parser.feed(card_json_output)
                     parsed_cell_inputs = parser.cell_input #list of data values with <div class='cell_input'>
 
-    #-------------------------------------------------------------------
-    #-------------------------------------------------------------------
-
                     for card_cell_input in parsed_cell_inputs:
                         #output_test.append(card_cell_input)   #for testing
 
-
                         if card_cell_input != '\n' and card_cell_input != '</div>' and card_cell_input != '\\':
-
 
                             if card_cell_input[:1] == '\n':
                                 card_cell_input = card_cell_input[1:]
                             if card_cell_input[-1:] == '\n':
                                 card_cell_input = card_cell_input[:-1]
 
-                            #output_test.append(card_cell_input)
                             card_heading = copy(code_cell[0])
                             card_heading['input'] = [card_cell_input]
                             card_heading['prompt_number'] = prompt_number
@@ -131,15 +122,12 @@ def result_json(request):
                             card_result['source'] = [card_json_output[1]]
                             notebook['worksheets'][0]['cells'].append(card_result)  #storing output after input
 
-
                         if len(card_json_output) > 1 :
                             card_json_output = card_json_output[1]
                         else:
                             card_json_output = card_json_output[0]
 
-
                     if card_json_output != '<':
-
                         card_last_result = copy(markdown_cell[0])
                         card_last_result['source'] = [card_json_output]
                         notebook['worksheets'][0]['cells'].append(card_last_result)
@@ -151,8 +139,6 @@ def result_json(request):
                 card_plot = copy(markdown_cell[0])
                 card_plot['source'] = ['Plotting is not yet implemented.']
                 notebook['worksheets'][0]['cells'].append(card_plot)
-
-
 
         if 'cell_output' in cell.keys():
             if cell['cell_output'] != "":
@@ -175,7 +161,6 @@ def result_json(request):
 
     notebook_json = json.dumps(notebook)
     response =  HttpResponse(notebook_json, content_type = 'text/plain')
-    #response['Content-Disposition'] = 'attachment; filename=gamma.ipynb'
+    response['Content-Disposition'] = 'attachment; filename=gamma.ipynb'
     return response
-    #return HttpResponse(output_test, content_type = 'text/plain')
 
