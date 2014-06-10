@@ -116,6 +116,8 @@ def result_json(request):
                                     card_json_output[0] = card_json_output[0][:-24]
                                 if card_json_output[0][-12:]  == '\n</li>\n<li>\n':
                                     card_json_output[0] = card_json_output[0][:-12]
+                                if card_json_output[0][-11:]  == '</li>\n<li>\n':
+                                    card_json_output[0] = card_json_output[0][:-11]
                             except:
                                 pass
                             card_result = copy(markdown_cell[0])
@@ -148,6 +150,9 @@ def result_json(request):
                                 card_json_output[0] = card_json_output[0][9:]
                             if card_json_output[0][-12:]  == '\n</li>\n</ul>':
                                 card_json_output[0] = card_json_output[0][:-12]
+                            if card_json_output[0][-11:]  == '</li>\n</ul>':
+                                card_json_output[0] = card_json_output[0][:-11]
+
 
                         except:
                             pass
@@ -185,5 +190,5 @@ def result_json(request):
     notebook_json = json.dumps(notebook)
     response =  HttpResponse(notebook_json, content_type = 'text/plain')
     #uncomment the following line to display json rather than downloading it.
-    #response['Content-Disposition'] = 'attachment; filename=gamma.ipynb'
+    response['Content-Disposition'] = 'attachment; filename=gamma.ipynb'
     return response
