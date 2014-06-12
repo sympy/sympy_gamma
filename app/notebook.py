@@ -14,8 +14,6 @@ li{ list-style-type:none;
     list-style-position:inside;
     margin:0;
     padding:0;}
-.cell_input{font-weight:bold;
-    margin-left:auto;}
 </style>'''
 
 class Parser(HTMLParser):
@@ -76,6 +74,9 @@ def result_json(request):
                     notebook['worksheets'][0]['cells'].append(pre_output)
 
             if cell['output'] != "" and 'script' in cell['output']:
+                output['source'] = [cell['output']]
+                notebook['worksheets'][0]['cells'].append(output)
+            elif 'div' in cell['output']:
                 output['source'] = [cell['output']]
                 notebook['worksheets'][0]['cells'].append(output)
 
