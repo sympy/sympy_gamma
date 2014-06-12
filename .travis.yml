@@ -5,7 +5,7 @@ python:
 env:
   global:
     # encrypted $OAUTH_REFRESH_TOKEN needed for deployment
-    - secure: "ePdMNCGbXplQwe+Y21rGMP01bnY+nssISc9Bhp2/QJ0pGw8RsTrc3LoCpQm2TPNkAEiwV3+NLoK4LuKnB6dg7DOLfAW9fD+7MyKl92Wio1vwIlEUxhhYldPXdBiOUND548Qyzty7ENkIrMNiMfxvUsKiKKwszoRrt8TAfZ2XpUc="
+    - secure: "gAf0hXfe3FDNJrxurJs8UtoK7CJ8jG6sTvUdRUymY7WPJ3NYKIevisV+PeIOl/xbvtXHi4O2kmDkFEKI+cmwYJXPVqJ12mlFiJEditeUoNfJp2xYP0OFUaBeXj+c/ldKNAWRuI7rbE7F58tYDqcVvKMK/NPLW/cOwy3VbeTGB98="
 virtualenv:
   system_site_packages: true
 
