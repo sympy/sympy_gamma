@@ -123,6 +123,21 @@ the ``Versions`` section of the sympy_gamma dashboard, and set this as the
 new default version.  If there are any issues, you can roll back to the
 previous version from this same screen.
 
+Generating a Deployment Key
+---------------------------
+
+Travis-CI deploys the application using OAuth credentials. These are stored
+encrypted in the ``env`` section of ``.travis.yml``, and are generated using
+the Travis command-line tools::
+
+  travis encrypt 'OAUTH_REFRESH_TOKEN=TOKEN' -r sympy/sympy_gamma
+
+The token is found in the JSON file ``$HOME/.appcfg_oauth2_tokens`` under
+the key ``"refresh_token"``. This file is created after manually deploying
+(or running any other command) using OAuth authorization::
+
+  $ ../appcfg.py update --oauth2 .
+
 Testing on the App Engine
 -------------------------
 
