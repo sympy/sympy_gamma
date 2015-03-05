@@ -187,6 +187,12 @@ NumPy version), change ``app.yaml.template`` and generate again. The
 Travis-CI script uses this to generate and deploy testing/production
 versions automatically.
 
+When deploying somewhere, make sure ``ALLOWED_HOSTS`` in ``settings.py`` is
+configured for the domain you will be using. In development, setting
+``DEBUG=True`` instead will relieve you of having to set this. **Make sure
+you do this!** Else you will only get 500 errors because Django will not
+serve to you (as your host is incorrect).
+
 Pulling changes
 ---------------
 
