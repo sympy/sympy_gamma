@@ -173,7 +173,7 @@ def is_constant(input_evaluated):
 
 def is_approximatable_constant(input_evaluated):
     # is_constant, but exclude Integer/Float/infinity
-    return (hasattr(input_evaluated, 'free_symbols') and
+    return (isinstance(input_evaluated, sympy.Basic) and
             not input_evaluated.free_symbols and
             not input_evaluated.is_Integer and
             not input_evaluated.is_Float and
