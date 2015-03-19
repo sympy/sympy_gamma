@@ -16,14 +16,14 @@ install: "pip install -r requirements.txt --use-mirrors"
 
 before_script:
   - cd ..
-  - wget https://storage.googleapis.com/appengine-sdks/deprecated/195/google_appengine_1.9.5.zip -nv
-  - unzip -q google_appengine_1.9.5.zip
+  - wget https://storage.googleapis.com/appengine-sdks/deprecated/1917/google_appengine_1.9.17.zip -nv
+  - unzip -q google_appengine_1.9.17.zip
   - export SDK_LOCATION="$(pwd)/google_appengine"
   - cd $TRAVIS_BUILD_DIR
   - git fetch --tags
   - python deploy.py --generate-only --generate-test 1000
   - python $SDK_LOCATION/dev_appserver.py --skip_sdk_update_check 1 . &
-  - sleep 10
+  - sleep 20
 script: python travis.py
 
 after_success: python deploy.py
