@@ -1,4 +1,4 @@
-from utils import Eval
+from app.logic.utils import Eval
 
 def test_eval1():
     e = Eval()

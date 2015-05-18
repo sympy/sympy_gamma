@@ -33,6 +33,7 @@ function setupExamples() {
         });
         header.toggleClass('shown');
         header.siblings('i').toggleClass('shown');
+	header.siblings('h3').toggleClass('shown');
     });
 }
 
