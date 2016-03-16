@@ -141,12 +141,12 @@ class IntegralPrinter(object):
                 self.format_math(rule.constant * du)
             ))
 
-            integrand = rule.substep.context.subs(rule.u_var, u)
+            integrand = rule.constant * rule.substep.context.subs(rule.u_var, u)
             self.append(self.format_math_display(
                 sympy.Integral(integrand, u)))
 
             with self.new_level():
-                self.print_rule(replace_u_var(rule.substep, rule.u_var, u))
+                self.print_rule(replace_u_var(rule.substep, rule.symbol.name, u))
 
             self.append("Now substitute {} back in:".format(
                 self.format_math(u)))
