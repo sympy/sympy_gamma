@@ -137,7 +137,7 @@ class IntegralPrinter(object):
             self.append("Let {}.".format(
                 self.format_math(sympy.Eq(u, rule.u_func))))
             self.append("Then let {} and substitute {}:".format(
-                self.format_math(sympy.Eq(du,rule.u_func.diff(rule.symbol) * dx)),
+                self.format_math(sympy.Eq(du, rule.u_func.diff(rule.symbol) * dx)),
                 self.format_math(rule.constant * du)
             ))
 
