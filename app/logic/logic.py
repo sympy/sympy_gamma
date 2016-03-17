@@ -152,6 +152,12 @@ class SymPyGamma(object):
         transformations.append(synonyms)
         transformations.extend(standard_transformations)
         transformations.extend((convert_xor, custom_implicit_transformation))
+
+        if "==" in s:
+            a=s.split("==")
+            if "0" not in a[1]:
+                s = 'simplify(' + a[0] + '-' + a[1] + ') == 0'
+
         parsed = stringify_expr(s, {}, namespace, transformations)
         try:
             evaluated = eval_expr(parsed, {}, namespace)
