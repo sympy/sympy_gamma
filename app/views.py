@@ -274,6 +274,10 @@ def _process_card(request, card_name):
 def eval_card(request, card_name):
     g, variable, expression, parameters = _process_card(request, card_name)
 
+    json.dumps({
+            'error': None
+        })
+
     try:
         result = g.eval_card(card_name, expression, variable, parameters)
     except ValueError as e:
@@ -295,6 +299,10 @@ def eval_card(request, card_name):
 
 def get_card_info(request, card_name):
     g, variable, expression, _ = _process_card(request, card_name)
+
+    json.dumps({
+            'error': None
+        })
 
     try:
         result = g.get_card_info(card_name, expression, variable)
@@ -374,6 +382,7 @@ def remove_query(request, qid):
 
         response = {
             'result': 'success',
+            'error': None
         }
     else:
         response = {
