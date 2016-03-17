@@ -274,10 +274,6 @@ def _process_card(request, card_name):
 def eval_card(request, card_name):
     g, variable, expression, parameters = _process_card(request, card_name)
 
-    json.dumps({
-            'error': None
-        })
-
     try:
         result = g.eval_card(card_name, expression, variable, parameters)
     except ValueError as e:
@@ -295,16 +291,10 @@ def eval_card(request, card_name):
                       'the last five traceback entries are: ' + trace)
         }), mimetype="application/json")
 
-    return HttpResponse(json.dumps(result,{
-            'error': (None)
-        }), mimetype="application/json")
+    return HttpResponse(json.dumps(result), mimetype="application/json")
 
 def get_card_info(request, card_name):
     g, variable, expression, _ = _process_card(request, card_name)
-
-    json.dumps({
-            'error': None
-        })
 
     try:
         result = g.get_card_info(card_name, expression, variable)
@@ -323,9 +313,7 @@ def get_card_info(request, card_name):
                       'the last five traceback entries are: ' + trace)
         }), mimetype="application/json")
 
-    return HttpResponse(json.dumps(result,{
-            'error': (None)
-        }), mimetype="application/json")
+    return HttpResponse(json.dumps(result), mimetype="application/json")
 
 def get_card_full(request, card_name):
     g, variable, expression, parameters = _process_card(request, card_name)
@@ -386,7 +374,6 @@ def remove_query(request, qid):
 
         response = {
             'result': 'success',
-            'error': None
         }
     else:
         response = {

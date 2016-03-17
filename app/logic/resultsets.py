@@ -591,8 +591,7 @@ def eval_plot(evaluator, components, parameters=None):
                 'x': xvalues,
                 'y': yvalues
             },
-            'data': None,
-            'error': None
+            'data': None
         })
     return {
         'variable': repr(variable),
