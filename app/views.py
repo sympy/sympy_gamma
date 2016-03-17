@@ -321,7 +321,7 @@ def get_card_info(request, card_name):
                       'the last five traceback entries are: ' + trace)
         }), mimetype="application/json")
 
-    return HttpResponse(json.dumps(result), mimetype="application/json")
+    return HttpResponse(json.dumps(result,error), mimetype="application/json")
 
 def get_card_full(request, card_name):
     g, variable, expression, parameters = _process_card(request, card_name)
