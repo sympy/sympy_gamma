@@ -84,7 +84,8 @@ casper.test.begin("All cards load", function(test) {
             }
             catch(e) {
                 test.assert(
-                    test.assert(false, utils.format("%s card returns valid JSON with no 'error' field", card_name));
+                    typeof json.error !== "undefined",
+                    utils.format("%s contains valid JSON", card_name)
                 );   
             }
         });
