@@ -1,16 +1,15 @@
 var utils = require('utils');
 
-casper.test.begin("All user-facing pages load", function(test) {
-    casper.start();
-
-    casper.each(["/", "/about", "/input", "/input/?i=x"], function(self, url) {
-        casper.thenOpen("http://localhost:8080" + url, function(resource) {
-            test.assertHttpStatus(200, utils.format("%s has HTTP status 200", url));
+casper.test.begin("All user-facing pages load", 1, function(test) {
+    var urls = ["http://localhost:8080/", "http://localhost:8080/about", "http://localhost:8080/input", "http://localhost:8080/input/?i=x"]
+    casper.start().eachThen(urls, function(response) {
+        this.thenOpen(response.data, function(response) {
+            test.assertHttpStatus(200, utils.format("%s has HTTP status 200", response));
         });
     });
 
     casper.run(function() {
-        this.test.done();
+        test.done();
     });
 });
 
@@ -24,10 +23,9 @@ function makeQueryString(parameters) {
     return result.join('&');
 }
 
-casper.test.begin("All cards load", function(test) {
-    casper.start();
+casper.test.begin("All cards load", 1, function(test) {
 
-    casper.each([
+    var urls = [
         ["roots", { variable: "x", expression: "x**2" }],
         ["integral", { variable: "x", expression: "x**2" }],
         ["integral_fake", { variable: "x", expression: "integrate(x**2)" }],
@@ -61,11 +59,13 @@ casper.test.begin("All cards load", function(test) {
         ["trig_alternate", { variable: "x", expression: "sin(x)" }],
         ["integral_alternate", { variable: "x", expression: "x**2" }],
         ["integral_alternate_fake", { variable: "x", expression: "integrate(x)" }]
-    ], function(self, data) {
+    ]
+
+    casper.start().eachThen(urls, function(data) {
         var card_name = data[0];
         var params = data[1];
         var url = "http://localhost:8080/card/" + card_name + '?' + makeQueryString(params);
-        casper.thenOpen(url, function(resource) {
+        this.thenOpen(url, function(resource) {
             test.assertHttpStatus(200, utils.format("%s card has HTTP status 200", card_name));
 
             try {

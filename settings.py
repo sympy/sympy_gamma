@@ -4,7 +4,7 @@
 import os
 root_dir = os.path.dirname(os.path.abspath(__file__))
 
-DEBUG = False
+DEBUG = "Development" in os.environ.get("SERVER_SOFTWARE", "")
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -81,4 +81,4 @@ INSTALLED_APPS = (
     #'django.contrib.sessions',
     #'django.contrib.sites',
 )
-ALLOWED_HOSTS = ['.sympygamma.com', '.localhost:8000', '.localhost:8080']
+ALLOWED_HOSTS = ['.sympygamma.com', '.sympy.org', '.localhost:8080', '.localhost:8000', '.localhost']
