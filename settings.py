@@ -81,3 +81,4 @@ INSTALLED_APPS = (
     #'django.contrib.sessions',
     #'django.contrib.sites',
 )
+ALLOWED_HOSTS = ['.sympygamma.com', '.localhost:8000', '.localhost:8080']
