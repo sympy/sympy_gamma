@@ -10,7 +10,7 @@ virtualenv:
   system_site_packages: true
 
 before_install:
-  - sudo apt-get install -qq python-numpy
+  - pip install mpmath
   - npm install casperjs
 install: "pip install -r requirements.txt --use-mirrors"
 
