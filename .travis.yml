@@ -10,10 +10,6 @@ virtualenv:
   system_site_packages: true
 
 before_install:
-<<<<<<< HEAD
-  - pip install mpmath
-=======
->>>>>>> master
   - npm install casperjs
 install: "pip install -r requirements.txt --use-mirrors"
 

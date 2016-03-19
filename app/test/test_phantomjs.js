@@ -1,6 +1,6 @@
 var utils = require('utils');
 
-casper.test.begin("All user-facing pages load", 1, function(test) {
+casper.test.begin("All user-facing pages load", function(test) {
     var urls = ["http://localhost:8080/", "http://localhost:8080/about", "http://localhost:8080/input", "http://localhost:8080/input/?i=x"]
     casper.start().eachThen(urls, function(response) {
         this.thenOpen(response.data, function(response) {
@@ -23,7 +23,7 @@ function makeQueryString(parameters) {
     return result.join('&');
 }
 
-casper.test.begin("All cards load", 1, function(test) {
+casper.test.begin("All cards load", function(test) {
 
     var urls = [
         ["roots", { variable: "x", expression: "x**2" }],
@@ -61,9 +61,9 @@ casper.test.begin("All cards load", 1, function(test) {
         ["integral_alternate_fake", { variable: "x", expression: "integrate(x)" }]
     ]
 
-    casper.start().eachThen(urls, function(data) {
-        var card_name = data[0];
-        var params = data[1];
+    casper.start().eachThen(urls, function(response) {
+        var card_name = response.data[0];
+        var params = response.data[1];
         var url = "http://localhost:8080/card/" + card_name + '?' + makeQueryString(params);
         this.thenOpen(url, function(resource) {
             test.assertHttpStatus(200, utils.format("%s card has HTTP status 200", card_name));
