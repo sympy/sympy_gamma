@@ -177,10 +177,11 @@ up the developer console, click the gear icon in the lower right, then
 select Overrides.)
 
 It's important to ensure that before deploying SymPy Gamma to any domain,
-**ALLOWED_HOSTS** in `settings.py` contains your domain name. Also, 
-**DEBUG** in `settings.py` must be set to **1** , when in Development
-mode. Otherwise, If your host is incorrect, then Django won't be able to
-process your queries, and only **500** Errors will be returned.
+**ALLOWED_HOSTS** in `settings.py` contains your domain name.  Otherwise, 
+If your host is incorrect, then Django won't be able to process your 
+queries, and only **500** Errors will be returned. Also, the `settings.py`
+file will automatically detect, and put **DEBUG** in `settings.py` must 
+be set to **1** , when in Development mode.
 
 GAE development server allows to use any Python interpreter, but Google
 App Engine uses Python 2.5, so if the default Python isn't 2.5, then make
