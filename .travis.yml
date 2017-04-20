@@ -1,6 +1,7 @@
 language: python
 python:
   - "2.7"
+sudo: false
 
 env:
   global:
@@ -10,8 +11,11 @@ virtualenv:
   system_site_packages: true
 
 before_install:
+  - pip install mpmath
   - npm install casperjs
-install: "pip install -r requirements.txt"
+  - npm install phantomjs
+install:
+  - pip install -r requirements.txt
 
 before_script:
   - cd ..
