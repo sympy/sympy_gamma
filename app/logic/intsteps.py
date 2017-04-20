@@ -7,7 +7,7 @@ from stepprinter import functionnames, Rule, replace_u_var
 from sympy.integrals.manualintegrate import (
     manualintegrate, _manualintegrate, integral_steps, evaluates,
     ConstantRule, ConstantTimesRule, PowerRule, AddRule, URule,
-    PartsRule, CyclicPartsRule, TrigRule, ExpRule, LogRule, ArctanRule,
+    PartsRule, CyclicPartsRule, TrigRule, ExpRule, ReciprocalRule, ArctanRule,
     AlternativeRule, DontKnowRule, RewriteRule
 )
 
@@ -72,7 +72,7 @@ class IntegralPrinter(object):
             self.print_Trig(rule)
         elif isinstance(rule, ExpRule):
             self.print_Exp(rule)
-        elif isinstance(rule, LogRule):
+        elif isinstance(rule, ReciprocalRule):
             self.print_Log(rule)
         elif isinstance(rule, ArctanRule):
             self.print_Arctan(rule)
