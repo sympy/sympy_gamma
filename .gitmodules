@@ -4,3 +4,6 @@
 [submodule "docutils"]
 	path = docutils
 	url = git://repo.or.cz/docutils.git
+[submodule "mpmath"]
+	path = mpmath
+	url = https://github.com/fredrik-johansson/mpmath

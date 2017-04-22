@@ -11,9 +11,9 @@ virtualenv:
   system_site_packages: true
 
 before_install:
-  - pip install mpmath
   - npm install casperjs
   - npm install phantomjs
+
 install:
   - pip install -r requirements.txt
 
