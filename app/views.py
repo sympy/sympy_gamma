@@ -24,6 +24,7 @@ import urllib2
 import datetime
 import traceback
 
+
 LIVE_URL = '<a href="http://live.sympy.org">SymPy Live</a>'
 LIVE_PROMOTION_MESSAGES = [
     'Need more control? Try ' + LIVE_URL + '.',
@@ -199,7 +200,8 @@ def input(request, user):
         form = SearchForm(request.GET)
         if form.is_valid():
             input = form.cleaned_data["i"]
-
+            export_notebook = urllib2.quote(str(input))
+            encoded_export_notebook = urllib2.quote(str(export_notebook)) #encoding twice for nbviewer.
             if input.strip().lower() in ('random', 'example', 'random example'):
                 return redirect('/random')
 
@@ -221,11 +223,11 @@ def input(request, user):
             elif not models.Query.query(models.Query.text==input).get():
                 query = models.Query(text=input, user_id=None)
                 query.put()
-
-
             # For some reason the |random tag always returns the same result
             return ("result.html", {
                 "input": input,
+                "encoded_export_notebook": encoded_export_notebook,
+                "export_notebook": export_notebook,
                 "result": r,
                 "form": form,
                 "MEDIA_URL": settings.MEDIA_URL,

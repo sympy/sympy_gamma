@@ -15,14 +15,20 @@
                 {{ form.i }}<input class="input_field" type="submit" value="=" />
             </form>
         </div>
+        
         <div class="result">
             {% for cell in result %}
                 {% show_card cell input %}
             {% endfor %}
             <div class="foot">
-                See what <a class="wolfram"
+                <p>See what <a class="wolfram"
                 href="http://www.wolframalpha.com/input/?i={{input|urlencode}}">
-                    Wolfram|Alpha</a> has to say.
+                    Wolfram|Alpha</a> has to say.</p>
+                <p>See the results as IPython <a class="notebook"
+                href="http://nbviewer.ipython.org/url/sympygamma.com/export_notebook//%3Fi%3D{{ encoded_export_notebook }}">
+                    Notebook Viewer</a> or export to an IPython Notebook <a href="{% url app.notebook.result_json %}?i={{ export_notebook }}">file</a></p>
+                
+
                 <p>{{ promote_live|safe }}</p>
             </div>
          </div>

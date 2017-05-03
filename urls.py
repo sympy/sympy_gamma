@@ -12,11 +12,10 @@ urlpatterns = patterns(
     # Example:
     # (r'^notebook/', include('notebook.foo.urls')),
     (r'^$', 'app.views.index'),
-
+    (r'^export_notebook/$', 'app.notebook.result_json'),
     (r'^input/', 'app.views.input'),
     (r'^about/$', 'app.views.about'),
     (r'^random', 'app.views.random_example'),
-
     (r'user/remove/(?P<qid>.*)$', 'app.views.remove_query'),
 
     (r'card/(?P<card_name>\w*)$', 'app.views.eval_card'),
