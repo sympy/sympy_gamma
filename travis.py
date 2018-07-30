@@ -7,7 +7,7 @@ import subprocess
 if __name__ == '__main__':
     print("Running PhantomJS Tests")
     gamma_directory = os.path.dirname(os.path.realpath(__file__))
-    returncode = subprocess.call(['node_modules', 'casperjs', 'bin', 'casperjs', 'test', os.path.join(gamma_directory, 'app/test/')])
+    returncode = subprocess.call(['casperjs', 'test', os.path.join(gamma_directory, 'app/test/')])
 
     print
     print("Running Python Unittests")
