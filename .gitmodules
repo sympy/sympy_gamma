@@ -6,4 +6,4 @@
 	url = git://repo.or.cz/docutils.git
 [submodule "mpmath"]
 	path = mpmath
-	url = ./mpmath
+	url = https://github.com/fredrik-johansson/mpmath.git
