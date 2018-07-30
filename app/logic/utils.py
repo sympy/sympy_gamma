@@ -6,11 +6,12 @@ import sys
 import ast
 import re
 from StringIO import StringIO
+import tokenize
+from token import NAME
+
 import sympy
 
 from sympy.core.relational import Relational
-import sympy.parsing.sympy_tokenize as sympy_tokenize
-from token import NAME
 
 OTHER_SYMPY_FUNCTIONS = ('sqrt',)
 
@@ -390,7 +391,7 @@ def close_matches(s, global_dict):
     Checks undefined names to see if they are close matches to a defined name.
     """
 
-    tokens = sympy_tokenize.generate_tokens(StringIO(s.strip()).readline)
+    tokens = tokenize.generate_tokens(StringIO(s.strip()).readline)
     result = []
     has_result = False
     all_names = set(global_dict).union(SYNONYMS)
@@ -409,5 +410,5 @@ def close_matches(s, global_dict):
                 continue
         result.append(token)
     if has_result:
-        return sympy_tokenize.untokenize(result).strip()
+        return tokenize.untokenize(result).strip()
     return None
