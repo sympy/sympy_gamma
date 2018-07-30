@@ -6,5 +6,6 @@ class FakeObject(object):
         return None
 
 sys.modules['subprocess'] = FakeObject()
+sys.path.insert(0, os.path.join(os.getcwd(), 'mpmath'))
 sys.path.insert(0, os.path.join(os.getcwd(), 'sympy'))
 sys.path.insert(0, os.path.join(os.getcwd(), 'docutils/docutils'))
