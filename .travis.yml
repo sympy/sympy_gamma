@@ -11,7 +11,7 @@ virtualenv:
 
 before_install:
   - npm install casperjs
-install: "pip install -r requirements.txt --use-mirrors"
+install: "pip install -r requirements.txt"
 
 before_script:
   - cd ..
