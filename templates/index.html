@@ -20,7 +20,7 @@ SymPy Gamma
         {% if history %}
         <div class="col recent">
             <h2>Recent queries</h2>
-            <a href="#" id="clear-all-recent">Clear All</a>
+            <button id="clear-all-recent">Clear All</button>
             <ul>
                 {% for query in history %}
                 <li>
@@ -33,11 +33,12 @@ SymPy Gamma
         {% endif %}
         <div class="col example">
             <h2>Examples</h2>
-            <a href="/random" id="random-example">Random Example</a>
+            <a id="random-example" href="/random">Random Example</a>
 
             {% for category in examples %}
             <div class="example-group">
-              <h3><i class="icon-angle-down"></i> {{ category.0 }}</h3>
+            <i class="icon-angle-down"></i>
+              <h3> {{ category.0 }}</h3>
 
               <div class="contents">
                 {% for subcategory in category.1 %}

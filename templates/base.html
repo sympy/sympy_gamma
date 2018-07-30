@@ -10,18 +10,16 @@
         {% block head_additional %}{% endblock %}
 
         <link rel="search" type="application/opensearchdescription+xml"
-              href="{{ MEDIA_URL }}/opensearch.xml" title="SymPy Gamma" />
+              href="{{ MEDIA_URL }}opensearch.xml" title="SymPy Gamma" />
         <link rel="stylesheet" href="{{ MEDIA_URL }}css/style.css" type="text/css" />
         <link href="http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet" />
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"
                 type="text/javascript"></script>
-        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/2.10.0/d3.v2.min.js" -->
-        <!--         type="text/javascript"></script> -->
-        <script src="{{ MEDIA_URL }}js/d3.min.js" type="text/javascript"></script>
+        <script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
         <script src="{{ MEDIA_URL }}js/base.js" type="text/javascript"></script>
         <script src="{{ MEDIA_URL }}js/card.js" type="text/javascript"></script>
-        <script src="{{ MEDIA_URL }}js/plotting.js" type="text/javascript"></script>
+        <script src="{{ MEDIA_URL }}js/plot.js" type="text/javascript"></script>
         <script src="{{ MEDIA_URL }}js/factordiagram.js" type="text/javascript"></script>
         <script src="{{ MEDIA_URL }}js/doc.js" type="text/javascript"></script>
         <script src="{{ MEDIA_URL }}js/gamma.js" type="text/javascript"></script>
@@ -45,9 +43,7 @@
                 extensions: ["tex2jax.js"]
             });
         </script>
-        <script type="text/javascript"
-          src="http://cdn.mathjax.org/mathjax/latest/MathJax.js">
-        </script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML-full"></script>
     </head>
     <body>
         <div class="menu">

@@ -197,9 +197,6 @@ var Card = (function() {
                     seeSteps.remove();
                 }, this));
             }
-            else if (this.card_name === 'graph') {
-                this.addOptionsSection();
-            }
             else if (this.card_name === 'intsteps' || this.card_name === 'diffsteps') {
                 this.element.hide();
 
@@ -215,13 +212,6 @@ var Card = (function() {
                         var steps = card.element.find('.steps').parent();
 
                         var button = $("<button>Fullscreen</button>");
-                        // var filler = $('<div/>').hide();
-                        // steps.parent().append(filler);
-
-                        // var originalWidth = steps.parent().outerWidth();
-                        // var originalHeight = steps.parent().outerHeight();
-                        // var originalTop = steps.offset().top;
-                        // var originalScroll = 0;
                         button.click($.proxy(function() {
                             this.toggleFullscreen();
                         }, card));

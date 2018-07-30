@@ -110,10 +110,11 @@ class IntegralPrinter(object):
 
     def print_Power(self, rule):
         with self.new_step():
-            self.append("The integral of {} is {}:".format(
+            self.append("The integral of {} is {} when {}:".format(
                 self.format_math(rule.symbol ** sympy.Symbol('n')),
                 self.format_math((rule.symbol ** (1 + sympy.Symbol('n'))) /
-                                 (1 + sympy.Symbol('n')))
+                                 (1 + sympy.Symbol('n'))),
+                self.format_math(sympy.Ne(sympy.Symbol('n'), -1)),
             ))
             self.append(
                 self.format_math_display(
@@ -136,16 +137,16 @@ class IntegralPrinter(object):
             self.append("Let {}.".format(
                 self.format_math(sympy.Eq(u, rule.u_func))))
             self.append("Then let {} and substitute {}:".format(
-                self.format_math(sympy.Eq(du,rule.u_func.diff(rule.symbol) * dx)),
+                self.format_math(sympy.Eq(du, rule.u_func.diff(rule.symbol) * dx)),
                 self.format_math(rule.constant * du)
             ))
 
-            integrand = rule.substep.context.subs(rule.u_var, u)
+            integrand = rule.constant * rule.substep.context.subs(rule.u_var, u)
             self.append(self.format_math_display(
                 sympy.Integral(integrand, u)))
 
             with self.new_level():
-                self.print_rule(replace_u_var(rule.substep, rule.u_var, u))
+                self.print_rule(replace_u_var(rule.substep, rule.symbol.name, u))
 
             self.append("Now substitute {} back in:".format(
                 self.format_math(u)))
@@ -158,9 +159,9 @@ class IntegralPrinter(object):
 
             u, v, du, dv = map(lambda f: sympy.Function(f)(rule.symbol), 'u v du dv'.split())
             self.append(self.format_math_display(
-                r"""\int \operatorname{u} \operatorname{dv} dx
+                r"""\int \operatorname{u} \operatorname{dv}
                 = \operatorname{u}\operatorname{v} -
-                \int \operatorname{v} \operatorname{du} dx"""
+                \int \operatorname{v} \operatorname{du}"""
             ))
 
             self.append("Let {} and let {}.".format(

@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+    {% block head_additional %}
+    <link rel="stylesheet" href="/static/css/style.css" type="text/css" />
+    {% endblock %}
     {% block title %}
     SymPy Gamma
     {% endblock %}
@@ -9,6 +12,6 @@
         </div>
         <div class="result">
             <h2>Whoa!</h2>
-            <p>This page doesn't exist...</p>
+            <p>This page doesn't exist... <a href="/">Go back to Gamma!</a></p>
         </div>
     {% endblock %}

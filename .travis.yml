@@ -1,0 +1,28 @@
+language: python
+python:
+  - "2.7"
+
+env:
+  global:
+    # encrypted $OAUTH_REFRESH_TOKEN needed for deployment
+    - secure: "gAf0hXfe3FDNJrxurJs8UtoK7CJ8jG6sTvUdRUymY7WPJ3NYKIevisV+PeIOl/xbvtXHi4O2kmDkFEKI+cmwYJXPVqJ12mlFiJEditeUoNfJp2xYP0OFUaBeXj+c/ldKNAWRuI7rbE7F58tYDqcVvKMK/NPLW/cOwy3VbeTGB98="
+virtualenv:
+  system_site_packages: true
+
+before_install:
+  - npm install casperjs
+install: "pip install -r requirements.txt --use-mirrors"
+
+before_script:
+  - cd ..
+  - wget https://storage.googleapis.com/appengine-sdks/deprecated/195/google_appengine_1.9.5.zip -nv
+  - unzip -q google_appengine_1.9.5.zip
+  - export SDK_LOCATION="$(pwd)/google_appengine"
+  - cd $TRAVIS_BUILD_DIR
+  - git fetch --tags
+  - python deploy.py --generate-only --generate-test 1000
+  - python $SDK_LOCATION/dev_appserver.py --skip_sdk_update_check 1 . &
+  - sleep 10
+script: python travis.py
+
+after_success: python deploy.py

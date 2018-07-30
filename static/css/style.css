@@ -71,16 +71,11 @@ h1 a img {
   padding: 10px;
   background: #FFF;
   box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.2);
-  -webkit-transition: all 3000ms ease-in;
-  -moz-transition: all 3000ms ease-in;
-  -ms-transition: all 3000ms ease-in;
-  -o-transition: all 3000ms ease-in;
-  transition: all 3000ms ease-in;
 }
 
 .did_you_mean {
   text-align: center;
-  box-shadow: 0px 0px 5px 2px rgba(255, 51, 51, 0.7);
+  box-shadow: 0px 0px 5px 2px rgba(255, 127, 14, 0.5);
 }
 
 .result_card.result_card_error {
@@ -372,12 +367,13 @@ h1 a img {
   padding: 0;
   cursor: pointer;
   font-size: 100%;
-  padding: 0.5em 0.25em;
+  padding: 0.6em 0.25em 0.5em;
 }
 
-.example-group h3 i {
-  display: inline-block;
-  margin: 0 0.25em;
+.example-group i {
+  cursor: pointer;
+  float: left;
+  margin: 0.4em 0.45em;
   font-size: 1.25em;
 }
 
@@ -385,7 +381,7 @@ h1 a img {
   border-bottom: 1px solid #777;
 }
 
-.example-group h3.shown i {
+.example-group i.shown {
   -moz-transform: rotate(180deg);
   -webkit-transform: rotate(180deg);
   -o-transform: rotate(180deg);
@@ -395,11 +391,13 @@ h1 a img {
 }
 
 .example-group .contents {
+  clear:both;
   padding: 0.5em 0.5em;
 }
 
 .example-group h4 {
   font-weight: 600;
+  padding: 0.25em 0 0;
 }
 
 .example-group li {
@@ -407,7 +405,7 @@ h1 a img {
 }
 
 .example-group a:link, .example-group a:visited,
-.example-group a:hover, .example-group a:active, a#random-example {
+.example-group a:hover, .example-group a:active {
   text-decoration: none;
   color: #3B5526;
   font-family: 'Droid Sans Mono', monospace;
@@ -418,6 +416,12 @@ h1 a img {
   padding: 0.125em 0;
   font-style: italic;
   font-size: 90%;
+}
+
+.col button a:link, .col button a:visited,
+.col button a:hover, .col button a:active {
+  color: #FFF;
+  text-decoration: none;
 }
 
 #random-example, #clear-all-recent {
@@ -445,7 +449,7 @@ p {
   padding: 0px 8px;
 }
 
-button {
+#random-example, button {
   cursor: pointer;
   display: block;
   font-family: 'Open Sans', sans-serif;
@@ -463,7 +467,7 @@ button {
   filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#40252D, endColorstr=#370C19);
 }
 
-button:hover {
+#random-example:hover, button:hover {
   background-color: #552634;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #552634), color-stop(100%, #40252D));
   background-image: -webkit-linear-gradient(top, #552634, #40252D);
@@ -474,22 +478,68 @@ button:hover {
   filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#552634, endColorstr=#40252D);
 }
 
-/* Graphs */
-
-.graph {
-  max-width: 400px;
-  height: 275px;
-  margin: 1em auto;
-  border: 1px solid #CCC;
-  padding: 20px;
+button {
+  height: 32px;
 }
 
-.graph:hover {
+#random-example {
+  height: 25px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 0.45em;
+  padding: 0.45em 0.45em 0 0.45em;
+  margin-bottom: 0;
+}
+/* Plots */
+
+/* Formatting for the input line */
+.plot-card .cell_input span.hidden {
+  opacity: 0.5;
+}
+
+.plot-card .cell_input span {
+  cursor: pointer;
+}
+
+.plot-card .cell_input span:after {
+  content: " \f06e";
+  font-family: "FontAwesome";
+  color: #000;
+}
+
+.plot-card .cell_input span.hidden:after {
+  content: " \f070";
+}
+
+.plot {
+  width: 400px;
+  height: 270px;
+  margin: 0 auto;
+  border: 1px solid #CCC;
+  padding: 10px;
+  overflow: hidden;
+  resize: both;
+}
+
+.plot:hover {
   border: 1px solid #000;
 }
 
-svg {
+.plot .graphs {
+  display: none;
+}
+
+.plot svg {
   cursor: all-scroll;
+}
+
+.plot svg text {
+  font-family: monospace;
+  font-size: 0.875em;
+}
+
+.plot svg path:hover {
+  stroke-width: 3;
 }
 
 .help {
@@ -637,6 +687,24 @@ svg {
   content: "+";
 }
 
+/* Truth table */
+
+.cell_output[data-card-name="truth_table"] td {
+  padding: 0;
+}
+
+td .true {
+  display: block;
+  padding: 0.25em 0.5em;
+  background-color: #3BB878;
+}
+
+td .false {
+  display: block;
+  padding: 0.25em 0.5em;
+  background-color: #F7977A;
+}
+
 /* Loading PNG */
 
 .loader {
@@ -678,6 +746,7 @@ svg {
      to { background-position: -256px; }
 }
 
+/* Phones/mobile devices */
 @media screen and (max-device-width: 767px) {
   .menu {
     padding: 0.25em 0.5em;
@@ -753,6 +822,21 @@ svg {
   .result, #footer {
     width: 100%;
     margin: 10px auto;
+  }
+
+  .cell_output[data-card-name="graph"] {
+    overflow-x: hidden;
+  }
+
+  .graph {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    border: 0;
+  }
+
+  .graph:hover {
+    border: 0;
   }
 
   .menu_right {
