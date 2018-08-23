@@ -67,7 +67,7 @@ if __name__ == '__main__':
                 sys.exit(1)
     else:
         print "Generating test configuration."
-        application = 'sympy-gamma-li'
+        application = 'sympy-gamma-tests'
         if args.generate_test > 0:
             # User provided test version
             version = args.generate_test
