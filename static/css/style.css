@@ -1,6 +1,6 @@
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,600);
-@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
-@import url(http://fonts.googleapis.com/css?family=Gentium+Basic&text=SymPy%20Gamma);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);
+@import url(https://fonts.googleapis.com/css?family=Droid+Sans+Mono);
+@import url(https://fonts.googleapis.com/css?family=Gentium+Basic&text=SymPy%20Gamma);
 
 body {
   font-family: 'Open Sans', sans-serif;
@@ -751,7 +751,7 @@ td .false {
   .menu {
     padding: 0.25em 0.5em;
   }
-  
+
   .menu a {
     font-size: 1.25em;
   }
@@ -769,7 +769,7 @@ td .false {
     box-shadow: none;
     border: 1px solid #F33;
   }
-  
+
   .col {
     width: auto;
     margin: 10px 10px;
@@ -797,7 +797,7 @@ td .false {
     box-shadow: none;
     border: 1px solid #CCC;
   }
-  
+
   .input form {
     margin: 0 auto;
     margin-top: 10px;
@@ -861,7 +861,7 @@ td .false {
     width: 740px;
     margin: 10px auto;
   }
-  
+
   .col {
     width: 360px;
   }
