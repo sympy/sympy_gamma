@@ -94,6 +94,8 @@ if __name__ == '__main__':
             return_code = subprocess.call(DEPLOY_COMMAND, shell=True)
             if return_code == 0:
                 print "Deployed application."
+                if config_type == 'test':
+                    print "Deployed to https://%s-dot-sympy-gamma-tests.appspot.com/" % version
             else:
                 print "Could not deploy application. Running appcfg rollback..."
                 subprocess.call(ROLLBACK_COMMAND, shell=True)
