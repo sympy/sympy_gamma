@@ -161,6 +161,11 @@ If you have a test app online, remember to update it every time you update a
 pull request, so that others can easily review your work, without even having
 to use ``dev_appserver.py``.
 
+Pull requests are automatically deployed by Travis to
+`https://N-dot-sympy-gamma-tests.appspot.com/`, where `N` is the pull request
+number. Note that the pull request has to from a branch on this repository, as
+forks do not have access to the key to deploy to the app engine.
+
 Development notes
 -----------------
 
