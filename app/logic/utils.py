@@ -257,7 +257,7 @@ class TopCallVisitor(ast.NodeVisitor):
         if not self.call:
             self.call = node
 
-# From http://stackoverflow.com/a/739301/262727
+# From https://stackoverflow.com/a/739301/262727
 def ordinal(n):
     if 10 <= n % 100 < 20:
         return 'th'
