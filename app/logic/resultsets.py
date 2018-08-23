@@ -460,7 +460,7 @@ def format_approximator(approximation, formatter):
 DIAGRAM_CODE = """
 <div class="factorization-diagram" data-primes="{primes}">
     <div></div>
-    <p><a href="http://mathlesstraveled.com/2012/10/05/factorization-diagrams/">About this diagram</a></p>
+    <p><a href="https://mathlesstraveled.com/2012/10/05/factorization-diagrams/">About this diagram</a></p>
 </div>
 """
 
@@ -646,7 +646,7 @@ def eval_intsteps(evaluator, components, parameters=None):
 
     return intsteps.print_html_steps(integrand, components['variable'])
 
-# http://www.python.org/dev/peps/pep-0257/
+# https://www.python.org/dev/peps/pep-0257/
 def trim(docstring):
     if not docstring:
         return ''
@@ -987,9 +987,9 @@ result_sets = [
 ]
 
 learn_more_sets = {
-    'rsolve': ['http://en.wikipedia.org/wiki/Recurrence_relation',
-               'http://mathworld.wolfram.com/RecurrenceEquation.html',
-               'http://docs.sympy.org/latest/modules/solvers/solvers.html#recurrence-equtions']
+    'rsolve': ['https://en.wikipedia.org/wiki/Recurrence_relation',
+               'https://mathworld.wolfram.com/RecurrenceEquation.html',
+               'https://docs.sympy.org/latest/modules/solvers/solvers.html#recurrence-equtions']
 }
 
 def is_function_handled(function_name):

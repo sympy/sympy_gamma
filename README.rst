@@ -1,7 +1,7 @@
 SymPy Gamma
 ===========
 
-`SymPy Gamma <http://www.sympygamma.com>`_ is a simple web application based
+`SymPy Gamma <https://www.sympygamma.com>`_ is a simple web application based
 on Google App Engine that executes and displays the results of SymPy
 expressions as well as additional related computations, in a fashion similar
 to that of Wolfram|Alpha. For instance, entering an integer will display
@@ -21,9 +21,9 @@ Installation
 ------------
 
 Download and unpack most recent Google App Engine SDK for Python from
-http://code.google.com/appengine/downloads.html, e.g.::
+https://code.google.com/appengine/downloads.html, e.g.::
 
-    $ wget http://googleappengine.googlecode.com/files/google_appengine_1.5.1.zip
+    $ wget https://googleappengine.googlecode.com/files/google_appengine_1.5.1.zip
     $ unzip google_appengine_1.5.1.zip
 
 On the Mac, it is a disk image with an application, which you should
@@ -108,7 +108,7 @@ Or, in Mac OS X, just open the GoogleAppEngineLauncher program, add the
 project if you haven't already, and click "Deploy" in the toolbar.  And then
 it should just work (follow the log that comes up to see.
 
-This requires admin privileges to http://sympy-gamma-hrd.appspot.com. If you
+This requires admin privileges to https://sympy-gamma-hrd.appspot.com. If you
 don't have access to this App Engine application, but want to test it, see
 the instructions in the `Testing on the App Engine`_ section below.
 
@@ -117,7 +117,7 @@ given the App Engine SDK location::
 
   $ SDK_LOCATION=/path/to/sdk python deploy.py --generate-production
 
-Finally, go to http://NN.sympy-gamma-hrd.appspot.com, where ``NN`` is the
+Finally, go to https://NN.sympy-gamma-hrd.appspot.com, where ``NN`` is the
 version you just uploaded, and make sure that it works.  If it does, go to
 the ``Versions`` section of the sympy_gamma dashboard, and set this as the
 new default version.  If there are any issues, you can roll back to the
