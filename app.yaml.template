@@ -8,14 +8,17 @@ default_expiration: "1h"
 handlers:
 - url: /static
   static_dir: static
+  secure: always
 
 - url: /favicon\.ico
   static_files: static/images/favicon.ico
   upload: static/images/favicon\.ico
+  secure: always
 
 - url: /google5acf6d2992c8237d.html
   static_files: google5acf6d2992c8237d.html
   upload: google5acf6d2992c8237d.html
+  secure: always
 
 - url: /.*
   script: main.application
