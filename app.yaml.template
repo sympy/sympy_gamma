@@ -19,6 +19,7 @@ handlers:
 
 - url: /.*
   script: main.application
+  secure: always
 
 libraries:
 - name: django
