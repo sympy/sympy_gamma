@@ -33,3 +33,5 @@ my/
 
 # Generated app.yaml
 app.yaml
+
+.vscode

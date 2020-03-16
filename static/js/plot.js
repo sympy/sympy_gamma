@@ -569,7 +569,7 @@ function setupPlots() {
         }
         var card = $(this).parents('.result_card').data('card');
         var graphs = JSON.parse($(this).find('.graphs').text());
-
+        if(variable.length == 8) {
         var plot = new Plot2D(card, $(this)[0], D3Backend, graphs);
         plot.show();
 
@@ -721,5 +721,19 @@ function setupPlots() {
                 attributes: true
             });
         }
+    }
+
+    if(variable.length >= 8) {
+        card.element.addClass('plot-card');
+        svg = document.createElement("svg")
+        document.getElementsByClassName('plot')[0].appendChild(svg)
+        document.getElementsByTagName('svg')[0].setAttribute('id', "plotly")         
+        const returned =  graphs[0].points
+        const type = {type : 'contour'}
+        data = Object.assign(returned , type) 
+        data =[data]
+        console.log(data);
+        Plotly.newPlot("plotly", data);
+    }    
     });
 }

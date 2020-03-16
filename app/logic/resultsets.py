@@ -280,8 +280,8 @@ def extract_plot(arguments, evaluated):
             result['variable'] = result['variables'][0]
             result['input_evaluated'] = [arguments.args[0]]
 
-            if len(result['variables']) != 1:
-                raise ValueError("Cannot plot function of multiple variables")
+            # if len(result['variables']) != 1:
+            #     raise ValueError("Cannot plot function of multiple variables")
         else:
             variables = set()
             try:
@@ -517,9 +517,10 @@ def eval_plot(evaluator, components, parameters=None):
         parameters = {}
 
     xmin, xmax = parameters.get('xmin', -10), parameters.get('xmax', 10)
+    ymin, ymax = [-10, 10]
     pmin, pmax = parameters.get('tmin', 0), parameters.get('tmax', 2 * sympy.pi)
     tmin, tmax = parameters.get('tmin', 0), parameters.get('tmax', 10)
-    from sympy.plotting.plot import LineOver1DRangeSeries, Parametric2DLineSeries
+    from sympy.plotting.plot import LineOver1DRangeSeries, Parametric2DLineSeries, SurfaceOver2DRangeSeries
     functions = evaluator.get("input_evaluated")
     if isinstance(functions, sympy.Basic):
         functions = [(functions, 'xy')]
@@ -539,7 +540,7 @@ def eval_plot(evaluator, components, parameters=None):
         else:
             variables = func.free_symbols
 
-        if len(variables) > 1:
+        if len(variables) > 3:
             raise ValueError("Cannot plot multivariate function")
         elif len(variables) == 0:
             variable = sympy.Symbol('x')
@@ -555,9 +556,22 @@ def eval_plot(evaluator, components, parameters=None):
                 graph_range = (variable, tmin, tmax)
 
             if graph_type in ('xy', 'polar'):
-                series = LineOver1DRangeSeries(func, graph_range, nb_of_points=150)
+                if len(variables) == 1 :
+                    series = LineOver1DRangeSeries(func, graph_range, nb_of_points=150)
+                    series = series.get_segments()
+                if len(variables) == 2:
+                    series = SurfaceOver2DRangeSeries(func, graph_range, ('x', -10, 10), nb_of_points=150)
+                    series = series.get_meshes()
+                    series = list(series)
+                    # print("from resultset line 584", series[0][0])
+                    if variable == 'y':
+                        print("true")
+                        series = SurfaceOver2DRangeSeries(func, graph_range, ('x', -10, 10), nb_of_points=150)
+                        series = series.get_meshes()
+                        series = list(series)
             elif graph_type == 'parametric':
                 series = Parametric2DLineSeries(x_func, y_func, graph_range, nb_of_points=150)
+                series = series.get_segments()
             # returns a list of [[x,y], [next_x, next_y]] pairs
             series = series.get_segments()
         except TypeError:
@@ -565,7 +579,7 @@ def eval_plot(evaluator, components, parameters=None):
 
         xvalues = []
         yvalues = []
-
+        zvalues = []
         def limit_y(y):
             CEILING = 1e8
             if y > CEILING:
@@ -575,26 +589,54 @@ def eval_plot(evaluator, components, parameters=None):
             return y
 
         x_transform, y_transform = GRAPH_TYPES[graph_type]
-        series.append([series[-1][1], None])
-        for point in series:
-            if point[0][1] is None:
-                continue
-            x = point[0][0]
-            y = limit_y(point[0][1])
-            xvalues.append(x_transform(x, y))
-            yvalues.append(y_transform(x, y))
+        if len(variables) == 1 :
+            series.append([series[-1][1], None])
+        if(len(variables) == 2 ):
+            series = list(series)
+        if(len(variables) == 1 ):
+            for point in series:
+                if point[0][1] is None:
+                    continue
+                x = point[0][0]
+                y = limit_y(point[0][1])
+                xvalues.append(x_transform(x, y))
+                yvalues.append(y_transform(x, y))
 
-        graphs.append({
-            'type': graph_type,
-            'function': sympy.jscode(sympy.sympify(func)),
-            'points': {
-                'x': xvalues,
-                'y': yvalues
-            },
-            'data': None
-        })
+            graphs.append({
+                'type': graph_type,
+                'function': sympy.jscode(sympy.sympify(func)),
+                'points': {
+                    'x': xvalues,
+                    'y': yvalues
+                },
+                'data': None
+            })
+        if(len(variables) == 2) :
+            for points in series[0][0]:
+                xvalues.append(points)
+            # print("from resultsets line 641 xvalues", xvalues)
+            for points in series[1]:
+                yvalues.append(points[0])
+            # print("from resultsets line 644 yvalues", yvalues)
+            for points in series[2].data:
+                new = []
+                for p in points:
+                    new.append(p)
+                # print(new)
+                zvalues.append(new)
+            # print("from resultsets line 654 yvalues", zvalues)
+            graphs.append({
+                'type': graph_type,
+                'function': sympy.jscode(sympy.sympify(func)),
+                'points': {
+                    'x': xvalues,
+                    'y': yvalues,
+                    'z': zvalues
+                },
+                'data': None
+            })
     return {
-        'variable': repr(variable),
+        'variable': repr(variables),
         'graphs': json.dumps(graphs)
     }
 
