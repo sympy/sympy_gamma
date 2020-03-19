@@ -573,7 +573,6 @@ def eval_plot(evaluator, components, parameters=None):
                 series = Parametric2DLineSeries(x_func, y_func, graph_range, nb_of_points=150)
                 series = series.get_segments()
             # returns a list of [[x,y], [next_x, next_y]] pairs
-            series = series.get_segments()
         except TypeError:
             raise ValueError("Cannot plot function")
 
