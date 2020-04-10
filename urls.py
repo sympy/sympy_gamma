@@ -1,4 +1,6 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import url
+
+from app import views
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -7,23 +9,22 @@ from django.conf.urls.defaults import *
 import os.path
 p = os.path.join(os.path.dirname(__file__), 'media/')
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     # Example:
     # (r'^notebook/', include('notebook.foo.urls')),
-    (r'^$', 'app.views.index'),
+    url(r'^$', views.index),
 
-    (r'^input/', 'app.views.input'),
-    (r'^about/$', 'app.views.about'),
-    (r'^random', 'app.views.random_example'),
+    url(r'^input/', views.input),
+    url(r'^about/$', views.about),
+    url(r'^random', views.random_example),
 
-    (r'user/remove/(?P<qid>.*)$', 'app.views.remove_query'),
+    url(r'user/remove/(?P<qid>.*)$', views.remove_query),
 
-    (r'card/(?P<card_name>\w*)$', 'app.views.eval_card'),
+    url(r'card/(?P<card_name>\w*)$', views.eval_card),
 
-    (r'card_info/(?P<card_name>\w*)$', 'app.views.get_card_info'),
+    url(r'card_info/(?P<card_name>\w*)$', views.get_card_info),
 
-    (r'card_full/(?P<card_name>\w*)$', 'app.views.get_card_full')
+    url(r'card_full/(?P<card_name>\w*)$', views.get_card_full)
 
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
@@ -32,7 +33,7 @@ urlpatterns = patterns(
 
     # Uncomment the next line to enable the admin:
     # (r'^admin/(.*)', admin.site.root),
-)
+]
 
-handler404 = 'app.views.view_404'
-handler500 = 'app.views.view_500'
+handler404 = views.view_404
+handler500 = views.view_500

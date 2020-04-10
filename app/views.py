@@ -1,17 +1,12 @@
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response, redirect
 from django.template.loader import render_to_string
-from django.utils import simplejson
 from django import forms
-import django
 
 from google.appengine.api import users
 from google.appengine.runtime import DeadlineExceededError
 
-import sympy
-from logic.utils import Eval
 from logic.logic import SymPyGamma, mathjax_latex
-from logic.resultsets import get_card, find_result_set
 
 import settings
 import models
@@ -127,6 +122,7 @@ EXAMPLES = [
     ]),
 ]
 
+
 class MobileTextInput(forms.widgets.TextInput):
     def render(self, name, value, attrs=None):
         if attrs is None:
@@ -135,8 +131,10 @@ class MobileTextInput(forms.widgets.TextInput):
         attrs['autocapitalize'] = 'off'
         return super(MobileTextInput, self).render(name, value, attrs)
 
+
 class SearchForm(forms.Form):
     i = forms.CharField(required=False, widget=MobileTextInput())
+
 
 def authenticate(view):
     def _wrapper(request, **kwargs):
@@ -157,6 +155,7 @@ def authenticate(view):
         return template, params
     return _wrapper
 
+
 def app_version(view):
     def _wrapper(request, **kwargs):
         result = view(request, **kwargs)
@@ -172,6 +171,7 @@ def app_version(view):
         except ValueError:
             return result
     return _wrapper
+
 
 @app_version
 @authenticate
@@ -279,19 +279,19 @@ def eval_card(request, card_name):
     except ValueError as e:
         return HttpResponse(json.dumps({
             'error': e.message
-        }), mimetype="application/json")
+        }), content_type="application/json")
     except DeadlineExceededError:
         return HttpResponse(json.dumps({
             'error': 'Computation timed out.'
-        }), mimetype="application/json")
+        }), content_type="application/json")
     except:
         trace = traceback.format_exc(5)
         return HttpResponse(json.dumps({
             'error': ('There was an error in Gamma. For reference'
                       'the last five traceback entries are: ' + trace)
-        }), mimetype="application/json")
+        }), content_type="application/json")
 
-    return HttpResponse(json.dumps(result), mimetype="application/json")
+    return HttpResponse(json.dumps(result), content_type="application/json")
 
 def get_card_info(request, card_name):
     g, variable, expression, _ = _process_card(request, card_name)
@@ -301,19 +301,19 @@ def get_card_info(request, card_name):
     except ValueError as e:
         return HttpResponse(json.dumps({
             'error': e.message
-        }), mimetype="application/json")
+        }), content_type="application/json")
     except DeadlineExceededError:
         return HttpResponse(json.dumps({
             'error': 'Computation timed out.'
-        }), mimetype="application/json")
+        }), content_type="application/json")
     except:
         trace = traceback.format_exc(5)
         return HttpResponse(json.dumps({
             'error': ('There was an error in Gamma. For reference'
                       'the last five traceback entries are: ' + trace)
-        }), mimetype="application/json")
+        }), content_type="application/json")
 
-    return HttpResponse(json.dumps(result), mimetype="application/json")
+    return HttpResponse(json.dumps(result), content_type="application/json")
 
 def get_card_full(request, card_name):
     g, variable, expression, parameters = _process_card(request, card_name)
@@ -339,10 +339,10 @@ def get_card_full(request, card_name):
                 'error': e.message
             },
             'input': expression
-        }), mimetype="text/html")
+        }), content_type="text/html")
     except DeadlineExceededError:
         return HttpResponse('Computation timed out.',
-                            mimetype="text/html")
+                            content_type="text/html")
     except:
         trace = traceback.format_exc(5)
         return HttpResponse(render_to_string('card.html', {
@@ -352,13 +352,14 @@ def get_card_full(request, card_name):
                 'error': trace
             },
             'input': expression
-        }), mimetype="text/html")
+        }), content_type="text/html")
 
-    response = HttpResponse(html, mimetype="text/html")
+    response = HttpResponse(html, content_type="text/html")
     response['Access-Control-Allow-Origin'] = '*'
     response['Access-Control-Allow-Headers'] = 'Content-Type, X-Requested-With'
 
     return response
+
 
 def remove_query(request, qid):
     user = users.get_current_user()
@@ -381,11 +382,13 @@ def remove_query(request, qid):
             'message': 'Not logged in or invalid user.'
         }
 
-    return HttpResponse(json.dumps(response), mimetype='application/json')
+    return HttpResponse(json.dumps(response), content_type='application/json')
+
 
 @app_version
 def view_404(request):
     return ("404.html", {})
+
 
 @app_version
 def view_500(request):

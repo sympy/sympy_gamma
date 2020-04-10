@@ -2,7 +2,7 @@
 
 # root_dir points to this directory (that contains settings.py):
 import os
-root_dir = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
@@ -54,13 +54,6 @@ ADMIN_MEDIA_PREFIX = '/media/'
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '4v-c#usznhix_^np%w)4yr@dlit*4^47u@uph3xr2gh@7(&z$u'
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
-)
-
 MIDDLEWARE_CLASSES = (
     'google.appengine.ext.ndb.django_middleware.NdbDjangoMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -70,9 +63,21 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'urls'
 
-TEMPLATE_DIRS = (
-    root_dir + "/templates",
-)
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [os.path.join(ROOT_DIR, 'templates')],
+    'OPTIONS': {
+        'loaders': [
+            ('django.template.loaders.cached.Loader', [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ]),
+        ],
+    },
+}]
+
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 INSTALLED_APPS = (
         #'django.contrib.auth',
