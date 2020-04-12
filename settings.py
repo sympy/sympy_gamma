@@ -77,7 +77,7 @@ TEMPLATES = [{
 }]
 
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.sympygamma.com']
 
 INSTALLED_APPS = (
         #'django.contrib.auth',
