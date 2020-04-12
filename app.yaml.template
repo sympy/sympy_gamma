@@ -26,6 +26,8 @@ handlers:
 
 libraries:
 - name: django
-  version: "1.3"
+  version: "1.11"
 - name: numpy
   version: "1.6.1"
+- name: ssl
+  version: "latest"
