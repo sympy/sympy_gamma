@@ -1,2 +1,2 @@
-django==1.11
+django==1.11.28
 numpy==1.6.1
