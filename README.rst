@@ -183,7 +183,6 @@ In projects that don't use submodules, pulling changes boils down to::
 in the simplest case. SymPy Gamma, however, requires additional effort::
 
     $ git submodule update
-    $ python deploy.py --generate-only --generate-test 1000
 
 The former command assures that if there were any changes to submodules
 of the super-project, then those submodules will get updated to new
