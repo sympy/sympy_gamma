@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
     print "Generating configuration for version", version
 
-    with open('app.yaml.template') as f:
+    with open('app.yaml') as f:
         template = f.read()
         configuration = template.format(application=application, version=version)
 
