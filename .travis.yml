@@ -25,7 +25,7 @@ before_deploy:
     -in client-secret.json.enc -out ../client-secret.json -d
   # Promote the deployed version if the $TRAVIS_TAG is not empty
   - promote=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "true"; else echo "false"; fi)
-  - version=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "$TRAVIS_TAG"; else echo "$TRAVIS_PULL_REQUEST"; fi)
+  - version=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "$TRAVIS_TAG"; else echo "$TRAVIS_BRANCH"; fi)
   - echo "Version = $version"
   - echo "promote traffic after deployment = $tag_version"
 deploy:
@@ -37,4 +37,3 @@ deploy:
   on:
     all_branches: true
     repo: sympy/sympy_gamma
-    condition: "$TRAVIS_PULL_REQUEST != false"
