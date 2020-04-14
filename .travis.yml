@@ -6,10 +6,9 @@ virtualenv:
   system_site_packages: true
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_2fd045226a67_key -iv $encrypted_2fd045226a67_iv
-    -in client-secret.json.enc -out ../client-secret.json -d
   - npm install -g casperjs
 install: pip install -r requirements.txt
+
 before_script:
   - cd ..
   - wget https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.90.zip -nv
@@ -18,16 +17,17 @@ before_script:
   - cd $TRAVIS_BUILD_DIR
   - python $SDK_LOCATION/dev_appserver.py --skip_sdk_update_check 1 . &
   - sleep 10
-  - git fetch --tags
-  # Promote the deployed version if the $TRAVIS_TAG is not empty
-  - promote=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "true"; else echo "false"; fi)
-  - TRAVIS_PULL_REQUEST=989  # Remove later
-  - version=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "$TRAVIS_TAG"; else echo "$TRAVIS_PULL_REQUEST"; fi)
-  - echo "Version = $version"
-  - echo "promote traffic after deployment = $tag_version"
 script:
   - python travis.py
 
+before_deploy:
+  - openssl aes-256-cbc -K $encrypted_2fd045226a67_key -iv $encrypted_2fd045226a67_iv
+    -in client-secret.json.enc -out ../client-secret.json -d
+  # Promote the deployed version if the $TRAVIS_TAG is not empty
+  - promote=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "true"; else echo "false"; fi)
+  - version=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "$TRAVIS_TAG"; else echo "$TRAVIS_PULL_REQUEST"; fi)
+  - echo "Version = $version"
+  - echo "promote traffic after deployment = $tag_version"
 deploy:
   provider: gae
   keyfile: "../client-secret.json"
@@ -36,3 +36,5 @@ deploy:
   version: "$version"
   on:
     all_branches: true
+    repo: sympy/sympy_gamma
+    condition: "$TRAVIS_PULL_REQUEST != false"
