@@ -1,5 +1,4 @@
 import nose
-import os
 import sys
 import os.path
 import subprocess

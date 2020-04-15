@@ -23,8 +23,8 @@ Installation
 Download and unpack most recent Google App Engine SDK for Python from
 https://code.google.com/appengine/downloads.html, e.g.::
 
-    $ wget https://googleappengine.googlecode.com/files/google_appengine_1.5.1.zip
-    $ unzip google_appengine_1.5.1.zip
+    $ wget https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.90.zip
+    $ unzip google_appengine_1.9.90.zip
 
 On the Mac, it is a disk image with an application, which you should
 drag to your Applications folder.  Open the program and install the
@@ -45,14 +45,6 @@ We use submodules to include external libraries in sympy_gamma::
 
 This is sufficient to clone appropriate repositories in correct versions
 into sympy_gamma (see git documentation on submodules for information).
-
-Generate a configuration file for App Engine (needed to run the development
-web server)::
-
-  $ python deploy.py --generate-only --generate-test 1000
-
-(the number does not matter unless you are deploying, see below). **DO not**
-commit the generated ``app.yaml`` file.
 
 Development server
 ------------------
@@ -85,58 +77,51 @@ necessary unless you are deploying to the official server)::
 
   $ git tag -a version-42
 
-Second, you need to generate an ``app.yaml`` (App Engine configuration) file
-using ``deploy.py``::
 
-  $ python deploy.py --generate-only --generate-production
+Then install the Google Cloud SDK for your OS from here:
+https://cloud.google.com/sdk/install
 
-The script will determine the version from the tag; it can also be manually
-specified (``--generate-production VERSION_NUMBER``). You will also want to
-change the application name if you are not deploying to the test
-application. **DO not** commit the generated ``app.yaml`` file.
+This will let you use the "gcloud" CLI. After this configure the CLI to access
+the google cloud console for the project::
 
-Second, you need to go to the ``Versions`` section of the
-sympy_gamma dashboard at appspot.com and delete the oldest version, as we
-can only upload ten versions at a time.
+    $ gcloud init
+
 
 Assuming that sympy_gamma works properly (also across different mainstream web
-browsers), you can upload your changes to Google App Engine::
+browsers), you can upload your changes to Google App Engine, replacing the
+<TAGGED_VERSION> with actual version we tagged with::
 
-    $ ../appcfg.py update .
-
-Or, in Mac OS X, just open the GoogleAppEngineLauncher program, add the
-project if you haven't already, and click "Deploy" in the toolbar.  And then
-it should just work (follow the log that comes up to see.
+    $ gcloud app deploy --project sympy-gamma-hrd --no-promote --version <TAGGED_VERSION>
 
 This requires admin privileges to https://sympy-gamma-hrd.appspot.com. If you
 don't have access to this App Engine application, but want to test it, see
 the instructions in the `Testing on the App Engine`_ section below.
 
-The deploy script can generate the configuration and deploy in one step if
-given the App Engine SDK location::
-
-  $ SDK_LOCATION=/path/to/sdk python deploy.py --generate-production
-
-Finally, go to https://NN.sympy-gamma-hrd.appspot.com, where ``NN`` is the
+Finally, go to https://NN-dot-sympy-gamma-hrd.appspot.com, where ``NN`` is the
 version you just uploaded, and make sure that it works.  If it does, go to
 the ``Versions`` section of the sympy_gamma dashboard, and set this as the
 new default version.  If there are any issues, you can roll back to the
 previous version from this same screen.
 
-Generating a Deployment Key
----------------------------
+Creating Deployment Credentials
+-------------------------------
 
-Travis-CI deploys the application using OAuth credentials. These are stored
-encrypted in the ``env`` section of ``.travis.yml``, and are generated using
-the Travis command-line tools::
+Travis-CI deploys the application using service account credentials. To create a
+service account for deployment with suitable permissions, follow these steps:
 
-  travis encrypt 'OAUTH_REFRESH_TOKEN=TOKEN' -r sympy/sympy_gamma
+https://cloud.google.com/solutions/continuous-delivery-with-travis-ci#creating_credentials
 
-The token is found in the JSON file ``$HOME/.appcfg_oauth2_tokens`` under
-the key ``"refresh_token"``. This file is created after manually deploying
-(or running any other command) using OAuth authorization::
+These are stored encrypted in the ``client-secret.json.enc`` file in the repository, and are generated
+using the Travis command-line tools (client-secret.json is the credentials file for the service account
+created int the step above) ::
 
-  $ ../appcfg.py update --oauth2 .
+
+  travis encrypt-file client-secret.json --add
+
+This also adds the encrypted keys in travis environment variables, which you can
+check from here: https://travis-ci.org/github/aktech/sympy_gamma/settings in the
+"Environment Variables" section.
+
 
 Testing on the App Engine
 -------------------------
@@ -147,23 +132,19 @@ Currently, there is no testing server set up as there is for SymPy
 Live. However, you can set up your own testing server (it's free, though it
 requires a cell phone to set up).
 
-Either way, to test, you will need to edit the ``app.yaml`` file.  You should
-edit the first line, ``application``, to the name of the testing application
-(like ``sympy-gamma-tests``), and the second line to the version number you
-want to use.
+Either way, to test, you will need to edit the Project ID in the deploy command
+mentioned above with your Project ID and the version you want to deploy to::
 
-You should not actually commit ``app.yaml``, as it is generated by the
-deploy script.  If you later want to commit an actual change to the
-generated ``app.yaml`` (e.g., to modify some metadata), you should edit and
-commit changes to ``app.yaml.template``.
+    gcloud app deploy --project <your-project-name> --no-promote --version <TAGGED_VERSION>
+
 
 If you have a test app online, remember to update it every time you update a
 pull request, so that others can easily review your work, without even having
 to use ``dev_appserver.py``.
 
-Pull requests are automatically deployed by Travis to
-`https://N-dot-sympy-gamma-tests.appspot.com/`, where `N` is the pull request
-number. Note that the pull request has to from a branch on this repository, as
+Branch builds are automatically deployed by Travis to
+`https://N-dot-sympy-gamma-tests.appspot.com/`, where `N` is the branch name.
+Note that the pull request has to from a branch on this repository, as
 forks do not have access to the key to deploy to the app engine.
 
 Development notes
@@ -202,7 +183,6 @@ In projects that don't use submodules, pulling changes boils down to::
 in the simplest case. SymPy Gamma, however, requires additional effort::
 
     $ git submodule update
-    $ python deploy.py --generate-only --generate-test 1000
 
 The former command assures that if there were any changes to submodules
 of the super-project, then those submodules will get updated to new
