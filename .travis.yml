@@ -23,16 +23,13 @@ script:
 before_deploy:
   - openssl aes-256-cbc -K $encrypted_2fd045226a67_key -iv $encrypted_2fd045226a67_iv
     -in client-secret.json.enc -out ../client-secret.json -d
-  # Promote the deployed version if the $TRAVIS_TAG is not empty
-  - promote=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "true"; else echo "false"; fi)
-  - version=$(if [ ! -z "$TRAVIS_TAG" ]; then echo "$TRAVIS_TAG"; else echo "$TRAVIS_BRANCH"; fi)
+  - version=$(if [ ! -z "$TRAVIS_TAG" ]; then echo $(cut -d'-' -f2 <<<"$TRAVIS_TAG"); else echo "$TRAVIS_BRANCH"; fi)
   - echo "Version = $version"
-  - echo "promote traffic after deployment = $tag_version"
 deploy:
   provider: gae
   keyfile: "../client-secret.json"
   project: sympy-gamma-hrd
-  no_promote: "$promote"
+  no_promote: true
   version: "$version"
   on:
     all_branches: true
