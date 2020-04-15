@@ -156,7 +156,7 @@ def authenticate(view):
     return _wrapper
 
 
-def app_version(view):
+def app_meta(view):
     def _wrapper(request, **kwargs):
         result = view(request, **kwargs)
         version, deployed = os.environ['CURRENT_VERSION_ID'].split('.')
@@ -167,13 +167,14 @@ def app_version(view):
             template, params = result
             params['app_version'] = version
             params['app_deployed'] = deployed
+            params['current_year'] = datetime.datetime.now().year
             return render_to_response(template, params)
         except ValueError:
             return result
     return _wrapper
 
 
-@app_version
+@app_meta
 @authenticate
 def index(request, user):
     form = SearchForm()
@@ -192,7 +193,7 @@ def index(request, user):
         "examples": EXAMPLES
         })
 
-@app_version
+@app_meta
 @authenticate
 def input(request, user):
     if request.method == "GET":
@@ -232,7 +233,7 @@ def input(request, user):
                 "promote_live": random.choice(LIVE_PROMOTION_MESSAGES)
                 })
 
-@app_version
+@app_meta
 @authenticate
 def about(request, user):
     return ("about.html", {
@@ -385,11 +386,11 @@ def remove_query(request, qid):
     return HttpResponse(json.dumps(response), content_type='application/json')
 
 
-@app_version
+@app_meta
 def view_404(request):
     return ("404.html", {})
 
 
-@app_version
+@app_meta
 def view_500(request):
     return ("500.html", {})
