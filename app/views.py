@@ -6,7 +6,7 @@ from django import forms
 from google.appengine.api import users
 from google.appengine.runtime import DeadlineExceededError
 
-from logic.logic import SymPyGamma, mathjax_latex
+from logic.logic import SymPyGamma
 
 import settings
 import models
@@ -18,6 +18,12 @@ import urllib
 import urllib2
 import datetime
 import traceback
+
+import logging
+
+
+ndb_client = models.ndb_client
+
 
 LIVE_URL = '<a href="https://live.sympy.org">SymPy Live</a>'
 LIVE_PROMOTION_MESSAGES = [
@@ -180,8 +186,9 @@ def index(request, user):
     form = SearchForm()
 
     if user:
-        history = models.Query.query(models.Query.user_id==user.user_id())
-        history = history.order(-models.Query.date).fetch(10)
+        with ndb_client.context():
+            history = models.Query.query(models.Query.user_id == user.user_id())
+            history = history.order(-models.Query.date).fetch(10)
     else:
         history = None
 
@@ -193,9 +200,23 @@ def index(request, user):
         "examples": EXAMPLES
         })
 
+
+def user_exists_and_input_not_present(user, input):
+    with ndb_client.context():
+        return (user and not models.Query.query(
+            models.Query.text == input,
+            models.Query.user_id == user.user_id()).get())
+
+
+def input_exists(input):
+    with ndb_client.context():
+        return models.Query.query(models.Query.text == input).get()
+
+
 @app_meta
 @authenticate
 def input(request, user):
+    logging.info('Got the input from user')
     if request.method == "GET":
         form = SearchForm(request.GET)
         if form.is_valid():
@@ -214,15 +235,18 @@ def input(request, user):
                     "output": "Can't handle the input."
                 }]
 
-            if (user and not models.Query.query(
-                    models.Query.text==input,
-                    models.Query.user_id==user.user_id()).get()):
-                query = models.Query(text=input, user_id=user.user_id())
-                query.put()
-            elif not models.Query.query(models.Query.text==input).get():
-                query = models.Query(text=input, user_id=None)
-                query.put()
-
+            if user_exists_and_input_not_present(user, input):
+                logging.info('User exists and input not present')
+                with ndb_client.context():
+                    query = models.Query(text=input, user_id=user.user_id())
+                    logging.info('query: %s' % query)
+                    query.put()
+            elif not input_exists(input):
+                logging.info('Input does not exists')
+                with ndb_client.context():
+                    query = models.Query(text=input, user_id=None)
+                    logging.info('query: %s' % query)
+                    query.put()
 
             # For some reason the |random tag always returns the same result
             return ("result.html", {
@@ -362,17 +386,25 @@ def get_card_full(request, card_name):
     return response
 
 
+def find_text_query(query):
+    with ndb_client.context():
+        return models.Query.query(models.Query.text == query.text)
+
+
 def remove_query(request, qid):
     user = users.get_current_user()
 
     if user:
-        query = models.ndb.Key(urlsafe=qid).get()
+        with ndb_client.context():
+            query = models.ndb.Key(urlsafe=qid).get()
 
-        if not models.Query.query(models.Query.text==query.text):
-            query.user_id = None
-            query.put()
+        if not find_text_query(query):
+            with ndb_client.context():
+                query.user_id = None
+                query.put()
         else:
-            query.key.delete()
+            with ndb_client.context():
+                query.key.delete()
 
         response = {
             'result': 'success',

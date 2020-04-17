@@ -29,3 +29,8 @@ libraries:
   version: "1.6.1"
 - name: ssl
   version: "latest"
+- name: grpcio
+  version: "1.0.0"
+
+env_variables:
+  GOOGLE_APPLICATION_CREDENTIALS: "client-secret.json"

@@ -9,5 +9,9 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from django.core.wsgi import get_wsgi_application
 
-application = get_wsgi_application()
+# https://cloud.google.com/appengine/docs/standard/python/issue-requests#requests
+import requests_toolbelt.adapters.appengine
+# Use the App Engine Requests adapter. This makes sure that Requests uses URLFetch.
+requests_toolbelt.adapters.appengine.monkeypatch()
 
+application = get_wsgi_application()

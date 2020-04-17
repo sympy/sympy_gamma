@@ -46,6 +46,22 @@ We use submodules to include external libraries in sympy_gamma::
 This is sufficient to clone appropriate repositories in correct versions
 into sympy_gamma (see git documentation on submodules for information).
 
+Install Dependencies
+--------------------
+
+The project depends on some third-party libraries that are not on the list
+of built-in libraries (in app.yaml) bundled with the runtime, to install them
+run the following command.::
+
+    pip install -r requirements.txt -t lib/
+
+Some libraries although available on app engine runtime, but needs to be
+installed locally for development.
+
+Ref: https://cloud.google.com/appengine/docs/standard/python/tools/using-libraries-python-27#local_development ::
+
+    pip install -r local_requirements.txt
+
 Development server
 ------------------
 
@@ -172,6 +188,24 @@ If the App Engine configuration needs to be changed (e.g. to update the
 NumPy version), change ``app.yaml.template`` and generate again. The
 Travis-CI script uses this to generate and deploy testing/production
 versions automatically.
+
+
+Running Tests
+-------------
+
+To be able to run tests, make sure you have testing libraries installed::
+
+    npm install -g casperjs
+    pip install nose
+
+To run unit tests::
+
+    PYTHONPATH='.' nosetests app/test -vv
+
+To run PhantomJS Tests::
+
+    casperjs test app/test
+
 
 Pulling changes
 ---------------
