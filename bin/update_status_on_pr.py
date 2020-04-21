@@ -24,8 +24,8 @@ def update_pr_status_with_deployment(branch_name, commit_sha):
     }
 
     headers = {
-        'Authorization': 'token %s' % sympy_bot_token,
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Authorization': 'Bearer %s' % sympy_bot_token,
+        'Content-Type': 'application/json'
     }
 
     update_status_url = GITHUB_API_UPDATE_STATUS_URL + commit_sha
