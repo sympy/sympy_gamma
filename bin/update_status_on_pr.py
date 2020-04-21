@@ -40,7 +40,7 @@ def main():
         raise ValueError('This script run only on travis!')
     branch_name = os.environ.get('TRAVIS_BRANCH')
     commit_sha = get_branch_commit_sha(branch_name)
-    print "Branch name: %s Commit SHA: %s" % branch_name, commit_sha
+    print "Branch name: %s Commit SHA: %s" % (branch_name, commit_sha)
     update_pr_status_with_deployment(branch_name, commit_sha)
 
 
