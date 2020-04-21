@@ -39,3 +39,6 @@ deploy:
   on:
     all_branches: true
     repo: sympy/sympy_gamma
+
+after_deploy:
+  - python bin/update_status_on_pr.py
