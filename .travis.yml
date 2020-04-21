@@ -7,10 +7,9 @@ virtualenv:
 
 before_install:
   - npm install -g casperjs
-  - pip install nose
 install:
-  - pip install -r requirements.txt -t lib/
-  - pip install -r local_requirements.txt
+  - pip install -r requirements/requirements.txt -t lib/
+  - pip install -r requirements/local_requirements.txt
 
 before_script:
   - openssl aes-256-cbc -K $encrypted_2fd045226a67_key -iv $encrypted_2fd045226a67_iv
