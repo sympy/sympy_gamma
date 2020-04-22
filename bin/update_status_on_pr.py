@@ -6,7 +6,7 @@ GITHUB_API_UPDATE_STATUS_URL = "https://api.github.com/repos/sympy/sympy_gamma/s
 
 
 def get_branch_commit_sha(branch_name):
-    response = requests.request("GET", GITHUB_API_REF_URL + branch_name)
+    response = requests.get(GITHUB_API_REF_URL + branch_name)
     if response.status_code == 200:
         response_json = response.json()
     else:
@@ -30,7 +30,7 @@ def update_pr_status_with_deployment(branch_name, commit_sha):
 
     update_status_url = GITHUB_API_UPDATE_STATUS_URL + commit_sha
     print "Update status URL: %s" % update_status_url
-    response = requests.request("POST", update_status_url, headers=headers, data=payload)
+    response = requests.post(update_status_url, headers=headers, json=payload)
     print "Response: %s" % response.json()
 
 
