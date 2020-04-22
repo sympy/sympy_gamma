@@ -35,10 +35,11 @@ def update_pr_status_with_deployment(branch_name, commit_sha):
     :return: Response POST request to Github API
     """
     sympy_bot_token = os.environ.get(SYMPY_BOT_TOKEN_VAR)
+    deployment_url = "https://%s-dot-sympy-gamma-hrd.appspot.com" % branch_name
     payload = {
         "state": "success",
-        "target_url": "https://%s-dot-sympy-gamma-hrd.appspot.com" % branch_name,
-        "description": "Deployment",
+        "target_url": deployment_url,
+        "description": "Deployed to version: %s" % branch_name,
         "context": "PR Deployment"
     }
 
