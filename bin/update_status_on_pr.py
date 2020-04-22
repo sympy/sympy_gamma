@@ -11,7 +11,7 @@ GITHUB_REPO = 'sympy/sympy_gamma'
 GITHUB_API_URL = 'https://api.github.com'
 GITHUB_API_REF_URL = "%s/repos/%s/git/matching-refs/heads/" % (GITHUB_API_URL, GITHUB_REPO)
 GITHUB_API_UPDATE_STATUS_URL = "%s/repos/%s/statuses/" % (GITHUB_API_URL, GITHUB_REPO)
-SYMPY_BOT_TOKEN_VAR = 'SYMPY_BOT_TOKEN_2'
+SYMPY_BOT_TOKEN_VAR = 'SYMPY_BOT_TOKEN'
 
 
 def get_branch_commit_sha(branch_name):
