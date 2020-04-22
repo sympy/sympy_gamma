@@ -15,7 +15,7 @@ def get_branch_commit_sha(branch_name):
 
 
 def update_pr_status_with_deployment(branch_name, commit_sha):
-    sympy_bot_token = os.environ.get('SYMPY_BOT_TOKEN')
+    sympy_bot_token = os.environ.get('SYMPY_BOT_TOKEN_2')
     payload = {
         "state": "success",
         "target_url": "https://%s-dot-sympy-gamma-hrd.appspot.com" % branch_name,
