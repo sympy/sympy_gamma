@@ -1,11 +1,24 @@
+"""
+This script runs only on travis to create the status for the latest commit
+in the PR.
+
+Reference: https://developer.github.com/v3/repos/statuses/#create-a-status
+"""
 import os
 import requests
 
-GITHUB_API_REF_URL = "https://api.github.com/repos/sympy/sympy_gamma/git/matching-refs/heads/"
-GITHUB_API_UPDATE_STATUS_URL = "https://api.github.com/repos/sympy/sympy_gamma/statuses/"
+GITHUB_REPO = 'sympy/sympy_gamma'
+GITHUB_API_URL = 'https://api.github.com'
+GITHUB_API_REF_URL = "%s/repos/%s/git/matching-refs/heads/" % (GITHUB_API_URL, GITHUB_REPO)
+GITHUB_API_UPDATE_STATUS_URL = "%s/repos/%s/statuses/" % (GITHUB_API_URL, GITHUB_REPO)
+SYMPY_BOT_TOKEN_VAR = 'SYMPY_BOT_TOKEN_2'
 
 
 def get_branch_commit_sha(branch_name):
+    """Gets the SHA of the last commit of the given branch
+    :param branch_name: str name of branch on Github
+    :return: str SHA
+    """
     response = requests.get(GITHUB_API_REF_URL + branch_name)
     if response.status_code == 200:
         response_json = response.json()
@@ -15,7 +28,13 @@ def get_branch_commit_sha(branch_name):
 
 
 def update_pr_status_with_deployment(branch_name, commit_sha):
-    sympy_bot_token = os.environ.get('SYMPY_BOT_TOKEN_2')
+    """Updates the Status of the commit identified by commit SHA, which is reflected
+    at the bottom of the PR, above merge button.
+    :param branch_name: str name of branch on github
+    :param commit_sha: str SHA
+    :return: Response POST request to Github API
+    """
+    sympy_bot_token = os.environ.get(SYMPY_BOT_TOKEN_VAR)
     payload = {
         "state": "success",
         "target_url": "https://%s-dot-sympy-gamma-hrd.appspot.com" % branch_name,
@@ -41,6 +60,7 @@ def main():
     branch_name = os.environ.get('TRAVIS_BRANCH')
     commit_sha = get_branch_commit_sha(branch_name)
     print "Branch name: %s Commit SHA: %s" % (branch_name, commit_sha)
+    print "Creating commit status ..."
     update_pr_status_with_deployment(branch_name, commit_sha)
 
 
