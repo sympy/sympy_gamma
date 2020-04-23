@@ -53,14 +53,14 @@ The project depends on some third-party libraries that are not on the list
 of built-in libraries (in app.yaml) bundled with the runtime, to install them
 run the following command.::
 
-    pip install -r requirements.txt -t lib/
+    pip install -r requirements/requirements.txt -t lib/
 
 Some libraries although available on app engine runtime, but needs to be
 installed locally for development.
 
 Ref: https://cloud.google.com/appengine/docs/standard/python/tools/using-libraries-python-27#local_development ::
 
-    pip install -r local_requirements.txt
+    pip install -r requirements/local_requirements.txt
 
 Development server
 ------------------
