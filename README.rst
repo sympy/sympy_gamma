@@ -83,11 +83,15 @@ This is a local server that runs on port 8080 (use ``--port`` option to
 change this). Open a web browser and go to http://localhost:8080. You
 should see GUI of SymPy Gamma.
 
-Uploading to GAE (Manually)
----------------------------
+Deploying to GAE
+----------------
 
-Travis-CI is used to deploy automatically to the official server. To upload
-the application manually, you need to do a few things.  First, tag the
+Travis-CI is used to deploy automatically to the official server via Github Releases.
+Go to https://github.com/sympy/sympy_gamma/releases and click on create a release and
+name the release as version-NN where NN is the release version. After this travis will
+automatically release the version NN.
+
+To upload the application manually, you need to do a few things. First, tag the
 current commit with the App Engine application version (this is not
 necessary unless you are deploying to the official server)::
 
@@ -118,6 +122,7 @@ version you just uploaded, and make sure that it works.  If it does, go to
 the ``Versions`` section of the sympy_gamma dashboard, and set this as the
 new default version.  If there are any issues, you can roll back to the
 previous version from this same screen.
+
 
 Creating Deployment Credentials
 -------------------------------
@@ -159,8 +164,8 @@ pull request, so that others can easily review your work, without even having
 to use ``dev_appserver.py``.
 
 Branch builds are automatically deployed by Travis to
-`https://N-dot-sympy-gamma-tests.appspot.com/`, where `N` is the branch name.
-Note that the pull request has to from a branch on this repository, as
+`https://<BRANCH-NAME>-dot-sympy-gamma-hrd.appspot.com/`.
+Note that the pull request has to be from a branch on this repository, as
 forks do not have access to the key to deploy to the app engine.
 
 Development notes
@@ -197,6 +202,8 @@ To be able to run tests, make sure you have testing libraries installed::
 
     npm install -g casperjs
     pip install nose
+
+Install phantomjs for your system from: https://phantomjs.org/download.html
 
 To run unit tests::
 
