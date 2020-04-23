@@ -33,3 +33,9 @@ my/
 
 # IntelliJ/Jetbrains
 .idea
+
+# Credentials
+client-secret.json
+
+# app engine lib
+lib
