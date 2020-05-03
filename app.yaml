@@ -34,3 +34,4 @@ libraries:
 
 env_variables:
   GOOGLE_APPLICATION_CREDENTIALS: "client-secret.json"
+  PROJECT_ID: "sympy-live-hrd"

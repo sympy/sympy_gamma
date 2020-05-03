@@ -1,10 +1,11 @@
 import six
+import os
 # https://github.com/googleapis/python-ndb/issues/249#issuecomment-560957294
 six.moves.reload_module(six)
 
 from google.cloud import ndb
 
-ndb_client = ndb.Client(project='sympy-live-hrd')
+ndb_client = ndb.Client(project=os.environ['PROJECT_ID'])
 
 
 class Query(ndb.Model):

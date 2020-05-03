@@ -18,20 +18,16 @@ install:
 before_script:
   - gcloud version || true
   - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf "$HOME/google-cloud-sdk"; curl https://sdk.cloud.google.com | bash > /dev/null; fi
-  # Add gcloud to $PATH
   - source /home/travis/google-cloud-sdk/path.bash.inc
   - gcloud version
   - cd ..
-#  - wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-290.0.1-linux-x86_64.tar.gz
-#  - tar -xvzf google-cloud-sdk-290.0.1-linux-x86_64.tar.gz
-#  - bash google-cloud-sdk/install.sh
   - gcloud components install cloud-datastore-emulator --quiet
   - gcloud beta emulators datastore start &
   - wget https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.90.zip -nv
   - unzip -q google_appengine_1.9.90.zip
   - export SDK_LOCATION="$(pwd)/google_appengine"
   - cd $TRAVIS_BUILD_DIR
-  - python $SDK_LOCATION/dev_appserver.py --skip_sdk_update_check 1 . --env_var DATASTORE_EMULATOR_HOST=localhost:8081 &
+  - python $SDK_LOCATION/dev_appserver.py --skip_sdk_update_check 1 . --env_var DATASTORE_EMULATOR_HOST=localhost:8081 --env_var DATASTORE_USE_PROJECT_ID_AS_APP_ID=true &
   - sleep 10
 
 script:
