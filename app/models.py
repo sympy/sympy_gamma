@@ -4,7 +4,7 @@ six.moves.reload_module(six)
 
 from google.cloud import ndb
 
-ndb_client = ndb.Client()
+ndb_client = ndb.Client(project='sympy-live-hrd')
 
 
 class Query(ndb.Model):
