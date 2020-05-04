@@ -62,6 +62,14 @@ Ref: https://cloud.google.com/appengine/docs/standard/python/tools/using-librari
 
     pip install -r requirements/local_requirements.txt
 
+You will need to install Datastore Emulator as well, which comes from gcloud's SDK,
+install the Google Cloud SDK for your OS from here: https://cloud.google.com/sdk/install
+Then run the following commands to install and run the datastore emulator in the background::
+
+    gcloud components install cloud-datastore-emulator --quiet
+    gcloud beta emulators datastore start &
+
+
 Development server
 ------------------
 
