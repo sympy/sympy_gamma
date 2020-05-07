@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/app/Dockerfile
+    image: app
+    container_name: gamma_app
+    depends_on:
+      - datastore
+    volumes:
+      - ./app/:/usr/src/app/app/
+    ports:
+      - "8080:8080"
+      - "8082:8082"
+      - "8083:8083"
+    command: /run.sh
+
+  datastore:
+    build:
+      context: .
+      dockerfile: ./docker/datastore/Dockerfile
+    image: datastore
+    container_name: gamma_datastore
+    ports:
+      - "8081:8081"
