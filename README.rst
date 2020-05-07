@@ -1,6 +1,9 @@
 SymPy Gamma
 ===========
 
+.. image:: https://travis-ci.org/sympy/sympy_gamma.svg?branch=master
+    :target: https://travis-ci.org/sympy/sympy_gamma
+
 `SymPy Gamma <https://www.sympygamma.com>`_ is a simple web application based
 on Google App Engine that executes and displays the results of SymPy
 expressions as well as additional related computations, in a fashion similar
