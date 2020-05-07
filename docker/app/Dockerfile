@@ -21,7 +21,7 @@ RUN unzip -q /usr/src/google_appengine_1.9.90.zip -d /usr/src/
 ENV SDK_LOCATION="/usr/src/google_appengine"
 
 # Install PhantomJs and Casperjs for Testing
-ENV PHANTOM_JS="phantomjs-1.9.8-linux-x86_64"
+ENV PHANTOM_JS="phantomjs-2.1.1-linux-x86_64"
 RUN apt-get install -y chrpath libssl-dev libxft-dev \
     && apt-get install -y libfreetype6 libfreetype6-dev \
     && apt-get install -y libfontconfig1 libfontconfig1-dev \

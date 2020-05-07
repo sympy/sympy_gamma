@@ -18,7 +18,7 @@ script:
   - docker-compose exec app casperjs test app/test
 
 before_deploy:
-  - docker cp app:/usr/src/app/lib lib
+  - docker cp gamma_app:/usr/src/app/lib lib
   - openssl aes-256-cbc -K $encrypted_2fd045226a67_key -iv $encrypted_2fd045226a67_iv
     -in client-secret.json.enc -out client-secret.json -d
   - version=$(if [ ! -z "$TRAVIS_TAG" ]; then echo $(cut -d'-' -f2 <<<"$TRAVIS_TAG"); else echo "$TRAVIS_BRANCH"; fi)
