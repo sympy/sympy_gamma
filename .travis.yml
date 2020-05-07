@@ -2,39 +2,23 @@ language: python
 python:
 - '2.7'
 
-cache:
-  directories:
-    - "$HOME/google-cloud-sdk/"
-
-virtualenv:
-  system_site_packages: true
+services:
+  - docker
 
 before_install:
-  - npm install -g casperjs
+  - ls
 install:
-  - pip install -r requirements/requirements.txt -t lib/
-  - pip install -r requirements/local_requirements.txt
-
+  - ls
 before_script:
-  - gcloud version || true
-  - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf "$HOME/google-cloud-sdk"; curl https://sdk.cloud.google.com | bash > /dev/null; fi
-  - source /home/travis/google-cloud-sdk/path.bash.inc
-  - gcloud version
-  - cd ..
-  - gcloud components install cloud-datastore-emulator --quiet
-  - gcloud beta emulators datastore start &
-  - wget https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.90.zip -nv
-  - unzip -q google_appengine_1.9.90.zip
-  - export SDK_LOCATION="$(pwd)/google_appengine"
-  - cd $TRAVIS_BUILD_DIR
-  - python $SDK_LOCATION/dev_appserver.py --skip_sdk_update_check 1 . --env_var DATASTORE_EMULATOR_HOST=localhost:8081 --env_var DATASTORE_USE_PROJECT_ID_AS_APP_ID=true &
-  - sleep 10
+  - docker-compose up -d
 
 script:
-  - PYTHONPATH='.' nosetests app/test -vv
-  - casperjs test app/test
+  - sleep 2  # Wait for api to be up
+  - docker-compose exec app nosetests app/test -vv
+  - docker-compose exec app casperjs test app/test
 
 before_deploy:
+  - docker cp app:/usr/src/app/lib lib
   - openssl aes-256-cbc -K $encrypted_2fd045226a67_key -iv $encrypted_2fd045226a67_iv
     -in client-secret.json.enc -out client-secret.json -d
   - version=$(if [ ! -z "$TRAVIS_TAG" ]; then echo $(cut -d'-' -f2 <<<"$TRAVIS_TAG"); else echo "$TRAVIS_BRANCH"; fi)
@@ -52,8 +36,3 @@ deploy:
 
 after_deploy:
   - python bin/update_status_on_pr.py
-
-env:
-  global:
-    # Do not prompt for user input when using any SDK methods.
-    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
