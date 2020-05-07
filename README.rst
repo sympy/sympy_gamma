@@ -17,6 +17,23 @@ documentation for details). Each result is evaluated in a separate request,
 so (for instance) an integral that takes too long will not prevent the other
 information from loading.
 
+Installation
+------------
+
+Clone sympy_gamma repository::
+
+    $ git clone git://github.com/sympy/sympy_gamma.git
+    $ cd sympy_gamma
+
+We use submodules to include external libraries in sympy_gamma::
+
+    $ git submodule init
+    $ git submodule update
+
+This is sufficient to clone appropriate repositories in correct versions
+into sympy_gamma (see git documentation on submodules for information).
+
+
 Development Server
 ------------------
 
