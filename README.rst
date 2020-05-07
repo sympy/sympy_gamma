@@ -17,79 +17,25 @@ documentation for details). Each result is evaluated in a separate request,
 so (for instance) an integral that takes too long will not prevent the other
 information from loading.
 
-Installation
-------------
-
-Download and unpack most recent Google App Engine SDK for Python from
-https://code.google.com/appengine/downloads.html, e.g.::
-
-    $ wget https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.90.zip
-    $ unzip google_appengine_1.9.90.zip
-
-On the Mac, it is a disk image with an application, which you should
-drag to your Applications folder.  Open the program and install the
-symlinks (it should ask you the first time you open the application, but
-if it doesn't, choose "Make Symlinks..." from the
-GoogleAppEngineLauncher menu).  Note that you will have to do this again
-each time you update the AppEngine program.
-
-Then clone sympy_gamma repository::
-
-    $ git clone git://github.com/sympy/sympy_gamma.git
-    $ cd sympy_gamma
-
-We use submodules to include external libraries in sympy_gamma::
-
-    $ git submodule init
-    $ git submodule update
-
-This is sufficient to clone appropriate repositories in correct versions
-into sympy_gamma (see git documentation on submodules for information).
-
-Install Dependencies
---------------------
-
-The project depends on some third-party libraries that are not on the list
-of built-in libraries (in app.yaml) bundled with the runtime, to install them
-run the following command.::
-
-    pip install -r requirements/requirements.txt -t lib/
-
-Some libraries although available on app engine runtime, but needs to be
-installed locally for development.
-
-Ref: https://cloud.google.com/appengine/docs/standard/python/tools/using-libraries-python-27#local_development ::
-
-    pip install -r requirements/local_requirements.txt
-
-You will need to install Datastore Emulator as well, which comes from gcloud's SDK,
-install the Google Cloud SDK for your OS from here: https://cloud.google.com/sdk/install
-Then run the following commands to install and run the datastore emulator in the background::
-
-    gcloud components install cloud-datastore-emulator --quiet
-    gcloud beta emulators datastore start &
-
-
-Development server
+Development Server
 ------------------
+
+To setup the development environment and run the app locally, you
+need ``docker`` and ``docker-compose``:
+
+* https://docs.docker.com/get-docker/
+* https://docs.docker.com/compose/install/
 
 Now you are ready to run development web server::
 
-    $ ../google_appengine/dev_appserver.py .
+    $ docker-compose up
 
-On the Mac, just run::
+This will build and run the image for app and datastore emulator.
 
-    $ dev_appserver.py .
+This will spin up a local server that runs on port ``8080``.
+Open a web browser and go to http://localhost:8080.
+You should see GUI of SymPy Gamma
 
-(make sure you installed the symlinks as described above).
-
-I couldn't figure out how to make it work in the GUI (it won't find the
-sympy git submodule).  If you figure out how to do it, please update
-this file and send a patch describing how to do it.
-
-This is a local server that runs on port 8080 (use ``--port`` option to
-change this). Open a web browser and go to http://localhost:8080. You
-should see GUI of SymPy Gamma.
 
 Deploying to GAE
 ----------------
@@ -114,6 +60,11 @@ the google cloud console for the project::
 
     $ gcloud init
 
+You need to to create ``lib`` (libraries) before deploying, make sure the development
+server is up and running via ``docker-compose``, as mentioned above and create
+libraries folder to package with the following command::
+
+    $ docker cp app:/usr/src/app/lib lib
 
 Assuming that sympy_gamma works properly (also across different mainstream web
 browsers), you can upload your changes to Google App Engine, replacing the
@@ -161,6 +112,12 @@ Currently, there is no testing server set up as there is for SymPy
 Live. However, you can set up your own testing server (it's free, though it
 requires a cell phone to set up).
 
+You need to to create ``lib`` (libraries) before deploying, make sure the development
+server is up and running via ``docker-compose``, as mentioned above and create
+libraries folder to package with the following command::
+
+    $ docker cp app:/usr/src/app/lib lib
+
 Either way, to test, you will need to edit the Project ID in the deploy command
 mentioned above with your Project ID and the version you want to deploy to::
 
@@ -206,21 +163,11 @@ versions automatically.
 Running Tests
 -------------
 
-To be able to run tests, make sure you have testing libraries installed::
+To run tests you need to spinup the container as mentioned above
+via ``docker-compose`` and run the following command::
 
-    npm install -g casperjs
-    pip install nose
-
-Install phantomjs for your system from: https://phantomjs.org/download.html
-
-To run unit tests::
-
-    PYTHONPATH='.' nosetests app/test -vv
-
-To run PhantomJS Tests::
-
-    casperjs test app/test
-
+    $ docker-compose exec app nosetests app/test -vv
+    $ docker-compose exec app casperjs test app/test
 
 Pulling changes
 ---------------
