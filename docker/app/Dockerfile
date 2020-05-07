@@ -39,6 +39,8 @@ RUN rm -rf /usr/local/share/$PHANTOM_JS.tar.bz2
 RUN cd ../ && git clone git://github.com/casperjs/casperjs.git
 RUN cd ../casperjs && ln -sf `pwd`/bin/casperjs /usr/local/bin/casperjs
 
+ENV PYTHONPATH="/usr/src/app"
+
 COPY . .
 
 ENTRYPOINT [ "/run.sh" ]
