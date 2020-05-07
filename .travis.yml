@@ -35,4 +35,5 @@ deploy:
     repo: sympy/sympy_gamma
 
 after_deploy:
+  - pip install requests
   - python bin/update_status_on_pr.py
