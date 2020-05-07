@@ -22,11 +22,10 @@ ENV SDK_LOCATION="/usr/src/google_appengine"
 
 # Install PhantomJs and Casperjs for Testing
 ENV PHANTOM_JS="phantomjs-1.9.8-linux-x86_64"
-RUN apt-get update
-RUN apt-get install -y build-essential chrpath libssl-dev libxft-dev
-RUN apt-get install -y libfreetype6 libfreetype6-dev
-RUN apt-get install -y libfontconfig1 libfontconfig1-dev
-RUN apt-get install -y git
+RUN apt-get install -y chrpath libssl-dev libxft-dev \
+    && apt-get install -y libfreetype6 libfreetype6-dev \
+    && apt-get install -y libfontconfig1 libfontconfig1-dev \
+    && apt-get install -y git
 
 RUN cd ../ && wget https://bitbucket.org/ariya/phantomjs/downloads/$PHANTOM_JS.tar.bz2
 RUN mv ../$PHANTOM_JS.tar.bz2 /usr/local/share/
@@ -36,8 +35,8 @@ RUN ln -sf /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/local/bin/phantomjs
 RUN ln -sf /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/bin/phantomjs
 RUN rm -rf /usr/local/share/$PHANTOM_JS.tar.bz2
 
-RUN cd ../ && git clone git://github.com/casperjs/casperjs.git
-RUN cd ../casperjs && ln -sf `pwd`/bin/casperjs /usr/local/bin/casperjs
+RUN cd ../ && git clone git://github.com/casperjs/casperjs.git \
+    && cd casperjs && ln -sf `pwd`/bin/casperjs /usr/local/bin/casperjs
 
 ENV PYTHONPATH="/usr/src/app"
 
