@@ -84,7 +84,7 @@ You need to to create ``lib`` (libraries) before deploying, make sure the develo
 server is up and running via ``docker-compose``, as mentioned above and create
 libraries folder to package with the following command::
 
-    $ docker cp app:/usr/src/app/lib lib
+    $ docker cp gamma_app:/usr/src/app/lib lib
 
 Assuming that sympy_gamma works properly (also across different mainstream web
 browsers), you can upload your changes to Google App Engine, replacing the
@@ -136,7 +136,7 @@ You need to to create ``lib`` (libraries) before deploying, make sure the develo
 server is up and running via ``docker-compose``, as mentioned above and create
 libraries folder to package with the following command::
 
-    $ docker cp app:/usr/src/app/lib lib
+    $ docker cp gamma_app:/usr/src/app/lib lib
 
 Either way, to test, you will need to edit the Project ID in the deploy command
 mentioned above with your Project ID and the version you want to deploy to::
