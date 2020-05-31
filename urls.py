@@ -18,8 +18,6 @@ urlpatterns = [
     url(r'^about/$', views.about),
     url(r'^random', views.random_example),
 
-    url(r'user/remove/(?P<qid>.*)$', views.remove_query),
-
     url(r'card/(?P<card_name>\w*)$', views.eval_card),
 
     url(r'card_info/(?P<card_name>\w*)$', views.get_card_info),

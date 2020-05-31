@@ -3,9 +3,9 @@ from django.shortcuts import render_to_response, redirect
 from django.template.loader import render_to_string
 from django import forms
 
-from google.appengine.api import users
 from google.appengine.runtime import DeadlineExceededError
 
+from constants import LIVE_PROMOTION_MESSAGES, EXAMPLES
 from logic.logic import SymPyGamma
 
 import settings
@@ -25,110 +25,6 @@ import logging
 ndb_client = models.ndb_client
 
 
-LIVE_URL = '<a href="https://live.sympy.org">SymPy Live</a>'
-LIVE_PROMOTION_MESSAGES = [
-    'Need more control? Try ' + LIVE_URL + '.',
-    'Want a full Python shell? Use ' + LIVE_URL + '.',
-    'Experiment with SymPy at ' + LIVE_URL + '.',
-    'Want to compute something more complicated?' +
-    ' Try a full Python/SymPy console at ' + LIVE_URL + '.'
-]
-
-EXAMPLES = [
-    ('Arithmetic', [
-        ['Fractions', [('Simplify fractions', '242/33'),
-                       ('Rationalize repeating decimals', '0.[123]')]],
-        ['Approximations', ['pi', 'E', 'exp(pi)']],
-    ]),
-    ('Algebra', [
-        [None, ['x', '(x+2)/((x+3)(x-4))', 'simplify((x**2 - 4)/((x+3)(x-2)))']],
-        ['Polynomial and Rational Functions', [
-            ('Polynomial division', 'div(x**2 - 4 + x, x-2)'),
-            ('Greatest common divisor', 'gcd(2*x**2 + 6*x, 12*x)'),
-            ('&hellip;and least common multiple', 'lcm(2*x**2 + 6*x, 12*x)'),
-            ('Factorization', 'factor(x**4/2 + 5*x**3/12 - x**2/3)'),
-            ('Multivariate factorization', 'factor(x**2 + 4*x*y + 4*y**2)'),
-            ('Symbolic roots', 'solve(x**2 + 4*x*y + 4*y**2)'),
-            'solve(x**2 + 4*x*y + 4*y**2, y)',
-            ('Complex roots', 'solve(x**2 + 4*x + 181, x)'),
-            ('Irrational roots', 'solve(x**3 + 4*x + 181, x)'),
-            ('Systems of equations', 'solve_poly_system([y**2 - x**3 + 1, y*x], x, y)'),
-        ]],
-    ]),
-    ('Trigonometry', [
-        [None, ['sin(2x)', 'tan(1 + x)']],
-    ]),
-    ('Calculus', [
-        ['Limits', ['limit(tan(x), x, pi/2)', 'limit(tan(x), x, pi/2, dir="-")']],
-        ['Derivatives', [
-            ('Derive the product rule', 'diff(f(x)*g(x)*h(x))'),
-            ('&hellip;as well as the quotient rule', 'diff(f(x)/g(x))'),
-            ('Get steps for derivatives', 'diff((sin(x) * x^2) / (1 + tan(cot(x))))'),
-            ('Multiple ways to derive functions', 'diff(cot(xy), y)'),
-            ('Implicit derivatives, too', 'diff(y(x)^2 - 5sin(x), x)'),
-        ]],
-        ['Integrals', [
-            'integrate(tan(x))',
-            ('Multiple variables', 'integrate(2*x + y, y)'),
-            ('Limits of integration', 'integrate(2*x + y, (x, 1, 3))'),
-            'integrate(2*x + y, (x, 1, 3), (y, 2, 4))',
-            ('Improper integrals', 'integrate(tan(x), (x, 0, pi/2))'),
-            ('Exact answers', 'integrate(1/(x**2 + 1), (x, 0, oo))'),
-            ('Get steps for integrals', 'integrate(exp(x) / (1 + exp(2x)))'),
-            'integrate(1 /((x+1)(x+3)(x+5)))',
-            'integrate((2x+3)**7)'
-        ]],
-        ['Series', [
-            'series(sin(x), x, pi/2)',
-        ]],
-    ]),
-    ('Number Theory', [
-        [None, [
-            '1006!',
-            'factorint(12321)',
-            ('Calculate the 42<sup>nd</sup> prime', 'prime(42)'),
-            (r'Calculate \( \varphi(x) \), the Euler totient function', 'totient(42)'),
-            'isprime(12321)',
-            ('First prime greater than 42', 'nextprime(42)'),
-        ]],
-        ['Diophantine Equations', [
-            'diophantine(x**2 - 4*x*y + 8*y**2 - 3*x + 7*y - 5)',
-            'diophantine(2*x + 3*y - 5)',
-            'diophantine(3*x**2 + 4*y**2 - 5*z**2 + 4*x*y - 7*y*z + 7*z*x)'
-        ]]
-    ]),
-    ('Discrete Mathematics', [
-        ['Boolean Logic', [
-            '(x | y) & (x | ~y) & (~x | y)',
-            'x & ~x'
-        ]],
-        ['Recurrences', [
-            ('Solve a recurrence relation', 'rsolve(y(n+2)-y(n+1)-y(n), y(n))'),
-            ('Specify initial conditions', 'rsolve(y(n+2)-y(n+1)-y(n), y(n), {y(0): 0, y(1): 1})')
-        ]],
-        ['Summation', [
-            'Sum(k,(k,1,m))',
-            'Sum(x**k,(k,0,oo))',
-            'Product(k**2,(k,1,m))',
-            'summation(1/2**i, (i, 0, oo))',
-            'product(i, (i, 1, k), (k, 1, n))'
-        ]]
-    ]),
-    ('Plotting', [
-        [None, ['plot(sin(x) + cos(2x))',
-                ('Multiple plots', 'plot([x, x^2, x^3, x^4])'),
-                ('Polar plots', 'plot(r=1-sin(theta))'),
-                ('Parametric plots', 'plot(x=cos(t), y=sin(t))'),
-                ('Multiple plot types', 'plot(y=x,y1=x^2,r=cos(theta),r1=sin(theta))')]],
-    ]),
-    ('Miscellaneous', [
-        [None, [('Documentation for functions', 'factorial2'),
-                'sympify',
-                'bernoulli']],
-    ]),
-]
-
-
 class MobileTextInput(forms.widgets.TextInput):
     def render(self, name, value, attrs=None):
         if attrs is None:
@@ -140,26 +36,6 @@ class MobileTextInput(forms.widgets.TextInput):
 
 class SearchForm(forms.Form):
     i = forms.CharField(required=False, widget=MobileTextInput())
-
-
-def authenticate(view):
-    def _wrapper(request, **kwargs):
-        user = users.get_current_user()
-        result = view(request, user, **kwargs)
-
-        try:
-            template, params = result
-        except ValueError:
-            return result
-
-        if user:
-            params['auth_url'] = users.create_logout_url("/")
-            params['auth_message'] = "Logout"
-        else:
-            params['auth_url'] = users.create_login_url("/")
-            params['auth_message'] = "Login"
-        return template, params
-    return _wrapper
 
 
 def app_meta(view):
@@ -181,31 +57,16 @@ def app_meta(view):
 
 
 @app_meta
-@authenticate
-def index(request, user):
+def index(request):
     form = SearchForm()
-
-    if user:
-        with ndb_client.context():
-            history = models.Query.query(models.Query.user_id == user.user_id())
-            history = history.order(-models.Query.date).fetch(10)
-    else:
-        history = None
 
     return ("index.html", {
         "form": form,
         "MEDIA_URL": settings.MEDIA_URL,
         "main_active": "selected",
-        "history": history,
+        "history": None,
         "examples": EXAMPLES
         })
-
-
-def user_exists_and_input_not_present(user, input):
-    with ndb_client.context():
-        return (user and not models.Query.query(
-            models.Query.text == input,
-            models.Query.user_id == user.user_id()).get())
 
 
 def input_exists(input):
@@ -214,8 +75,7 @@ def input_exists(input):
 
 
 @app_meta
-@authenticate
-def input(request, user):
+def input(request):
     logging.info('Got the input from user')
     if request.method == "GET":
         form = SearchForm(request.GET)
@@ -235,13 +95,7 @@ def input(request, user):
                     "output": "Can't handle the input."
                 }]
 
-            if user_exists_and_input_not_present(user, input):
-                logging.info('User exists and input not present')
-                with ndb_client.context():
-                    query = models.Query(text=input, user_id=user.user_id())
-                    logging.info('query: %s' % query)
-                    query.put()
-            elif not input_exists(input):
+            if not input_exists(input):
                 logging.info('Input does not exists')
                 with ndb_client.context():
                     query = models.Query(text=input, user_id=None)
@@ -257,13 +111,14 @@ def input(request, user):
                 "promote_live": random.choice(LIVE_PROMOTION_MESSAGES)
                 })
 
+
 @app_meta
-@authenticate
-def about(request, user):
+def about(request):
     return ("about.html", {
         "MEDIA_URL": settings.MEDIA_URL,
         "about_active": "selected",
         })
+
 
 def random_example(request):
     examples = []
@@ -391,38 +246,11 @@ def find_text_query(query):
         return models.Query.query(models.Query.text == query.text)
 
 
-def remove_query(request, qid):
-    user = users.get_current_user()
-
-    if user:
-        with ndb_client.context():
-            query = models.ndb.Key(urlsafe=qid).get()
-
-        if not find_text_query(query):
-            with ndb_client.context():
-                query.user_id = None
-                query.put()
-        else:
-            with ndb_client.context():
-                query.key.delete()
-
-        response = {
-            'result': 'success',
-        }
-    else:
-        response = {
-            'result': 'error',
-            'message': 'Not logged in or invalid user.'
-        }
-
-    return HttpResponse(json.dumps(response), content_type='application/json')
-
-
 @app_meta
 def view_404(request):
-    return ("404.html", {})
+    return "404.html", {}
 
 
 @app_meta
 def view_500(request):
-    return ("500.html", {})
+    return "500.html", {}
