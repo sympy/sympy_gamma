@@ -1,6 +1,7 @@
 # Django settings for notebook project.
 
 # root_dir points to this directory (that contains settings.py):
+from __future__ import absolute_import
 import os
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 

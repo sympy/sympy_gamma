@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 from django import template
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six
 register = template.Library()
 
 @register.inclusion_tag('card.html')
@@ -24,10 +26,10 @@ class QueryNode(template.Node):
             self.query = template.Variable(query)
 
     def render(self, context):
-        if isinstance(self.query, unicode):
-            return "/input/?i=" + urllib.quote(self.query[1:-1])
+        if isinstance(self.query, six.text_type):
+            return "/input/?i=" + six.moves.urllib.parse.quote(self.query[1:-1])
         else:
-            return "/input/?i=" + urllib.quote(self.query.resolve(context))
+            return "/input/?i=" + six.moves.urllib.parse.quote(self.query.resolve(context))
 
 @register.tag(name='make_query_link')
 def do_make_query(parser, token):
@@ -47,12 +49,12 @@ class QueryLinkNode(template.Node):
             self.query = template.Variable(query)
 
     def render(self, context):
-        if isinstance(self.query, unicode) or isinstance(self.query, str):
+        if isinstance(self.query, six.text_type) or isinstance(self.query, str):
             q = self.query[1:-1]
         else:
             q = self.query.resolve(context)
 
-        link = '<a href="/input/?i={0}">{1}</a>'.format(urllib.quote(q), q)
+        link = '<a href="/input/?i={0}">{1}</a>'.format(six.moves.urllib.parse.quote(q), q)
         return link
 
 @register.tag(name='make_example')
@@ -83,5 +85,5 @@ class ExampleLinkNode(template.Node):
             buf.append('<span>{}</span>'.format(title))
 
         buf.append('<a href="/input/?i={0}">{1}</a>'.format(
-            urllib.quote(example), example))
+            six.moves.urllib.parse.quote(example), example))
         return ' '.join(buf)

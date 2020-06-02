@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import six
 import os
 # https://github.com/googleapis/python-ndb/issues/249#issuecomment-560957294

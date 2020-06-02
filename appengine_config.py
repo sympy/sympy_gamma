@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import pkg_resources
 from google.appengine.ext import vendor

@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 import sympy
 import collections
 from contextlib import contextmanager
-import stepprinter
-from stepprinter import functionnames, Rule, replace_u_var
+from . import stepprinter
+from .stepprinter import functionnames, Rule, replace_u_var
 
 from sympy.integrals.manualintegrate import (
     manualintegrate, _manualintegrate, integral_steps, evaluates,
@@ -40,7 +41,7 @@ def contains_dont_know(rule):
 
 def filter_unknown_alternatives(rule):
     if isinstance(rule, AlternativeRule):
-        alternatives = list(filter(lambda r: not contains_dont_know(r), rule.alternatives))
+        alternatives = list([r for r in rule.alternatives if not contains_dont_know(r)])
         if not alternatives:
             alternatives = rule.alternatives
         return AlternativeRule(alternatives, rule.context, rule.symbol)
@@ -157,7 +158,7 @@ class IntegralPrinter(object):
         with self.new_step():
             self.append("Use integration by parts:")
 
-            u, v, du, dv = map(lambda f: sympy.Function(f)(rule.symbol), 'u v du dv'.split())
+            u, v, du, dv = [sympy.Function(f)(rule.symbol) for f in 'u v du dv'.split()]
             self.append(self.format_math_display(
                 r"""\int \operatorname{u} \operatorname{dv}
                 = \operatorname{u}\operatorname{v} -
@@ -185,7 +186,7 @@ class IntegralPrinter(object):
             self.append("Use integration by parts, noting that the integrand"
                         " eventually repeats itself.")
 
-            u, v, du, dv = map(lambda f: sympy.Function(f)(rule.symbol), 'u v du dv'.split())
+            u, v, du, dv = [sympy.Function(f)(rule.symbol) for f in 'u v du dv'.split()]
             current_integrand = rule.context
             total_result = sympy.S.Zero
             with self.new_level():

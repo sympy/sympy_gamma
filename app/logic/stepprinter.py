@@ -1,8 +1,11 @@
+from __future__ import absolute_import
 import sympy
 import collections
 from contextlib import contextmanager
 
 from sympy import latex
+import six
+from six.moves import range
 
 def Rule(name, props=""):
     # GOTCHA: namedtuple class name not considered!
@@ -94,7 +97,7 @@ class HTMLPrinter(LaTeXPrinter):
             latex(math))
 
     def format_math_display(self, math):
-        if not isinstance(math, basestring):
+        if not isinstance(math, six.string_types):
             math = latex(math)
         return '<script type="math/tex; mode=display">{}</script>'.format(
             math)

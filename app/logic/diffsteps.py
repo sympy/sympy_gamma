@@ -1,12 +1,17 @@
+from __future__ import absolute_import
 import sympy
 import collections
 
-import stepprinter
-from stepprinter import functionnames, replace_u_var
+from . import stepprinter
+from .stepprinter import functionnames, replace_u_var
 
 from sympy.core.function import AppliedUndef
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
 from sympy.strategies.core import switch, identity
+from six.moves import map
+from six.moves import range
+from six.moves import zip
+from functools import reduce
 def Rule(name, props=""):
     return collections.namedtuple(name, props + " context symbol")
 
@@ -219,7 +224,7 @@ def eval_default(*args):
 
 @evaluates(MulRule)
 def eval_mul(terms, substeps, expr, symbol):
-    diffs = map(diff, substeps)
+    diffs = list(map(diff, substeps))
 
     result = sympy.S.Zero
     for i in range(len(terms)):
@@ -347,9 +352,8 @@ class DiffPrinter(object):
             self.append("Apply the product rule:".format(
                 self.format_math(rule.context)))
 
-            fnames = map(lambda n: sympy.Function(n)(rule.symbol),
-                         functionnames(len(rule.terms)))
-            derivatives = map(lambda f: sympy.Derivative(f, rule.symbol), fnames)
+            fnames = [sympy.Function(n)(rule.symbol) for n in functionnames(len(rule.terms))]
+            derivatives = [sympy.Derivative(f, rule.symbol) for f in fnames]
             ruleform = []
             for index in range(len(rule.terms)):
                 buf = []

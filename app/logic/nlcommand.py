@@ -28,7 +28,7 @@ def extraneous(word):
     return (word in prepositions) or (word in pronouns) or (word in articles)
 
 def interpret(command):
-    words = filter(lambda word: not extraneous(word), command.lower().split())
+    words = [word for word in command.lower().split() if not extraneous(word)]
     modifier = 'default'
     modifier_priority = -1
     cmds = []
