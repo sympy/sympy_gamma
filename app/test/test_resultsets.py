@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from app.logic import resultsets
 from sympy import sympify, Derivative, Integral, I, sqrt
 

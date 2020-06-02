@@ -4,6 +4,8 @@ in the PR.
 
 Reference: https://developer.github.com/v3/repos/statuses/#create-a-status
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import requests
 
@@ -49,9 +51,9 @@ def update_pr_status_with_deployment(branch_name, commit_sha):
     }
 
     update_status_url = GITHUB_API_UPDATE_STATUS_URL + commit_sha
-    print "Update status URL: %s" % update_status_url
+    print("Update status URL: %s" % update_status_url)
     response = requests.post(update_status_url, headers=headers, json=payload)
-    print "Response: %s" % response.json()
+    print("Response: %s" % response.json())
 
 
 def main():
@@ -60,8 +62,8 @@ def main():
         raise ValueError('This script run only on travis!')
     branch_name = os.environ.get('TRAVIS_BRANCH')
     commit_sha = get_branch_commit_sha(branch_name)
-    print "Branch name: %s Commit SHA: %s" % (branch_name, commit_sha)
-    print "Creating commit status ..."
+    print("Branch name: %s Commit SHA: %s" % (branch_name, commit_sha))
+    print("Creating commit status ...")
     update_pr_status_with_deployment(branch_name, commit_sha)
 
 

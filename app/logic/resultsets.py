@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import sys
 import json
 import itertools
@@ -5,8 +6,11 @@ import sympy
 from sympy.core.function import FunctionClass
 from sympy.core.symbol import Symbol
 import docutils.core
-import diffsteps
-import intsteps
+from . import diffsteps
+from . import intsteps
+import six
+from six.moves import map
+from six.moves import zip
 
 
 class ResultCard(object):
@@ -383,12 +387,12 @@ def format_dict_title(*title):
                 '<thead><tr><th>{}</th><th>{}</th></tr></thead>'.format(*title),
                 '<tbody>']
         try:
-            fdict = dictionary.iteritems()
+            fdict = six.iteritems(dictionary)
             if not any(isinstance(i,Symbol) for i in dictionary.keys()):
-                fdict = sorted(dictionary.iteritems())
+                fdict = sorted(six.iteritems(dictionary))
             for key, val in fdict:
                 html.append('<tr><td>{}</td><td>{}</td></tr>'.format(key, val))
-        except AttributeError, TypeError:  # not iterable/not a dict
+        except AttributeError as TypeError:  # not iterable/not a dict
             return formatter(dictionary)
         html.append('</tbody></table>')
         return '\n'.join(html)
@@ -654,14 +658,14 @@ def trim(docstring):
     # and split into a list of lines:
     lines = docstring.expandtabs().splitlines()
     # Determine minimum indentation (first line doesn't count):
-    indent = sys.maxint
+    indent = sys.maxsize
     for line in lines[1:]:
         stripped = line.lstrip()
         if stripped:
             indent = min(indent, len(line) - len(stripped))
     # Remove indentation (first line is special):
     trimmed = [lines[0].strip()]
-    if indent < sys.maxint:
+    if indent < sys.maxsize:
         for line in lines[1:]:
             trimmed.append(line[indent:].rstrip())
     # Strip off trailing and leading blank lines:
@@ -683,7 +687,7 @@ def eval_truth_table(evaluator, components, parameters=None):
 
     result = []
     for combination in itertools.product([True, False], repeat=len(variables)):
-        result.append(combination +(expr.subs(zip(variables, combination)),))
+        result.append(combination +(expr.subs(list(zip(variables, combination))),))
     return variables, result
 
 

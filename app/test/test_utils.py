@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from app.logic.utils import Eval
 
 def test_eval1():

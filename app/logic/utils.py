@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import absolute_import
 import difflib
 import collections
 import traceback
@@ -11,6 +12,8 @@ import sympy
 from sympy.core.relational import Relational
 import sympy.parsing.sympy_tokenize as sympy_tokenize
 from token import NAME
+from six.moves import map
+from six.moves import zip
 
 OTHER_SYMPY_FUNCTIONS = ('sqrt',)
 
@@ -236,7 +239,7 @@ def format_diophantine(node, visitor):
         klass = sympy.Sum
     else:
         klass = sympy.Product
-    return sympy.latex(klass(*map(visitor.evaluator.eval_node, node.args)))
+    return sympy.latex(klass(*list(map(visitor.evaluator.eval_node, node.args))))
 
 @LatexVisitor.formats_function('help')
 def format_help(node, visitor):

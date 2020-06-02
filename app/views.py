@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response, redirect
 from django.template.loader import render_to_string
@@ -5,17 +6,17 @@ from django import forms
 
 from google.appengine.runtime import DeadlineExceededError
 
-from constants import LIVE_PROMOTION_MESSAGES, EXAMPLES
-from logic.logic import SymPyGamma
+from .constants import LIVE_PROMOTION_MESSAGES, EXAMPLES
+from .logic.logic import SymPyGamma
 
-import settings
-import models
+from . import settings
+from . import models
 
 import os
 import random
 import json
-import urllib
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import datetime
 import traceback
 
@@ -42,7 +43,7 @@ def app_meta(view):
     def _wrapper(request, **kwargs):
         result = view(request, **kwargs)
         version, deployed = os.environ['CURRENT_VERSION_ID'].split('.')
-        deployed = datetime.datetime.fromtimestamp(long(deployed) / pow(2, 28))
+        deployed = datetime.datetime.fromtimestamp(int(deployed) / pow(2, 28))
         deployed = deployed.strftime("%d/%m/%y %X")
 
         try:
@@ -131,7 +132,7 @@ def random_example(request):
                 else:
                     examples.append(example)
 
-    return redirect('input/?i=' + urllib.quote(random.choice(examples)))
+    return redirect('input/?i=' + six.moves.urllib.parse.quote(random.choice(examples)))
 
 def _process_card(request, card_name):
     variable = request.GET.get('variable')
@@ -139,8 +140,8 @@ def _process_card(request, card_name):
     if not variable or not expression:
         raise Http404
 
-    variable = urllib2.unquote(variable)
-    expression = urllib2.unquote(expression)
+    variable = six.moves.urllib.parse.unquote(variable)
+    expression = six.moves.urllib.parse.unquote(expression)
 
     g = SymPyGamma()
 

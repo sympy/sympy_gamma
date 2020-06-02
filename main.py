@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os, sys
 
 # Force sys.path to have our own directory first, in case we want to import

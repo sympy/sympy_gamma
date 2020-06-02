@@ -1,10 +1,11 @@
+from __future__ import absolute_import
 import sys
 import traceback
 import collections
-from utils import Eval, latexify, arguments, removeSymPy, \
+from .utils import Eval, latexify, arguments, removeSymPy, \
     custom_implicit_transformation, synonyms, OTHER_SYMPY_FUNCTIONS, \
     close_matches
-from resultsets import find_result_set, get_card, format_by_type, \
+from .resultsets import find_result_set, get_card, format_by_type, \
     is_function_handled, find_learn_more_set
 from sympy import latex, series, sympify, solve, Derivative, \
     Integral, Symbol, diff, integrate
@@ -12,6 +13,7 @@ import sympy
 from sympy.core.function import FunctionClass
 from sympy.parsing.sympy_parser import stringify_expr, eval_expr, \
     standard_transformations, convert_xor, TokenError
+from six.moves import map
 
 PREEXEC = """from __future__ import division
 from sympy import *
@@ -115,7 +117,7 @@ class SymPyGamma(object):
 
     def eval_input(self, s):
         namespace = {}
-        exec PREEXEC in {}, namespace
+        exec(PREEXEC, {}, namespace)
 
         def plot(f=None, **kwargs):
             """Plot functions. Not the same as SymPy's plot.
@@ -222,7 +224,7 @@ class SymPyGamma(object):
             if any(get_card(c).is_multivariate() for c in cards):
                 result[-1].update({
                     "num_variables": len(components['variables']),
-                    "variables": map(repr, components['variables']),
+                    "variables": list(map(repr, components['variables'])),
                     "variable": repr(components['variable'])
                 })
 
