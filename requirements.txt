@@ -1,0 +1,10 @@
+Django==3.0.7
+numpy
+grpcio
+googleapis_common_protos
+google-cloud-ndb
+requests-toolbelt
+protobuf
+enum34
+nose
+requests

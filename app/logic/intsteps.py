@@ -1,12 +1,10 @@
 from __future__ import absolute_import
 import sympy
-import collections
-from contextlib import contextmanager
 from . import stepprinter
-from .stepprinter import functionnames, Rule, replace_u_var
+from .stepprinter import replace_u_var
 
 from sympy.integrals.manualintegrate import (
-    manualintegrate, _manualintegrate, integral_steps, evaluates,
+    _manualintegrate, integral_steps, evaluates,
     ConstantRule, ConstantTimesRule, PowerRule, AddRule, URule,
     PartsRule, CyclicPartsRule, TrigRule, ExpRule, LogRule, ArctanRule,
     AlternativeRule, DontKnowRule, RewriteRule

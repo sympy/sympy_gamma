@@ -9,11 +9,12 @@ RUN apt-get update \
 
 WORKDIR /usr/src/app
 
-COPY requirements ./requirements
+COPY requirements.txt ./requirements.txt
 COPY ./docker/app/run.sh /run.sh
 
-RUN pip install -r requirements/requirements.txt -t lib/
-RUN pip install -r requirements/local_requirements.txt
+RUN pip install -r requirements.txt
+#RUN pip install -r requirements/requirements.txt -t lib/
+#RUN pip install -r requirements/local_requirements.txt
 
 # Install App engine SDK
 RUN wget https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.90.zip -nv -P /usr/src/

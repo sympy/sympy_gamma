@@ -1,6 +1,6 @@
-runtime: python27
-threadsafe: true
-api_version: 1
+runtime: python37
+entrypoint: main:application
+
 default_expiration: "1h"
 
 handlers:

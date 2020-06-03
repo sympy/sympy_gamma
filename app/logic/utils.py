@@ -6,7 +6,7 @@ import traceback
 import sys
 import ast
 import re
-from StringIO import StringIO
+from io import StringIO
 import sympy
 
 from sympy.core.relational import Relational

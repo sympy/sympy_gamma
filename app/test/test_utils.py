@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from app.logic.utils import Eval
+from app.logic import Eval
 
 def test_eval1():
     e = Eval()

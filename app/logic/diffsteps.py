@@ -7,7 +7,7 @@ from .stepprinter import functionnames, replace_u_var
 
 from sympy.core.function import AppliedUndef
 from sympy.functions.elementary.trigonometric import TrigonometricFunction
-from sympy.strategies.core import switch, identity
+from sympy.strategies.core import switch
 from six.moves import map
 from six.moves import range
 from six.moves import zip

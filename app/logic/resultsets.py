@@ -3,7 +3,6 @@ import sys
 import json
 import itertools
 import sympy
-from sympy.core.function import FunctionClass
 from sympy.core.symbol import Symbol
 import docutils.core
 from . import diffsteps

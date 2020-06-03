@@ -4,12 +4,12 @@ from django.shortcuts import render_to_response, redirect
 from django.template.loader import render_to_string
 from django import forms
 
-from google.appengine.runtime import DeadlineExceededError
+# from google.appengine.runtime import DeadlineExceededError
 
 from .constants import LIVE_PROMOTION_MESSAGES, EXAMPLES
-from .logic.logic import SymPyGamma
+from app.logic.logic import SymPyGamma
 
-from . import settings
+from app import settings
 from . import models
 
 import os
@@ -42,14 +42,14 @@ class SearchForm(forms.Form):
 def app_meta(view):
     def _wrapper(request, **kwargs):
         result = view(request, **kwargs)
-        version, deployed = os.environ['CURRENT_VERSION_ID'].split('.')
-        deployed = datetime.datetime.fromtimestamp(int(deployed) / pow(2, 28))
-        deployed = deployed.strftime("%d/%m/%y %X")
+        # version, deployed = os.environ['CURRENT_VERSION_ID'].split('.')
+        # deployed = datetime.datetime.fromtimestamp(int(deployed) / pow(2, 28))
+        # deployed = deployed.strftime("%d/%m/%y %X")
 
         try:
             template, params = result
-            params['app_version'] = version
-            params['app_deployed'] = deployed
+            params['app_version'] = 12
+            params['app_deployed'] = "01/06/20 23:59:49"
             params['current_year'] = datetime.datetime.now().year
             return render_to_response(template, params)
         except ValueError:
@@ -160,10 +160,6 @@ def eval_card(request, card_name):
     except ValueError as e:
         return HttpResponse(json.dumps({
             'error': e.message
-        }), content_type="application/json")
-    except DeadlineExceededError:
-        return HttpResponse(json.dumps({
-            'error': 'Computation timed out.'
         }), content_type="application/json")
     except:
         trace = traceback.format_exc(5)
