@@ -63,7 +63,7 @@ def index(request):
 
     return ("index.html", {
         "form": form,
-        "MEDIA_URL": settings.MEDIA_URL,
+        "MEDIA_URL": settings.STATIC_URL,
         "main_active": "selected",
         "history": None,
         "examples": EXAMPLES
@@ -108,7 +108,7 @@ def input(request):
                 "input": input,
                 "result": r,
                 "form": form,
-                "MEDIA_URL": settings.MEDIA_URL,
+                "MEDIA_URL": settings.STATIC_URL,
                 "promote_live": random.choice(LIVE_PROMOTION_MESSAGES)
                 })
 
@@ -116,7 +116,7 @@ def input(request):
 @app_meta
 def about(request):
     return ("about.html", {
-        "MEDIA_URL": settings.MEDIA_URL,
+        "MEDIA_URL": settings.STATIC_URL,
         "about_active": "selected",
         })
 
