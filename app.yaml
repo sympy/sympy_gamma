@@ -1,12 +1,4 @@
 runtime: python37
-entrypoint: main:application
-
-default_expiration: "1h"
-
-handlers:
-- url: /static
-  static_dir: static
-  secure: always
 
 - url: /favicon\.ico
   static_files: static/images/favicon.ico
@@ -21,16 +13,6 @@ handlers:
 - url: /.*
   script: main.application
   secure: always
-
-libraries:
-- name: django
-  version: "1.11"
-- name: numpy
-  version: "1.6.1"
-- name: ssl
-  version: "latest"
-- name: grpcio
-  version: "1.0.0"
 
 env_variables:
   GOOGLE_APPLICATION_CREDENTIALS: "client-secret.json"

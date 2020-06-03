@@ -1,18 +1,10 @@
-from __future__ import absolute_import
-import os, sys
+from app.wsgi import application
 
-# Force sys.path to have our own directory first, in case we want to import
-# from it.
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-
-# Must set this env var *before* importing any part of Django
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
-from django.core.wsgi import get_wsgi_application
-
-# https://cloud.google.com/appengine/docs/standard/python/issue-requests#requests
-# import requests_toolbelt.adapters.appengine
-# Use the App Engine Requests adapter. This makes sure that Requests uses URLFetch.
-# requests_toolbelt.adapters.appengine.monkeypatch()
-
-application = get_wsgi_application()
+# App Engine by default looks for a main.py file at the root of the app
+# directory with a WSGI-compatible object called app.
+# This file imports the WSGI-compatible object of your Django app,
+# application from mysite/wsgi.py and renames it app so it is discoverable by
+# App Engine without additional configuration.
+# Alternatively, you can add a custom entrypoint field in your app.yaml:
+# entrypoint: gunicorn -b :$PORT mysite.wsgi
+app = application
