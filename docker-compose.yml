@@ -19,6 +19,7 @@ services:
       - DATASTORE_EMULATOR_HOST=datastore:8081
       - DATASTORE_USE_PROJECT_ID_AS_APP_ID=true
       - PROJECT_ID=sympy-gamma-hrd
+      - GAE_VERSION=development
     command: python manage.py runserver 0.0.0.0:8080
 
   datastore:
