@@ -28,15 +28,6 @@ Clone sympy_gamma repository::
     $ git clone git://github.com/sympy/sympy_gamma.git
     $ cd sympy_gamma
 
-We use submodules to include external libraries in sympy_gamma::
-
-    $ git submodule init
-    $ git submodule update
-
-This is sufficient to clone appropriate repositories in correct versions
-into sympy_gamma (see git documentation on submodules for information).
-
-
 Development Server
 ------------------
 
@@ -80,11 +71,6 @@ the google cloud console for the project::
 
     $ gcloud init
 
-You need to to create ``lib`` (libraries) before deploying, make sure the development
-server is up and running via ``docker-compose``, as mentioned above and create
-libraries folder to package with the following command::
-
-    $ docker cp gamma_app:/usr/src/app/lib lib
 
 Assuming that sympy_gamma works properly (also across different mainstream web
 browsers), you can upload your changes to Google App Engine, replacing the
@@ -127,16 +113,10 @@ Testing on the App Engine
 -------------------------
 
 It's usually a good idea to test big changes on the App Engine itself before
-deploying, as ``dev_appserver.py`` can only simulate the App Engine.
+deploying, as local environment can only simulate the App Engine.
 Currently, there is no testing server set up as there is for SymPy
 Live. However, you can set up your own testing server (it's free, though it
 requires a cell phone to set up).
-
-You need to to create ``lib`` (libraries) before deploying, make sure the development
-server is up and running via ``docker-compose``, as mentioned above and create
-libraries folder to package with the following command::
-
-    $ docker cp gamma_app:/usr/src/app/lib lib
 
 Either way, to test, you will need to edit the Project ID in the deploy command
 mentioned above with your Project ID and the version you want to deploy to::
@@ -168,17 +148,6 @@ to be checked with an actual device. (In Google Chrome, for instance, open
 up the developer console, click the gear icon in the lower right, then
 select Overrides.)
 
-GAE development server allows to use any Python interpreter, but Google
-App Engine uses Python 2.5, so if the default Python isn't 2.5, then make
-sure to test your changes to the server part, if it runs properly on 2.5.
-Also don't use any modules that aren't supported by GAE. Note that GAE now
-supports Python 2.7 and that this is what is currently deployed.
-
-If the App Engine configuration needs to be changed (e.g. to update the
-NumPy version), change ``app.yaml.template`` and generate again. The
-Travis-CI script uses this to generate and deploy testing/production
-versions automatically.
-
 
 Running Tests
 -------------
@@ -189,60 +158,11 @@ via ``docker-compose`` and run the following command::
     $ docker-compose exec app nosetests app/test -vv
     $ docker-compose exec app casperjs test app/test
 
-Pulling changes
----------------
-
-In projects that don't use submodules, pulling changes boils down to::
-
-    $ git pull origin master
-
-in the simplest case. SymPy Gamma, however, requires additional effort::
-
-    $ git submodule update
-
-The former command assures that if there were any changes to submodules
-of the super-project, then those submodules will get updated to new
-versions. This is related to the following section. The latter command
-regenerates the configuration.
 
 Updating SymPy
 --------------
 
-Make sure that you followed instructions above and SymPy's submodule is
-properly initialized. Assuming that you are in the directory where SymPy
-Gamma was cloned, issue::
-
-    $ cd sympy/
-    $ git fetch origin
-    $ git checkout sympy-0.7.0
-    $ cd ..
-    $ git add .
-    $ git commit -m "Updated SymPy to version 0.7.0"
-
-Now if you issue::
-
-    $ git show -v
-
-you should get::
-
-    commit 5138e824dc9fd46c243eea2d7c9581a9e58feb08
-    Author: Mateusz Paprocki <mattpap@gmail.com>
-    Date:   Wed Jul 6 07:45:19 2011 +0200
-
-        Updated SymPy to version 0.7.0
-
-        diff --git a/sympy b/sympy
-        index df7a135..c9470ac 160000
-        --- a/sympy
-        +++ b/sympy
-        @@ -1 +1 @@
-        -Subproject commit df7a135a4ff7eca361ebbb07ccbeabf8654a8d80
-        +Subproject commit c9470ac4f44e7dacfb026cf74529db3ec0822145
-
-This was done for SymPy's version 0.7.0, so in future updates of SymPy replace
-0.7.0 with appropriate newer version (e.g. 0.7.1) and you are done (of course
-particular SHA signatures will be different in your case). If unsure, refer to
-``git help submodule`` or git book: http://book.git-scm.com/5_submodules.html.
+Update the version in requirements.txt file.
 
 Original info
 -------------

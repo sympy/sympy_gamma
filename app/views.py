@@ -4,12 +4,12 @@ from django.shortcuts import render_to_response, redirect
 from django.template.loader import render_to_string
 from django import forms
 
-from google.appengine.runtime import DeadlineExceededError
+# from google.appengine.runtime import DeadlineExceededError
 
 from .constants import LIVE_PROMOTION_MESSAGES, EXAMPLES
-from .logic.logic import SymPyGamma
+from app.logic.logic import SymPyGamma
 
-from . import settings
+from app import settings
 from . import models
 
 import os
@@ -42,14 +42,11 @@ class SearchForm(forms.Form):
 def app_meta(view):
     def _wrapper(request, **kwargs):
         result = view(request, **kwargs)
-        version, deployed = os.environ['CURRENT_VERSION_ID'].split('.')
-        deployed = datetime.datetime.fromtimestamp(int(deployed) / pow(2, 28))
-        deployed = deployed.strftime("%d/%m/%y %X")
+        version = os.environ['GAE_VERSION']
 
         try:
             template, params = result
             params['app_version'] = version
-            params['app_deployed'] = deployed
             params['current_year'] = datetime.datetime.now().year
             return render_to_response(template, params)
         except ValueError:
@@ -63,7 +60,7 @@ def index(request):
 
     return ("index.html", {
         "form": form,
-        "MEDIA_URL": settings.MEDIA_URL,
+        "MEDIA_URL": settings.STATIC_URL,
         "main_active": "selected",
         "history": None,
         "examples": EXAMPLES
@@ -108,7 +105,7 @@ def input(request):
                 "input": input,
                 "result": r,
                 "form": form,
-                "MEDIA_URL": settings.MEDIA_URL,
+                "MEDIA_URL": settings.STATIC_URL,
                 "promote_live": random.choice(LIVE_PROMOTION_MESSAGES)
                 })
 
@@ -116,7 +113,7 @@ def input(request):
 @app_meta
 def about(request):
     return ("about.html", {
-        "MEDIA_URL": settings.MEDIA_URL,
+        "MEDIA_URL": settings.STATIC_URL,
         "about_active": "selected",
         })
 
@@ -160,10 +157,6 @@ def eval_card(request, card_name):
     except ValueError as e:
         return HttpResponse(json.dumps({
             'error': e.message
-        }), content_type="application/json")
-    except DeadlineExceededError:
-        return HttpResponse(json.dumps({
-            'error': 'Computation timed out.'
         }), content_type="application/json")
     except:
         trace = traceback.format_exc(5)

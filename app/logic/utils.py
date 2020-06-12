@@ -6,7 +6,7 @@ import traceback
 import sys
 import ast
 import re
-from StringIO import StringIO
+from io import StringIO
 import sympy
 
 from sympy.core.relational import Relational
@@ -260,6 +260,10 @@ class TopCallVisitor(ast.NodeVisitor):
         if not self.call:
             self.call = node
 
+    def visit_NameConstant(self, node):
+        if not self.call:
+            self.call = node
+
 # From https://stackoverflow.com/a/739301/262727
 def ordinal(n):
     if 10 <= n % 100 < 20:
@@ -306,6 +310,9 @@ def arguments(string_or_node, evaluator):
             return Arguments(name, args, kwargs)
         elif isinstance(node, ast.Name):
             return Arguments(node.id, [], {})
+
+        elif isinstance(node, ast.NameConstant):
+            return Arguments(node.value, [], {})
     return None
 
 re_calls = re.compile(r'(Integer|Symbol|Float|Rational)\s*\([\'\"]?([a-zA-Z0-9\.]+)[\'\"]?\s*\)')

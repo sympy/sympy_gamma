@@ -1,13 +1,8 @@
-runtime: python27
-threadsafe: true
-api_version: 1
-default_expiration: "1h"
+runtime: python37
 
 handlers:
-- url: /static
-  static_dir: static
-  secure: always
-
+  # This configures Google App Engine to serve the files in the app's static
+  # directory.
 - url: /favicon\.ico
   static_files: static/images/favicon.ico
   upload: static/images/favicon\.ico
@@ -18,19 +13,12 @@ handlers:
   upload: google5acf6d2992c8237d.html
   secure: always
 
-- url: /.*
-  script: main.application
-  secure: always
+- url: /static
+  static_dir: static/
 
-libraries:
-- name: django
-  version: "1.11"
-- name: numpy
-  version: "1.6.1"
-- name: ssl
-  version: "latest"
-- name: grpcio
-  version: "1.0.0"
+- url: /.*
+  script: auto
+  secure: always
 
 env_variables:
   GOOGLE_APPLICATION_CREDENTIALS: "client-secret.json"

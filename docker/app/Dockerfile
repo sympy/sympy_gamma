@@ -1,4 +1,4 @@
-FROM python:2-slim
+FROM python:3.7-slim-buster
 
 RUN apt-get update \
   # dependencies for building Python packages
@@ -9,16 +9,9 @@ RUN apt-get update \
 
 WORKDIR /usr/src/app
 
-COPY requirements ./requirements
-COPY ./docker/app/run.sh /run.sh
+COPY requirements.txt ./requirements.txt
 
-RUN pip install -r requirements/requirements.txt -t lib/
-RUN pip install -r requirements/local_requirements.txt
-
-# Install App engine SDK
-RUN wget https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.90.zip -nv -P /usr/src/
-RUN unzip -q /usr/src/google_appengine_1.9.90.zip -d /usr/src/
-ENV SDK_LOCATION="/usr/src/google_appengine"
+RUN pip install -r requirements.txt
 
 # Install PhantomJs and Casperjs for Testing
 ENV PHANTOM_JS="phantomjs-1.9.8-linux-x86_64"
@@ -39,7 +32,5 @@ RUN cd ../ && git clone git://github.com/casperjs/casperjs.git \
     && cd casperjs && ln -sf `pwd`/bin/casperjs /usr/local/bin/casperjs
 
 ENV PYTHONPATH="/usr/src/app"
-
+ENV PYTHONUNBUFFERED=1
 COPY . .
-
-ENTRYPOINT [ "/run.sh" ]

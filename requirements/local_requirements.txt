@@ -1,5 +1,0 @@
-numpy==1.6.1
-protobuf
-enum34
-nose
-requests

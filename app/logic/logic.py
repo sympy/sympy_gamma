@@ -84,7 +84,7 @@ class SymPyGamma(object):
     def handle_error(self, s, e):
         if isinstance(e, SyntaxError):
             error = {
-                "msg": e.msg,
+                "msg": str(e),
                 "offset": e.offset
             }
             if e.text:
@@ -97,7 +97,7 @@ class SymPyGamma(object):
         elif isinstance(e, ValueError):
             return [
                 {"title": "Input", "input": s},
-                {"title": "Error", "input": s, "error": e.message}
+                {"title": "Error", "input": s, "error": str(e)}
             ]
         else:
             trace = traceback.format_exc()

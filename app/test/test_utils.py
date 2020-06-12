@@ -1,5 +1,6 @@
 from __future__ import absolute_import
-from app.logic.utils import Eval
+from app.logic.logic import Eval
+
 
 def test_eval1():
     e = Eval()
@@ -11,6 +12,7 @@ def test_eval1():
     assert e.eval("a=1+1\na\n") == "2"
     assert e.eval("a=1+1\na=3") == ""
     assert e.eval("a=1+1\na=3\n") == ""
+
 
 def test_eval2():
     e = Eval()
@@ -47,6 +49,7 @@ else:
 a
 """\
         ) == "0"
+
 
 def test_eval3():
     e = Eval()
