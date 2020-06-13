@@ -178,7 +178,8 @@ def is_approximatable_constant(input_evaluated):
     # is_constant, but exclude Integer/Float/infinity
     return (hasattr(input_evaluated, 'free_symbols') and
             not input_evaluated.free_symbols and
-            not input_evaluated.is_Integer and
+            hasattr(input_evaluated, 'is_Integer')
+            and input_evaluated.is_Integer and
             not input_evaluated.is_Float and
             input_evaluated.is_finite is not True)
 

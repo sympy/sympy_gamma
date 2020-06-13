@@ -11,13 +11,19 @@ import sympy
 
 from sympy.core.relational import Relational
 import sympy.parsing.sympy_tokenize as sympy_tokenize
-from token import NAME
 from six.moves import map
 from six.moves import zip
+
+from sympy.parsing.sympy_parser import (
+    AppliedFunction, implicit_multiplication, split_symbols,
+    function_exponentiation, implicit_application, OP, NAME,
+    _group_parentheses, _apply_functions, _flatten, _token_callable
+)
 
 OTHER_SYMPY_FUNCTIONS = ('sqrt',)
 
 Arguments = collections.namedtuple('Arguments', 'function args kwargs')
+
 
 class Eval(object):
     def __init__(self, namespace={}):
@@ -79,6 +85,7 @@ class Eval(object):
             s = "".join(traceback.format_exception(etype, value, tb))
             return s
 
+
 class LatexVisitor(ast.NodeVisitor):
     EXCEPTIONS = {'integrate': sympy.Integral, 'diff': sympy.Derivative}
     formatters = {}
@@ -129,6 +136,7 @@ class LatexVisitor(ast.NodeVisitor):
                 self.latex = sympy.latex(self.evaluator.eval_node(node))
         return self.latex
 
+
 @LatexVisitor.formats_function('solve')
 def format_solve(node, visitor):
     expr = visitor.evaluator.eval_node(node.args[0])
@@ -147,11 +155,13 @@ def format_solve(node, visitor):
 
     return ''.join(buffer)
 
+
 @LatexVisitor.formats_function('limit')
 def format_limit(node, visitor):
     if len(node.args) >= 3:
         return sympy.latex(
             sympy.Limit(*[visitor.evaluator.eval_node(arg) for arg in node.args]))
+
 
 @LatexVisitor.formats_function('prime')
 def format_prime(node, visitor):
@@ -161,25 +171,30 @@ def format_prime(node, visitor):
                     ordinal(int(number)),
                     r'}\; \mathrm{prime~number}'])
 
+
 @LatexVisitor.formats_function('isprime')
 def format_isprime(node, visitor):
     number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
     return ''.join([r'\mathrm{Is~}', number, r'\mathrm{~prime?}'])
+
 
 @LatexVisitor.formats_function('nextprime')
 def format_nextprime(node, visitor):
     number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
     return r'\mathrm{Least~prime~greater~than~}' + number
 
+
 @LatexVisitor.formats_function('factorint')
 def format_factorint(node, visitor):
     number = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
     return r'\mathrm{Prime~factorization~of~}' + number
 
+
 @LatexVisitor.formats_function('factor')
 def format_factor(node, visitor):
     expression = sympy.latex(visitor.evaluator.eval_node(node.args[0]))
     return r'\mathrm{Factorization~of~}' + expression
+
 
 @LatexVisitor.formats_function('solve_poly_system')
 def format_factorint(node, visitor):
@@ -194,6 +209,7 @@ def format_factorint(node, visitor):
                     r'\end{cases} \mathrm{~for~}',
                     sympy.latex(variables)])
 
+
 @LatexVisitor.formats_function('plot')
 def format_plot(node, visitor):
     if node.args:
@@ -204,6 +220,7 @@ def format_plot(node, visitor):
             keywords[keyword.arg] = visitor.evaluator.eval_node(keyword.value)
         function = sympy.latex(keywords)
     return r'\mathrm{Plot~}' + function
+
 
 @LatexVisitor.formats_function('rsolve')
 def format_rsolve(node, visitor):
@@ -217,8 +234,11 @@ def format_rsolve(node, visitor):
     else:
         return r'\mathrm{Solve~the~recurrence~}' + recurrence
 
+
 diophantine_template = (r"\begin{{align}}&{}\\&\mathrm{{where~}}"
                         r"{}\mathrm{{~are~integers}}\end{{align}}")
+
+
 @LatexVisitor.formats_function('diophantine')
 def format_diophantine(node, visitor):
     expression = visitor.evaluator.eval_node(node.args[0])
@@ -232,6 +252,7 @@ def format_diophantine(node, visitor):
         result = diophantine_template.format(result, tuple(symbols))
     return result
 
+
 @LatexVisitor.formats_function('summation')
 @LatexVisitor.formats_function('product')
 def format_diophantine(node, visitor):
@@ -241,12 +262,14 @@ def format_diophantine(node, visitor):
         klass = sympy.Product
     return sympy.latex(klass(*list(map(visitor.evaluator.eval_node, node.args))))
 
+
 @LatexVisitor.formats_function('help')
 def format_help(node, visitor):
     if node.args:
         function = visitor.evaluator.eval_node(node.args[0])
         return r'\mathrm{Show~documentation~for~}' + function.__name__
     return r'\mathrm{Show~documentation~(requires~1~argument)}'
+
 
 class TopCallVisitor(ast.NodeVisitor):
     def __init__(self):
@@ -264,12 +287,14 @@ class TopCallVisitor(ast.NodeVisitor):
         if not self.call:
             self.call = node
 
+
 # From https://stackoverflow.com/a/739301/262727
 def ordinal(n):
     if 10 <= n % 100 < 20:
         return 'th'
     else:
-       return {1 : 'st', 2 : 'nd', 3 : 'rd'}.get(n % 10, "th")
+        return {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, "th")
+
 
 # TODO: modularize all of this
 def latexify(string, evaluator):
@@ -278,12 +303,14 @@ def latexify(string, evaluator):
     a.visit(ast.parse(string))
     return a.latex
 
+
 def topcall(string):
     a = TopCallVisitor()
     a.visit(ast.parse(string))
     if hasattr(a, 'call'):
         return getattr(a.call.func, 'id', None)
     return None
+
 
 def arguments(string_or_node, evaluator):
     node = None
@@ -315,10 +342,13 @@ def arguments(string_or_node, evaluator):
             return Arguments(node.value, [], {})
     return None
 
+
 re_calls = re.compile(r'(Integer|Symbol|Float|Rational)\s*\([\'\"]?([a-zA-Z0-9\.]+)[\'\"]?\s*\)')
+
 
 def re_calls_sub(match):
     return match.groups()[1]
+
 
 def removeSymPy(string):
     try:
@@ -326,10 +356,6 @@ def removeSymPy(string):
     except IndexError:
         return string
 
-from sympy.parsing.sympy_parser import (
-    AppliedFunction, implicit_multiplication, split_symbols,
-    function_exponentiation, implicit_application, OP, NAME,
-    _group_parentheses, _apply_functions, _flatten, _token_callable)
 
 def _implicit_multiplication(tokens, local_dict, global_dict):
     result = []
@@ -385,6 +411,7 @@ def _implicit_multiplication(tokens, local_dict, global_dict):
         result.append(tokens[-1])
     return result
 
+
 def implicit_multiplication(result, local_dict, global_dict):
     """Makes the multiplication operator optional in most cases.
 
@@ -406,6 +433,7 @@ def implicit_multiplication(result, local_dict, global_dict):
 
     result = _flatten(result)
     return result
+
 
 def custom_implicit_transformation(result, local_dict, global_dict):
     """Allows a slightly relaxed syntax.
@@ -446,6 +474,7 @@ SYNONYMS = {
     u'draw': 'plot'
 }
 
+
 def synonyms(tokens, local_dict, global_dict):
     """Make some names synonyms for others.
 
@@ -462,6 +491,7 @@ def synonyms(tokens, local_dict, global_dict):
                 continue
         result.append(token)
     return result
+
 
 def close_matches(s, global_dict):
     """

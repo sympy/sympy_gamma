@@ -1,14 +1,11 @@
 from __future__ import absolute_import
-import sys
 import traceback
-import collections
 from .utils import Eval, latexify, arguments, removeSymPy, \
     custom_implicit_transformation, synonyms, OTHER_SYMPY_FUNCTIONS, \
     close_matches
 from .resultsets import find_result_set, get_card, format_by_type, \
     is_function_handled, find_learn_more_set
-from sympy import latex, series, sympify, solve, Derivative, \
-    Integral, Symbol, diff, integrate
+from sympy import latex
 import sympy
 from sympy.core.function import FunctionClass
 from sympy.parsing.sympy_parser import stringify_expr, eval_expr, \

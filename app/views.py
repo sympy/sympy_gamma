@@ -6,8 +6,6 @@ from django.shortcuts import render_to_response, redirect
 from django.template.loader import render_to_string
 from django import forms
 
-# from google.appengine.runtime import DeadlineExceededError
-
 from .constants import LIVE_PROMOTION_MESSAGES, EXAMPLES
 from app.logic.logic import SymPyGamma
 
@@ -134,6 +132,7 @@ def random_example(request):
 
     return redirect('input/?i=' + six.moves.urllib.parse.quote(random.choice(examples)))
 
+
 def _process_card(request, card_name):
     variable = request.GET.get('variable')
     expression = request.GET.get('expression')
@@ -161,7 +160,8 @@ def eval_card(request, card_name):
         return HttpResponse(json.dumps({
             'error': str(e)
         }), content_type="application/json")
-    except:
+    except Exception as e:
+        logging.error(f'Exception: {e}')
         trace = traceback.format_exc(5)
         return HttpResponse(json.dumps({
             'error': ('There was an error in Gamma. For reference'
@@ -169,6 +169,7 @@ def eval_card(request, card_name):
         }), content_type="application/json")
 
     return HttpResponse(json.dumps(result), content_type="application/json")
+
 
 def get_card_info(request, card_name):
     g, variable, expression, _ = _process_card(request, card_name)
@@ -179,11 +180,8 @@ def get_card_info(request, card_name):
         return HttpResponse(json.dumps({
             'error': str(e)
         }), content_type="application/json")
-    except DeadlineExceededError:
-        return HttpResponse(json.dumps({
-            'error': 'Computation timed out.'
-        }), content_type="application/json")
-    except:
+    except Exception as e:
+        logging.error(f"Exception: {e}")
         trace = traceback.format_exc(5)
         return HttpResponse(json.dumps({
             'error': ('There was an error in Gamma. For reference'
@@ -191,6 +189,7 @@ def get_card_info(request, card_name):
         }), content_type="application/json")
 
     return HttpResponse(json.dumps(result), content_type="application/json")
+
 
 def get_card_full(request, card_name):
     g, variable, expression, parameters = _process_card(request, card_name)
@@ -217,10 +216,8 @@ def get_card_full(request, card_name):
             },
             'input': expression
         }), content_type="text/html")
-    except DeadlineExceededError:
-        return HttpResponse('Computation timed out.',
-                            content_type="text/html")
-    except:
+    except Exception as e:
+        logging.error(f'Exception: {e}')
         trace = traceback.format_exc(5)
         return HttpResponse(render_to_string('card.html', {
             'cell': {
