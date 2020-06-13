@@ -47,6 +47,9 @@ This will spin up a local server that runs on port ``8080``.
 Open a web browser and go to http://localhost:8080.
 You should see GUI of SymPy Gamma
 
+Note: Make sure to set ``DEBUG = False`` in `settings.py` for serving staticfiles
+locally.
+
 
 Deploying to GAE
 ----------------
