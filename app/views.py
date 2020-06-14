@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+
+import sympy
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response, redirect
 from django.template.loader import render_to_string
@@ -47,6 +49,7 @@ def app_meta(view):
         try:
             template, params = result
             params['app_version'] = version
+            params['sympy_version'] = sympy.__version__
             params['current_year'] = datetime.datetime.now().year
             return render_to_response(template, params)
         except ValueError:
