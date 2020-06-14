@@ -159,7 +159,7 @@ def eval_card(request, card_name):
         result = g.eval_card(card_name, expression, variable, parameters)
     except ValueError as e:
         return HttpResponse(json.dumps({
-            'error': e.message
+            'error': str(e)
         }), content_type="application/json")
     except:
         trace = traceback.format_exc(5)
@@ -177,7 +177,7 @@ def get_card_info(request, card_name):
         result = g.get_card_info(card_name, expression, variable)
     except ValueError as e:
         return HttpResponse(json.dumps({
-            'error': e.message
+            'error': str(e)
         }), content_type="application/json")
     except DeadlineExceededError:
         return HttpResponse(json.dumps({
@@ -213,7 +213,7 @@ def get_card_full(request, card_name):
                 'input': card_info['input'],
                 'card': card_name,
                 'variable': variable,
-                'error': e.message
+                'error': str(e)
             },
             'input': expression
         }), content_type="text/html")
