@@ -10,7 +10,7 @@ from io import StringIO
 import sympy
 
 from sympy.core.relational import Relational
-import sympy.parsing.sympy_tokenize as sympy_tokenize
+import tokenize as sympy_tokenize
 from six.moves import map
 from six.moves import zip
 
