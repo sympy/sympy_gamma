@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+
+import sympy
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response, redirect
 from django.template.loader import render_to_string
@@ -47,6 +49,7 @@ def app_meta(view):
         try:
             template, params = result
             params['app_version'] = version
+            params['sympy_version'] = sympy.__version__
             params['current_year'] = datetime.datetime.now().year
             return render_to_response(template, params)
         except ValueError:
@@ -156,7 +159,7 @@ def eval_card(request, card_name):
         result = g.eval_card(card_name, expression, variable, parameters)
     except ValueError as e:
         return HttpResponse(json.dumps({
-            'error': e.message
+            'error': str(e)
         }), content_type="application/json")
     except:
         trace = traceback.format_exc(5)
@@ -174,7 +177,7 @@ def get_card_info(request, card_name):
         result = g.get_card_info(card_name, expression, variable)
     except ValueError as e:
         return HttpResponse(json.dumps({
-            'error': e.message
+            'error': str(e)
         }), content_type="application/json")
     except DeadlineExceededError:
         return HttpResponse(json.dumps({
@@ -210,7 +213,7 @@ def get_card_full(request, card_name):
                 'input': card_info['input'],
                 'card': card_name,
                 'variable': variable,
-                'error': e.message
+                'error': str(e)
             },
             'input': expression
         }), content_type="text/html")
