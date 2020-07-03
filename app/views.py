@@ -41,8 +41,8 @@ class SearchForm(forms.Form):
 
 
 def app_meta(view):
-    def _wrapper(request, **kwargs):
-        result = view(request, **kwargs)
+    def _wrapper(request, *args, **kwargs):
+        result = view(request, *args, **kwargs)
         version = os.environ['GAE_VERSION']
 
         try:
@@ -242,7 +242,7 @@ def find_text_query(query):
 
 
 @app_meta
-def view_404(request):
+def view_404(request, exception):
     return "404.html", {}
 
 
