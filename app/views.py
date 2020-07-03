@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 import sympy
 from django.http import HttpResponse, Http404
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render
+from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django import forms
 
@@ -27,7 +28,7 @@ ndb_client = models.ndb_client
 
 
 class MobileTextInput(forms.widgets.TextInput):
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if attrs is None:
             attrs = {}
         attrs['autocorrect'] = 'off'
@@ -49,7 +50,7 @@ def app_meta(view):
             params['app_version'] = version
             params['sympy_version'] = sympy.__version__
             params['current_year'] = datetime.datetime.now().year
-            return render_to_response(template, params)
+            return render(request, template, params)
         except ValueError:
             return result
     return _wrapper
