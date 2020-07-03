@@ -2,8 +2,7 @@ from __future__ import absolute_import
 
 import sympy
 from django.http import HttpResponse, Http404
-from django.shortcuts import render
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django import forms
 
