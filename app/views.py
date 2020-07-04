@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import sympy
 from django.http import HttpResponse, Http404
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django import forms
 
@@ -27,7 +27,7 @@ ndb_client = models.ndb_client
 
 
 class MobileTextInput(forms.widgets.TextInput):
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if attrs is None:
             attrs = {}
         attrs['autocorrect'] = 'off'
@@ -40,8 +40,8 @@ class SearchForm(forms.Form):
 
 
 def app_meta(view):
-    def _wrapper(request, **kwargs):
-        result = view(request, **kwargs)
+    def _wrapper(request, *args, **kwargs):
+        result = view(request, *args, **kwargs)
         version = os.environ['GAE_VERSION']
 
         try:
@@ -49,7 +49,7 @@ def app_meta(view):
             params['app_version'] = version
             params['sympy_version'] = sympy.__version__
             params['current_year'] = datetime.datetime.now().year
-            return render_to_response(template, params)
+            return render(request, template, params)
         except ValueError:
             return result
     return _wrapper
@@ -241,7 +241,7 @@ def find_text_query(query):
 
 
 @app_meta
-def view_404(request):
+def view_404(request, exception):
     return "404.html", {}
 
 
