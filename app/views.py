@@ -157,11 +157,12 @@ def eval_card(request, card_name):
     try:
         result = g.eval_card(card_name, expression, variable, parameters)
     except ValueError as e:
+        logging.exception(f"Exception:\n{e}\n")
         return HttpResponse(json.dumps({
             'error': str(e)
         }), content_type="application/json")
     except Exception as e:
-        logging.error(f'Exception: {e}')
+        logging.exception(f"Exception:\n{e}\n")
         trace = traceback.format_exc(5)
         return HttpResponse(json.dumps({
             'error': ('There was an error in Gamma. For reference'
@@ -177,11 +178,12 @@ def get_card_info(request, card_name):
     try:
         result = g.get_card_info(card_name, expression, variable)
     except ValueError as e:
+        logging.exception(f"Exception:\n{e}\n")
         return HttpResponse(json.dumps({
             'error': str(e)
         }), content_type="application/json")
     except Exception as e:
-        logging.error(f"Exception: {e}")
+        logging.exception(f"Exception:\n{e}\n")
         trace = traceback.format_exc(5)
         return HttpResponse(json.dumps({
             'error': ('There was an error in Gamma. For reference'

@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 import traceback
+
+import logging
+
 from .utils import Eval, latexify, arguments, removeSymPy, \
     custom_implicit_transformation, synonyms, OTHER_SYMPY_FUNCTIONS, \
     close_matches
@@ -57,6 +60,7 @@ class SymPyGamma(object):
                 {"title": "Error", "input": s, "error": "Invalid input"}
             ]
         except Exception as e:
+            logging.exception(f"Exception eval failed:\n{e}\n")
             return self.handle_error(s, e)
 
         if result:
@@ -74,6 +78,7 @@ class SymPyGamma(object):
             try:
                 cards.extend(self.prepare_cards(parsed, arguments, evaluator, evaluated))
             except ValueError as e:
+                logging.exception(f"Exception:\n{e}\n")
                 return self.handle_error(s, e)
 
             return cards
@@ -152,9 +157,11 @@ class SymPyGamma(object):
         transformations.extend(standard_transformations)
         transformations.extend((convert_xor, custom_implicit_transformation))
         parsed = stringify_expr(s, {}, namespace, transformations)
+        logging.info(f"Parsed as: {parsed}")
         try:
             evaluated = eval_expr(parsed, {}, namespace)
-        except SyntaxError:
+        except SyntaxError as e:
+            logging.exception(e)
             raise
         except Exception as e:
             raise ValueError(str(e))
@@ -277,6 +284,7 @@ class SymPyGamma(object):
                         'parameters': card.card_info.get('parameters', [])
                     })
                 except (SyntaxError, ValueError) as e:
+                    logging.error(e)
                     pass
 
             if is_function:
