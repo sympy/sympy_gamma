@@ -71,9 +71,12 @@ def index(request):
 
 
 def input_exists(input):
+    logging.info(f'Checking if input exists...: {input}')
     query = datastore_client.query(kind='Query')
-    query.text = input
-    return query.fetch(limit=1)
+    query = query.add_filter('text', '=', input)
+    result = list(query.fetch(limit=1))
+    logging.info(f'Input result: {result}')
+    return result
 
 
 @app_meta
@@ -98,15 +101,16 @@ def input(request):
                 }]
 
             if not input_exists(input):
-                logging.info('Input does not exists')
+                logging.info('Input does not exists, inserting into datastore..')
                 entity = datastore.Entity(key=datastore_client.key('Query'))
                 entity.update({
                     "text": input,
                     "user_id": None,
+                    "date": datetime.datetime.utcnow(),
                 })
-
-                datastore_client.put(entity)
-
+                logging.info(f'Inserting entity: {entity}')
+                put_result = datastore_client.put(entity)
+                logging.info(f'Input insert result: {put_result}')
             # For some reason the |random tag always returns the same result
             return ("result.html", {
                 "input": input,
