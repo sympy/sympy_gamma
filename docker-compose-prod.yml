@@ -7,8 +7,6 @@ services:
       dockerfile: ./docker/app/Dockerfile
     image: app
     container_name: gamma_app
-    depends_on:
-      - datastore
     volumes:
       - ./app/:/usr/src/app/app/
     ports:
@@ -22,8 +20,10 @@ services:
       - GAE_VERSION=development
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gamma.rule=Host(`localhost`)"
-      - "traefik.http.routers.gamma.entrypoints=web"
+      - "traefik.http.routers.gamma.rule=Host(`gamma.iamit.in`)"
+      - "traefik.http.routers.gamma.entrypoints=websecure"
+      - "traefik.http.routers.gamma.tls.certresolver=myresolver"
+
     command: python manage.py runserver 0.0.0.0:5000
 
   datastore:
@@ -43,9 +43,21 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.myresolver.acme.email=dtu.amit@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+
     ports:
       - "80:80"
-      - "8080:8080"
+      - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
