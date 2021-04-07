@@ -9,15 +9,14 @@ services:
     container_name: gamma_app
     volumes:
       - ./app/:/usr/src/app/app/
+      - /root/secrets/:/usr/src/app/secrets/
     ports:
       - "5000:5000"
       - "8082:8082"
       - "8083:8083"
     environment:
-      - DATASTORE_EMULATOR_HOST=datastore:8081
-      - DATASTORE_USE_PROJECT_ID_AS_APP_ID=true
+      - GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/secrets/gamma-service-account.json
       - PROJECT_ID=sympy-gamma-hrd
-      - GAE_VERSION=development
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.gamma.rule=Host(`gamma.iamit.in`)"
@@ -25,15 +24,6 @@ services:
       - "traefik.http.routers.gamma.tls.certresolver=myresolver"
 
     command: python manage.py runserver 0.0.0.0:5000
-
-  datastore:
-    image: google/cloud-sdk:latest
-    container_name: gamma_datastore
-    ports:
-      - "8081:8081"
-    environment:
-      - CLOUDSDK_CORE_PROJECT=sympy-live-hrd
-    command: gcloud beta emulators datastore start --host-port=0.0.0.0:8081
 
   traefik:
     image: "traefik:v2.4"
