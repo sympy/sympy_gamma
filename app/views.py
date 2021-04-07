@@ -22,8 +22,10 @@ import traceback
 
 import logging
 
+from google.cloud import datastore
 
-ndb_client = models.ndb_client
+
+datastore_client = models.datastore_client
 
 
 class MobileTextInput(forms.widgets.TextInput):
@@ -69,8 +71,12 @@ def index(request):
 
 
 def input_exists(input):
-    with ndb_client.context():
-        return models.Query.query(models.Query.text == input).get()
+    logging.info(f'Checking if input exists...: {input}')
+    query = datastore_client.query(kind='Query')
+    query = query.add_filter('text', '=', input)
+    result = list(query.fetch(limit=1))
+    logging.info(f'Input result: {result}')
+    return result
 
 
 @app_meta
@@ -95,12 +101,16 @@ def input(request):
                 }]
 
             if not input_exists(input):
-                logging.info('Input does not exists')
-                with ndb_client.context():
-                    query = models.Query(text=input, user_id=None)
-                    logging.info('query: %s' % query)
-                    query.put()
-
+                logging.info('Input does not exists, inserting into datastore..')
+                entity = datastore.Entity(key=datastore_client.key('Query'))
+                entity.update({
+                    "text": input,
+                    "user_id": None,
+                    "date": datetime.datetime.utcnow(),
+                })
+                logging.info(f'Inserting entity: {entity}')
+                put_result = datastore_client.put(entity)
+                logging.info(f'Input insert result: {put_result}')
             # For some reason the |random tag always returns the same result
             return ("result.html", {
                 "input": input,
@@ -235,11 +245,6 @@ def get_card_full(request, card_name):
     response['Access-Control-Allow-Headers'] = 'Content-Type, X-Requested-With'
 
     return response
-
-
-def find_text_query(query):
-    with ndb_client.context():
-        return models.Query.query(models.Query.text == query.text)
 
 
 @app_meta

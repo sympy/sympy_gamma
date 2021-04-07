@@ -2,7 +2,7 @@ Django==3.0.8
 numpy==1.18.4
 grpcio==1.29.0
 googleapis_common_protos==1.51.0
-google-cloud-ndb==1.3.0
+google-cloud-datastore==2.1.0
 requests-toolbelt==0.9.1
 protobuf==3.12.2
 enum34==1.1.10
