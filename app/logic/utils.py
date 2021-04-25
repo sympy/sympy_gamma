@@ -277,7 +277,8 @@ class TopCallVisitor(ast.NodeVisitor):
         self.call = None
 
     def visit_Call(self, node):
-        self.call = node
+        if not self.call:
+            self.call = node
 
     def visit_Name(self, node):
         if not self.call:
