@@ -1,4 +1,4 @@
-Django==3.0.8
+Django==3.1.9
 numpy==1.18.4
 grpcio==1.29.0
 googleapis_common_protos==1.51.0
