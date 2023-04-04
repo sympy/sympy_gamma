@@ -11,6 +11,31 @@ import six
 from six.moves import map
 from six.moves import zip
 
+class CardResult:
+    """
+    A class to encapsulate the result of a card evaluation.
+
+    This class holds the card, the evaluation result, the input representation, 
+    and the components related to the card evaluation. It also implements an 
+    equality check to compare CardResult instances based on their evaluation result.
+
+    Attributes:
+        card (ResultCard): The card that was evaluated.
+        result (Any): The result of the card evaluation.
+        input_repr (str): The string representation of the input expression.
+        components (dict): The components related to the card evaluation.
+    """
+
+    def __init__(self, card, result, input_repr, components):
+        self.card = card
+        self.result = result
+        self.input_repr = input_repr
+        self.components = components
+
+    def __eq__(self, other):
+        if not isinstance(other, CardResult):
+            return False
+        return self.result == other.result
 
 class ResultCard(object):
     """
@@ -113,20 +138,17 @@ class MultiResultCard(ResultCard):
         self.cards_used = []
         results = []
 
-        # TODO Implicit state is bad, come up with better API
-        # in particular a way to store variable, cards used
         for card in self.cards:
             try:
                 result = card.eval(evaluator, components, parameters)
             except ValueError:
                 continue
-            if result != None:
-                if not any(result == r[1] for r in results):
+            if result is not None:
+                card_result = CardResult(card, result, evaluator.get("input_evaluated"), components)
+                if card_result not in results:
                     self.cards_used.append(card)
-                    results.append((card, result))
+                    results.append(card_result)
         if results:
-            self.input_repr = evaluator.get("input_evaluated")
-            self.components = components
             return results
         return "None"
 
@@ -137,16 +159,15 @@ class MultiResultCard(ResultCard):
         if not isinstance(output, list):
             return output
         html = ["<ul>"]
-        for card, result in output:
+        for card_result in output:
             html.append("<li>")
             html.append('<div class="cell_input">')
-            html.append(card.format_input(self.input_repr, self.components))
+            html.append(card_result.card.format_input(card_result.input_repr, card_result.components))
             html.append('</div>')
-            html.append(card.format_output(result, formatter))
+            html.append(card_result.card.format_output(card_result.result, formatter))
             html.append("</li>")
         html.append("</ul>")
         return "\n".join(html)
-
 
 # Decide which result card set to use
 
