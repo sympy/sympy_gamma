@@ -28,7 +28,7 @@ RUN ln -sf /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/local/bin/phantomjs
 RUN ln -sf /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/bin/phantomjs
 RUN rm -rf /usr/local/share/$PHANTOM_JS.tar.bz2
 
-RUN cd ../ && git clone git://github.com/casperjs/casperjs.git \
+RUN cd ../ && git clone https://github.com/casperjs/casperjs.git \
     && cd casperjs && ln -sf `pwd`/bin/casperjs /usr/local/bin/casperjs
 
 ENV PYTHONPATH="/usr/src/app"
