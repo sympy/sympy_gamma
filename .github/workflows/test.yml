@@ -13,5 +13,5 @@ jobs:
 
     - name: Run Tests
       run: |
-        docker-compose exec app nosetests app/test -vv
-        docker-compose exec app casperjs test app/test
+        docker-compose exec -T app nosetests app/test -vv
+        docker-compose exec -T app casperjs test app/test
