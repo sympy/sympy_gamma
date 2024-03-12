@@ -1,0 +1,19 @@
+name: Test
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Start Docker compose
+      run: |
+        docker-compose up -d
+        sleep 10
+
+    - name: Run Tests
+      run: |
+        docker-compose exec -T app nosetests app/test -vv
+        docker-compose exec -T app casperjs test app/test
